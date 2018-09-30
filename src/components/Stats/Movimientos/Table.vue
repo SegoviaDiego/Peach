@@ -6,16 +6,13 @@
         Hora
       </div>
       <div class="column">
-        Articulo
-      </div>
-      <div v-if="type == 4" class="column">
-        Tipo de egreso
+        Descripcion
       </div>
       <div class="column">
-        Cantidad
+        Tipo
       </div>
       <div class="column">
-        Valor
+        Monto
       </div>
     </div>
     <div class="body">
@@ -25,16 +22,13 @@
             {{toHour(log.time)}}
           </div>
           <div class="column">
-            {{products[log.productId].name}}
+            {{log.desc}}
           </div>
-          <div v-if="type == 4" class="column">
+          <div class="column">
             {{getType(log.type)}}
           </div>
           <div class="column">
-            {{composeMagnitude(log.amount, 2)}}
-          </div>
-          <div class="column">
-            ${{products[log.productId].price * toMagnitude(log.amount)}}
+            ${{log.money}}
           </div>
         </div>
       </template>
@@ -50,7 +44,7 @@ import Log from "@/Server/mongodb/Log";
 import Toolbar from "./Toolbar.vue";
 import { log as types } from "@/vuexTypes";
 
-import { composeMagnitude, toMagnitude, toHour } from "@/Server/mongodb/Utils";
+import { toHour } from "@/Server/mongodb/Utils";
 
 function addKeyValues(obj) {
   let values = "";
@@ -59,11 +53,9 @@ function addKeyValues(obj) {
   }
   return values.toLowerCase();
 }
-function filterData(data, products, filter) {
+function filterData(data, filter) {
   return data.filter(item => {
-    return (
-      addKeyValues(item) + addKeyValues(products[item.productId])
-    ).includes(filter.toLowerCase());
+    return addKeyValues(item).includes(filter.toLowerCase());
   });
 }
 function sortData(data) {
@@ -78,43 +70,20 @@ export default Vue.extend({
     Toolbar
   },
   mounted() {
-    this.$store.dispatch(types.loadEgreso);
+    this.$store.dispatch(types.loadMov);
   },
   data: () => ({
     openPrintDialog: false
   }),
   computed: mapState({
-    type: state => state.Log.type,
     filter: state => state.Log.filter,
     isLoading: state => state.Log.loading,
-    showSpinner: state => state.Log.showSpinner,
     filteredData(state) {
-      return sortData(
-        filterData([...state.Log.egreso], this.products, this.filter)
-      );
-    },
-    products(state) {
-      return _.mapKeys(state.Product.data, function(value, key) {
-        return value._id;
-      });
+      return sortData(filterData([...state.Log.mov], this.filter));
     }
   }),
   methods: {
-    toMagnitude: toMagnitude,
-    composeMagnitude: composeMagnitude,
     toHour: toHour,
-    getType(type) {
-      switch (type) {
-        case 1:
-          return "Vencimiento";
-        case 2:
-          return "Reciclado";
-        case 3:
-          return "Transferencia";
-        default:
-          return "";
-      }
-    },
     closePrintDialog() {
       this.openPrintDialog = false;
     },
@@ -129,7 +98,7 @@ export default Vue.extend({
 // Scrollbar
 $sbSize: 10px;
 // Grid
-$tableColumnTemplate: 1fr 3fr 2fr 2fr 2fr;
+$tableColumnTemplate: 1fr 3fr 2fr 2fr;
 // Head options
 $hFontColor: #000;
 $hFontSize: 20px;

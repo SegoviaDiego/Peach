@@ -16,6 +16,9 @@ export default class Log {
         case types.outStock:
           resolve(await Log.outStock(payload));
           break;
+        case types.createMov:
+          resolve(await Log.createMov(payload));
+          break;
         default:
           resolve();
           break;
@@ -23,15 +26,15 @@ export default class Log {
     });
   }
 
-  public static getLog(type: string, date: Date, eType?: number): Promise<any> {
+  public static getLog(db: string, date: Date, type?: number): Promise<any> {
     return new Promise(async (resolve: any) => {
       date.setHours(0, 0, 0, 0);
       let query;
 
-      if (eType && eType != 4) {
+      if (type && type != 4) {
         query = {
           date,
-          type: eType
+          type
         };
       } else {
         query = {
@@ -39,12 +42,31 @@ export default class Log {
         };
       }
 
-      Log.db(type)
+      Log.db(db)
         .find(query)
         .toArray((err: any, docs: any) => {
           if (err) throw err;
           resolve(docs);
         });
+    });
+  }
+
+  private static createMov(payload: any) {
+    return new Promise(async (resolve: any) => {
+      let { desc, money, type } = payload;
+      let date = new Date();
+      let time = new Date();
+      date.setHours(0, 0, 0, 0);
+
+      await Log.db(types.movLog).insertOne({
+        date,
+        time,
+        desc,
+        type,
+        money
+      });
+
+      resolve();
     });
   }
 

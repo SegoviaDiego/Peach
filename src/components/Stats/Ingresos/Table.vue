@@ -19,7 +19,7 @@
       <template v-for="log in filteredData">
         <div :key="'row-' + log._id" class="row">
           <div class="column">
-            {{getTime(log.time)}}
+            {{toHour(log.time)}}
           </div>
           <div class="column">
             {{products[log.productId].name}}
@@ -44,7 +44,7 @@ import Log from "@/Server/mongodb/Log";
 import Toolbar from "./Toolbar.vue";
 import { log as types } from "@/vuexTypes";
 
-import { composeMagnitude, toMagnitude } from "@/Server/mongodb/Utils";
+import { composeMagnitude, toMagnitude, toHour } from "@/Server/mongodb/Utils";
 
 function addKeyValues(obj) {
   let values = "";
@@ -95,9 +95,7 @@ export default Vue.extend({
   methods: {
     toMagnitude: toMagnitude,
     composeMagnitude: composeMagnitude,
-    getTime(date) {
-      return date.getHours() + ":" + date.getMinutes();
-    },
+    toHour: toHour,
     closePrintDialog() {
       this.openPrintDialog = false;
     },

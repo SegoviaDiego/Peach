@@ -20,8 +20,9 @@ export default Vue.extend({
 </script>
 
 <style lang="scss">
+
 #app {
-  font-family: Lato;
+  font-family: Lato, "Avenir", Helvetica, Arial, sans-serif !important;
   -webkit-font-smoothing: antialiased;
   -webkit-user-select: none;
   user-select: none;

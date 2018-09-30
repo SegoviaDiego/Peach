@@ -55,7 +55,7 @@
         <button @click="selectingDate = true" class="rect">
           Fecha
         </button>
-        <button v-if="exists" @click="print()" class="circle">
+        <button @click="selectingPrint = true" class="circle">
           <fontawesome icon="print" />
         </button>
       </div>
@@ -67,11 +67,38 @@
       :visible.sync="selectingDate"
       width="30%">
       <div>
-        <input v-model="selectedDate" type="date">
+        <el-date-picker
+          v-model="selectedDate"
+          type="date"
+          placeholder="Seleccionar dia"
+          :picker-options="datePickOptions">
+        </el-date-picker>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="selectingDate = false">Cancelar</el-button>
         <el-button type="primary" @click="setDate()">Aceptar</el-button>
+      </span>
+    </el-dialog>
+
+    <el-dialog
+      title="Seleccionar rango horario para la impresion"
+      :visible.sync="selectingPrint"
+      width="30%">
+      <div>
+        <el-select v-model="selectedCierre" placeholder="Seleccionar cierre">
+           <template v-for="i of cierres">
+            <el-option
+              :key="'cierre-'+i"
+              :label="getLabel(i)"
+              :value="i">
+            </el-option>
+          </template>
+          <el-option :value="0" label="Todos" />
+        </el-select>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="selectingPrint = false">Cancelar</el-button>
+        <el-button type="primary" @click="validatePrint()">Imprimir</el-button>
       </span>
     </el-dialog>
 
@@ -84,6 +111,9 @@ import { mapState } from "vuex";
 
 import { equalDates } from "../../../store/backendish/Src/Utils";
 import { totals as types } from "../../../store/vuexTypes";
+
+import Print from "@/Server/Src/Print";
+import { composeMagnitude, toHour } from "@/Server/mongodb/Utils";
 
 export default Vue.extend({
   name: "informes-toolbar",
@@ -98,12 +128,48 @@ export default Vue.extend({
         return state.Total.data.cierres.length;
       }
       return 0;
+    },
+    products(state) {
+      return _.mapKeys(state.Product.data, function(value, key) {
+        return value._id;
+      });
     }
   }),
   data: () => ({
     totalIndex: types.totalIndex,
     selectingDate: false,
-    selectedDate: null
+    selectingPrint: false,
+    selectedDate: null,
+    selectedCierre: null,
+    datePickOptions: {
+      disabledDate(time) {
+        return time.getTime() > Date.now();
+      },
+      shortcuts: [
+        {
+          text: "Hoy",
+          onClick(picker) {
+            picker.$emit("pick", new Date());
+          }
+        },
+        {
+          text: "Ayer",
+          onClick(picker) {
+            const date = new Date();
+            date.setTime(date.getTime() - 3600 * 1000 * 24);
+            picker.$emit("pick", date);
+          }
+        },
+        {
+          text: "Semana pasada",
+          onClick(picker) {
+            const date = new Date();
+            date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
+            picker.$emit("pick", date);
+          }
+        }
+      ]
+    }
   }),
   methods: {
     getLabel(i) {
@@ -118,14 +184,62 @@ export default Vue.extend({
       this.$store.dispatch(types.setCierreIndex, index);
     },
     setDate() {
-      let newDate = this.selectedDate.split("-");
-      newDate[1]--;
-      this.$store.dispatch(types.setDate, new Date(...newDate)).then(() => {
+      this.$store.dispatch(types.setDate, this.selectedDate).then(() => {
         this.$store.dispatch(types.load);
         this.selectingDate = false;
       });
     },
-    print() {}
+    validatePrint() {
+      if (!this.selectedCierre) {
+        this.$notify({
+          title: "No seleccionaste un cierre!",
+          message: "Selecciona un cierre para poder imprimir.",
+          type: "warning",
+          duration: 5000,
+          offset: 170
+        });
+      } else {
+        this.print();
+      }
+    },
+    print() {
+      let printData = [];
+
+      printData.push([
+        { text: "PLU", style: "tableHeader" },
+        { text: "HORA", style: "tableHeader" },
+        { text: "NOMBRE", style: "tableHeader" },
+        { text: "INGRESADO", style: "tableHeader" }
+      ]);
+
+      let topTable = [
+        { text: "PLU", style: "tableHeader" },
+        { text: "HORA", style: "tableHeader" },
+        { text: "NOMBRE", style: "tableHeader" },
+        { text: "INGRESADO", style: "tableHeader" }
+      ];
+
+      Print.print({
+        content: [
+          {
+            table: {
+              headerRows: 1,
+              dontBreakRows: true,
+              keepWithHeaderRows: 1,
+              widths: [50, 50, "*", "20%"],
+              body: printData
+            }
+          }
+        ],
+        styles: {
+          tableHeader: {
+            bold: true,
+            fontSize: 15,
+            color: "black"
+          }
+        }
+      });
+    }
   }
 });
 </script>

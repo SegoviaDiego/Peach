@@ -12,7 +12,7 @@
     <button @click="selectingDate = true" class="rect">
       Fecha
     </button>
-    <button @click="print()" class="circle">
+    <button @click="selectingPrint = true" class="circle">
       <fontawesome icon="print" />
     </button>
     
@@ -22,21 +22,68 @@
       :visible.sync="selectingDate"
       width="30%">
       <div>
-        <input v-model="selectedDate" type="date">
+        <el-date-picker
+          v-model="selectedDate"
+          type="date"
+          placeholder="Seleccionar dia"
+          :picker-options="datePickOptions">
+        </el-date-picker>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="selectingDate = false">Cancelar</el-button>
         <el-button type="primary" @click="setDate()">Aceptar</el-button>
       </span>
     </el-dialog>
+
+    <el-dialog
+      title="Seleccionar rango horario para la impresion"
+      :visible.sync="selectingPrint"
+      width="30%">
+      <div>
+        <el-select v-model="selectedType" placeholder="Tipo de egreso">
+          <el-option :value="1" label="Vencimiento" />
+          <el-option :value="2" label="Reciclado" />
+          <el-option :value="3" label="Transferencia" />
+          <el-option :value="4" label="Todo" />
+        </el-select>
+        <el-time-picker
+          is-range
+          v-model="selectedTime"
+          start-placeholder="Desde"
+          range-separator="|"
+          end-placeholder="Hasta">
+        </el-time-picker>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="selectingPrint = false">Cancelar</el-button>
+        <el-button type="primary" @click="validatePrint()">Imprimir</el-button>
+      </span>
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
+import Vue from "vue";
 import { mapState } from "vuex";
 import { log as types } from "@/vuexTypes";
+import Print from "@/Server/Src/Print";
+import { composeMagnitude, toHour } from "@/Server/mongodb/Utils";
 
-export default {
+function getType(type) {
+  switch (type) {
+    case 1:
+      return "Vencimiento";
+    case 2:
+      return "Reciclado";
+    case 3:
+      return "Transferencia";
+    default:
+      return "";
+  }
+}
+
+export default Vue.extend({
   name: "informes-toolbar",
   components: {},
   mounted() {},
@@ -44,11 +91,50 @@ export default {
     isLoading: state => state.Log.loading,
     showSpinner: state => state.Log.showSpinner,
     filter: state => state.Log.filter,
-    date: state => state.Log.date
+    date: state => state.Log.date,
+    data: state => state.Log.egreso,
+    products(state) {
+      return _.mapKeys(state.Product.data, function(value, key) {
+        return value._id;
+      });
+    }
   }),
   data: () => ({
     selectingDate: false,
-    selectedDate: null
+    selectingPrint: false,
+    selectedDate: null,
+    selectedTime: null,
+    selectedPrint: null,
+    selectedType: null,
+    datePickOptions: {
+      disabledDate(time) {
+        return time.getTime() > Date.now();
+      },
+      shortcuts: [
+        {
+          text: "Hoy",
+          onClick(picker) {
+            picker.$emit("pick", new Date());
+          }
+        },
+        {
+          text: "Ayer",
+          onClick(picker) {
+            const date = new Date();
+            date.setTime(date.getTime() - 3600 * 1000 * 24);
+            picker.$emit("pick", date);
+          }
+        },
+        {
+          text: "Semana pasada",
+          onClick(picker) {
+            const date = new Date();
+            date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
+            picker.$emit("pick", date);
+          }
+        }
+      ]
+    }
   }),
   methods: {
     filterChanged(value) {
@@ -67,16 +153,106 @@ export default {
       return `${this.date.getDate()}/${this.date.getMonth()}/${this.date.getFullYear()}`;
     },
     setDate() {
-      let newDate = this.selectedDate.split("-");
-      newDate[1]--;
-      this.$store.dispatch(types.setDate, new Date(...newDate)).then(() => {
+      this.$store.dispatch(types.setDate, this.selectedDate).then(() => {
         this.$store.dispatch(types.loadEgreso);
         this.selectingDate = false;
       });
     },
-    print() {}
+    validatePrint() {
+      if (!this.selectedTime) {
+        this.$notify({
+          title: "No seleccionaste un rango horario!",
+          message: "No has colocado ningun valor.",
+          type: "warning",
+          duration: 5000,
+          offset: 170
+        });
+      } else if (!this.selectedType) {
+        this.$notify({
+          title: "No seleccionaste un tipo de egreso!",
+          message: "No has seleccionado ningun valor.",
+          type: "warning",
+          duration: 5000,
+          offset: 170
+        });
+      } else {
+        this.print();
+      }
+    },
+    print() {
+      let printData = [];
+      let egresos = [...this.data];
+      let from = this.selectedTime[0];
+      let to = this.selectedTime[1];
+
+      printData.push([
+        { text: "PLU", style: "tableHeader" },
+        { text: "HORA", style: "tableHeader" },
+        { text: "TIPO", style: "tableHeader" },
+        { text: "NOMBRE", style: "tableHeader" },
+        { text: "EGRESADO", style: "tableHeader" }
+      ]);
+
+      if (this.selectedType != 4) {
+        egresos = egresos.filter(item => {
+          return item.type == this.selectedType;
+        });
+      }
+
+      egresos = egresos.sort((a, b) => {
+        return b.time - a.time;
+      });
+
+      for (let item of egresos) {
+        if (item.time > from && item.time < to)
+          printData.push([
+            item.productId,
+            toHour(item.time),
+            getType(item.type),
+            this.products[item.productId].name,
+            composeMagnitude(item.amount, 2)
+          ]);
+      }
+
+      if (printData.length == 1) {
+        this.$notify({
+          title: "Impresion vacia!",
+          message: `No se realizaron egresos en el rango seleccionado. 
+            Seleccione un rango mas amplio`,
+          type: "warning",
+          duration: 5000,
+          offset: 170
+        });
+        return;
+      } else {
+        this.selectingPrint = false;
+        this.selectedTime = null;
+        this.selectedType = null;
+      }
+
+      Print.print({
+        content: [
+          {
+            table: {
+              headerRows: 1,
+              dontBreakRows: true,
+              keepWithHeaderRows: 1,
+              widths: [50, 50, 100, "*", "20%"],
+              body: printData
+            }
+          }
+        ],
+        styles: {
+          tableHeader: {
+            bold: true,
+            fontSize: 15,
+            color: "black"
+          }
+        }
+      });
+    }
   }
-};
+});
 </script>
 
 <style lang="scss" scoped>

@@ -47,18 +47,19 @@ export default new Router({
               path: "/egresos",
               component: () =>
                 import(/* webpackChunkName: "Egresos" */ "@/components/Stats/Egresos/index.vue")
+            },
+            {
+              path: "/movimientos",
+              component: () =>
+                import(/* webpackChunkName: "Movimientos" */ "@/components/Stats/Movimientos/index.vue")
             }
-            // {
-            //   path: "/movimientos",
-            //   component: require("@/components/Stats/Movimientos/index").default
-            // },
           ]
+        },
+        {
+          path: "*",
+          redirect: "/stock"
         }
       ]
-    },
-    {
-      path: "*",
-      redirect: "/stock"
     }
   ]
 });

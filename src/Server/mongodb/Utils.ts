@@ -7,6 +7,17 @@ export function equalDates(a: Date, b: Date) {
   );
 }
 
+export function toHour(time: Date) {
+  let hour: any = time.getHours();
+  let minutes: any = time.getMinutes();
+
+  if (time.getHours() < 10) hour = "0" + hour;
+
+  if (time.getMinutes() < 10) minutes = "0" + minutes;
+
+  return hour + ":" + minutes;
+}
+
 export function magnitude(type: number) {
   switch (type) {
     case 1:

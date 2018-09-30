@@ -9,6 +9,9 @@
         @input="filterChanged($event.target.value)"
         placeholder="Buscar" type="text">
     </div>
+    <button @click="creatingMov = true" class="rect">
+      Crear movimiento
+    </button>
     <button @click="selectingDate = true" class="rect">
       Fecha
     </button>
@@ -17,6 +20,25 @@
     </button>
     
     <!-- Dialog -->
+    <el-dialog
+      title="Crear movimiento"
+      :visible.sync="creatingMov"
+      width="50%">
+      <div>
+        <el-select v-model="movType" placeholder="Seleccionar tipo de movimiento">
+          <el-option label="Ingreso" :value="1"/>
+          <el-option label="Egreso" :value="2"/>
+        </el-select>
+        <el-input placeholder="Descripcion" v-model="movDesc" />
+        <el-input placeholder="Dinero" type="number" v-model="movMoney" />
+        
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="creatingMov = false">Cancelar</el-button>
+        <el-button type="primary" @click="validateMov()">Guardar</el-button>
+      </span>
+    </el-dialog>
+
     <el-dialog
       title="Seleccionar fecha"
       :visible.sync="selectingDate"
@@ -83,9 +105,13 @@ export default Vue.extend({
   data: () => ({
     selectingDate: false,
     selectingPrint: false,
+    creatingMov: false,
     selectedDate: null,
     selectedTime: null,
     selectedPrint: null,
+    movDesc: null,
+    movMoney: null,
+    movType: null,
     datePickOptions: {
       disabledDate(time) {
         return time.getTime() > Date.now();
@@ -117,6 +143,50 @@ export default Vue.extend({
     }
   }),
   methods: {
+    validateMov() {
+      if (!this.movType) {
+        this.$notify({
+          title: "No has seleccionado el tipo de movimiento!",
+          message: "",
+          type: "warning",
+          duration: 5000,
+          offset: 170
+        });
+      } else if (!this.movDesc) {
+        this.$notify({
+          title: "No has ingresado una descripcion!",
+          message: "",
+          type: "warning",
+          duration: 5000,
+          offset: 170
+        });
+      } else if (!this.movMoney) {
+        this.$notify({
+          title: "No has ingresado un valor monetario!",
+          message: "",
+          type: "warning",
+          duration: 5000,
+          offset: 170
+        });
+      } else {
+        this.createMov();
+      }
+    },
+    createMov() {
+      this.$store
+        .dispatch(types.createMov, {
+          type: this.movType,
+          desc: this.movDesc,
+          money: this.movMoney
+        })
+        .then(() => {
+          this.$store.dispatch(types.loadMov);
+          this.creatingMov = false;
+          this.movType = null;
+          this.movDesc = null;
+          this.movMoney = null;
+        });
+    },
     filterChanged(value) {
       this.$store.dispatch(types.filter, value);
     },
@@ -287,7 +357,7 @@ export default Vue.extend({
     }
     &.rect {
       height: 40px;
-      width: 100px;
+      min-width: 100px;
     }
     &.circle {
       $circleSize: 40px;

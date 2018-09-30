@@ -36,9 +36,12 @@ export const log = {
   // Logs
   inStock: "Log_Ingreso",
   outStock: "Log_Egreso",
+  movLog: "Log_Mov",
   // actions
   loadIngreso: "Log_Ingreso",
   loadEgreso: "Log_Egreso",
+  loadMov: "Log_Mov",
+  createMov: "create_Mov",
   filter: "FILTER_CHANGE",
   setDate: "SET_LOGS_DATE",
   setType: "SET_LOGS_TYPE",
