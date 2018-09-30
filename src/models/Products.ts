@@ -12,57 +12,56 @@ export default {
     type: 1
   },
   actions: {
-    // async [types.load]({ commit }: any) {
-    //   commit(types.startLoading);
-    //   commit(types.load, []);
-    //   commit(types.load, await loadProducts());
-    //   commit(types.stopLoading);
-    // },
+    async [types.load]({ commit }: any) {
+      commit(types.startLoading);
+      commit(types.load, await Product.loadProducts());
+      commit(types.stopLoading);
+    },
     async [types.syncToSystel]({ commit }: any) {
       commit(types.startLoading);
       await Product.syncToSystel();
       commit(types.load, await Product.loadProducts());
+    },
+    async [types.create]({ commit }: any, product: any) {
+      commit(types.startLoading);
+      await Product.createProduct(product);
+      commit(types.load, await Product.loadProducts());
+      commit(types.stopLoading);
+    },
+    async [types.delete]({ commit }: any, selected: any) {
+      commit(types.startLoading);
+      await Product.deleteItems(selected);
+      commit(types.load, await Product.loadProducts());
+      commit(types.stopLoading);
+    },
+    async [types.inStock]({ commit }: any, payload: any) {
+      commit(types.startLoading);
+      await Product.inStock(payload.amount, payload.magnitude);
+      commit(types.load, await Product.loadProducts());
+      commit(types.stopLoading);
+    },
+    async [types.outStock]({ commit }: any, payload: any) {
+      commit(types.startLoading);
+      await Product.outStock(payload, payload.magnitude);
+      commit(types.load, await Product.loadProducts());
+      commit(types.stopLoading);
+    },
+    [types.filter]({ commit }: any, value: any) {
+      commit(types.filter, value);
+    },
+    [types.buttons]({ commit }: any, route: any) {
+      commit(types.buttons, route);
+    },
+    [types.startRealTime]({ commit }: any) {
+      // startRealTimeProducts(async () => {
+      //   commit(types.startLoading);
+      //   commit(types.load, await loadProducts());
+      //   commit(types.stopLoading);
+      // });
+    },
+    [types.stopRealTime]() {
+      // stopRealTimeProducts();
     }
-    // async [types.create]({ commit }: any, product: any) {
-    //   commit(types.startLoading);
-    //   await createProduct(product);
-    //   commit(types.load, await loadProducts());
-    //   commit(types.stopLoading);
-    // },
-    // async [types.delete]({ commit }: any, selected: any) {
-    //   commit(types.startLoading);
-    //   await deleteItems(selected);
-    //   commit(types.load, await loadProducts());
-    //   commit(types.stopLoading);
-    // },
-    // async [types.inStock]({ commit }: any, amount: any) {
-    //   commit(types.startLoading);
-    //   await inStock(amount);
-    //   commit(types.load, await loadProducts());
-    //   commit(types.stopLoading);
-    // },
-    // async [types.outStock]({ commit }: any, payload: any) {
-    //   commit(types.startLoading);
-    //   await outStock(payload);
-    //   commit(types.load, await loadProducts());
-    //   commit(types.stopLoading);
-    // },
-    // [types.startRealTime]({ commit }: any) {
-    //   startRealTimeProducts(async () => {
-    //     commit(types.startLoading);
-    //     commit(types.load, await loadProducts());
-    //     commit(types.stopLoading);
-    //   });
-    // },
-    // [types.filter]({ commit }: any, value: any) {
-    //   commit(types.filter, value);
-    // },
-    // [types.stopRealTime]() {
-    //   stopRealTimeProducts();
-    // },
-    // [types.buttons]({ commit }: any, route: any) {
-    //   commit(types.buttons, route);
-    // }
   },
   mutations: {
     [types.load](state: any, payload: any) {

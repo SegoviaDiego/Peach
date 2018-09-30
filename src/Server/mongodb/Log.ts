@@ -1,5 +1,6 @@
 import { log as types } from "@/vuexTypes";
 import Server from "@/Server/Server";
+import { fromMagnitude } from "@/Server/mongodb/Utils";
 
 export default class Log {
   private static db(name: string) {
@@ -22,33 +23,67 @@ export default class Log {
     });
   }
 
-  private static inStock(amount: any) {
-    return new Promise(resolve => {
-      Log.db(types.inStock).insert(
-        {
-          date: new Date(),
-          amount
-        },
-        err => {
+  public static getLog(type: string, date: Date, eType?: number): Promise<any> {
+    return new Promise(async (resolve: any) => {
+      date.setHours(0, 0, 0, 0);
+      let query;
+
+      if (eType && eType != 4) {
+        query = {
+          date,
+          type: eType
+        };
+      } else {
+        query = {
+          date
+        };
+      }
+
+      Log.db(type)
+        .find(query)
+        .toArray((err: any, docs: any) => {
           if (err) throw err;
-          resolve();
-        }
-      );
+          resolve(docs);
+        });
     });
   }
 
-  private static outStock(amount: any) {
-    return new Promise(resolve => {
-      Log.db(types.outStock).insert(
-        {
-          date: new Date(),
-          amount
-        },
-        err => {
-          if (err) throw err;
-          resolve();
-        }
-      );
+  private static inStock(payload: any) {
+    return new Promise(async (resolve: any) => {
+      let { amount, magnitude } = payload;
+      let date = new Date();
+      let time = new Date();
+      date.setHours(0, 0, 0, 0);
+
+      for (let id in amount) {
+        await Log.db(types.inStock).insertOne({
+          date,
+          time,
+          productId: id,
+          amount: fromMagnitude(amount[id], magnitude)
+        });
+      }
+      resolve();
+    });
+  }
+
+  private static outStock(payload: any) {
+    return new Promise(async (resolve: any) => {
+      let { amount, type, magnitude } = payload;
+      let date = new Date();
+      let time = new Date();
+      date.setHours(0, 0, 0, 0);
+
+      for (let id in amount) {
+        await Log.db(types.outStock).insertOne({
+          date,
+          time,
+          productId: id,
+          amount: fromMagnitude(amount[id], magnitude),
+          type
+        });
+      }
+      resolve();
     });
   }
 }

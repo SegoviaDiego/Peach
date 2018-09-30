@@ -17,16 +17,36 @@ export const products = {
   startLoading: "START_LOADING",
   stopLoading: "STOP_LOADING",
   showSpinner: "SHOW_SPINNER",
-  hideSpinner: "HIDE_SPINNER"
+  hideSpinner: "HIDE_SPINNER",
+  // Routes
+  routes: {
+    default: 1,
+    more: 2,
+    createItem: 3,
+    deleteItems: 4,
+    editItems: 5,
+    inStock: 6,
+    outStock: 7
+  }
 };
 
 export const log = {
   // general
   collection: "Log",
-  //
-  totals: "Log_Total",
+  // Logs
   inStock: "Log_Ingreso",
-  outStock: "Log_Egreso"
+  outStock: "Log_Egreso",
+  // actions
+  loadIngreso: "Log_Ingreso",
+  loadEgreso: "Log_Egreso",
+  filter: "FILTER_CHANGE",
+  setDate: "SET_LOGS_DATE",
+  setType: "SET_LOGS_TYPE",
+  // mutations
+  startLoading: "START_LOADING",
+  stopLoading: "STOP_LOADING",
+  showSpinner: "SHOW_SPINNER",
+  hideSpinner: "HIDE_SPINNER"
 };
 
 export const totals = {
@@ -38,17 +58,6 @@ export const totals = {
   setDate: "SET_TOTALS_DATE",
   setCierreIndex: "SET_CIERRE_INDEX",
   totalIndex: "TOTAL_INDEX",
-  // mutations
-  startLoading: "START_LOADING",
-  stopLoading: "STOP_LOADING",
-  showSpinner: "SHOW_SPINNER",
-  hideSpinner: "HIDE_SPINNER"
-};
-
-export const sells = {
-  load: "LOAD_SELLS",
-  filter: "FILTER_CHANGE",
-  setDate: "SET_SELLS_DATE",
   // mutations
   startLoading: "START_LOADING",
   stopLoading: "STOP_LOADING",

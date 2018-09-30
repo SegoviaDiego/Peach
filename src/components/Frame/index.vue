@@ -9,24 +9,26 @@
 </template>
 
 <script lang="ts">
+import Vue from "vue";
 import Header from "./header.vue";
 import Navbar from "./navbar.vue";
 
-export default {
+export default Vue.extend({
   name: "app-main",
   components: {
     Header,
     Navbar
   },
   mounted() {
-    // this.$router.push("/updater");
+    this.$router.push("/updater");
     // this.$router.push("/stock");
   }
-};
+});
 </script>
 
 <style lang="scss" scoped>
 .grid {
+  position: relative;
   width: 100vw;
   height: 100vh;
   display: grid;
@@ -46,7 +48,8 @@ export default {
 .content {
   grid-area: content;
   position: relative;
+  display: flex;
+  overflow: hidden !important;
   background-color: white;
-  overflow: hidden;
 }
 </style>

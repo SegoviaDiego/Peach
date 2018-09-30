@@ -17,11 +17,12 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "app-navbar",
-  methods: {}
-};
+<script lang="ts">
+import Vue from "vue";
+
+export default Vue.extend({
+  name: "app-navbar"
+});
 </script>
 
 <style lang="scss" scoped>

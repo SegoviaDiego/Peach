@@ -16,7 +16,7 @@ export default class Server {
     return new Promise(async resolve => {
       Server.initMongo().then(() => {
         dispatch(pTypes.syncToSystel).then(() => {
-          // Firebird.listenForChanges();
+          Firebird.listenForChanges("C:/projects/qendra.fdb");
           resolve();
         });
       });

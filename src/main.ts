@@ -8,11 +8,9 @@ import store from "./store";
 import "typeface-lato/index.css";
 import "typeface-pacifico/index.css";
 
-import Buefy from "buefy";
-import "buefy/dist/buefy.css";
-
 import ElementUI from "element-ui";
 import "element-ui/lib/theme-chalk/index.css";
+import locale from "element-ui/lib/locale/lang/es";
 
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
@@ -54,9 +52,7 @@ library.add(
 // dependencies
 
 // Binding
-
-Vue.use(Buefy);
-Vue.use(ElementUI);
+Vue.use(ElementUI, { locale });
 Vue.component("fontawesome", FontAwesomeIcon);
 
 // Binding

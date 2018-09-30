@@ -2,6 +2,7 @@ import Server from "@/Server/Server";
 import { products as types, log as logTypes } from "@/vuexTypes";
 import Firebird from "@/Server/db/Firebird";
 import Log from "@/Server/mongodb/Log";
+import { fromMagnitude } from "@/Server/mongodb/Utils";
 
 export default class Product {
   private static db() {
@@ -58,7 +59,7 @@ export default class Product {
 
   public static createProduct(product: any): Promise<any> {
     return new Promise((resolve, reject) => {
-      Product.db().insert(
+      Product.db().insertOne(
         {
           ...product,
           price: parseFloat(parseFloat(product.price).toFixed(2))
@@ -107,7 +108,7 @@ export default class Product {
 
   public static deleteProduct(_id: any): Promise<any> {
     return new Promise((resolve, reject) => {
-      Product.db().remove({ _id }, {}, err => {
+      Product.db().deleteOne({ _id }, {}, err => {
         if (err) {
           reject({
             error: err,
@@ -121,13 +122,15 @@ export default class Product {
     });
   }
 
-  public static inStock(amount: any): Promise<any> {
+  public static inStock(amount: any, magnitude: number): Promise<any> {
     return new Promise(async resolve => {
       let keys = Object.keys(amount);
       for (let id of keys) {
-        await Product.add(id, amount[id]);
+        if (amount[id])
+          if (amount[id] > 0)
+            await Product.add(id, fromMagnitude(amount[id], magnitude));
       }
-      Log.save(logTypes.inStock, amount).then(() => {
+      Log.save(logTypes.inStock, { amount, magnitude }).then(() => {
         resolve();
       });
     });
@@ -135,7 +138,7 @@ export default class Product {
 
   public static add(_id: any, amount: any): Promise<any> {
     return new Promise(resolve => {
-      Product.db().update(
+      Product.db().updateOne(
         { _id: parseInt(_id) },
         { $inc: { stock: parseFloat(amount) } },
         {},
@@ -146,13 +149,18 @@ export default class Product {
     });
   }
 
-  public static outStock(amount: any): Promise<any> {
+  public static outStock(payload: any, magnitude: number): Promise<any> {
     return new Promise(async resolve => {
+      let amount = payload.amount;
+      let type = payload.type;
+
       let keys = Object.keys(amount);
       for (let id of keys) {
-        await Product.remove(id, amount[id]);
+        if (amount[id])
+          if (amount[id] > 0)
+            await Product.remove(id, fromMagnitude(amount[id], magnitude));
       }
-      Log.save(logTypes.outStock, amount).then(() => {
+      Log.save(logTypes.outStock, { amount, type, magnitude }).then(() => {
         resolve();
       });
     });
@@ -160,7 +168,7 @@ export default class Product {
 
   public static remove(_id: any, amount: any): Promise<any> {
     return new Promise(resolve => {
-      Product.db().update(
+      Product.db().updateOne(
         { _id: parseInt(_id) },
         { $inc: { stock: -parseFloat(amount) } },
         {},

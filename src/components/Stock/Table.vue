@@ -69,7 +69,7 @@
             v-model="selected[item._id]">
           </template>
           <template v-else>
-            {{item.stock}}
+            {{toMagnitude(item.stock, 2)}}
           </template>
         </div>
       </div>
@@ -87,30 +87,36 @@
 </template>
 
 <script lang="ts">
-import { mapState } from "Vuex";
-import { products as types } from "../../store/vuexTypes";
+import Vue from "vue";
+import { mapState } from "vuex";
+import { products as types } from "@/vuexTypes";
 
-export default {
+import { composeMagnitude as toMagnitude } from "@/Server/mongodb/Utils";
+
+export default Vue.extend({
   name: "products-table",
   props: {
     products: Array,
     newItem: {},
     amount: {},
     selected: {},
-    changes: {},
-    routes: {}
+    changes: {}
   },
+  data: () => ({
+    routes: types.routes
+  }),
   computed: mapState({
-    isLoading: state => state.Products.loading,
-    showSpinner: state => state.Products.showSpinner,
-    route: state => state.Products.buttonRoute
+    isLoading: (state: any) => state.Product.loading,
+    showSpinner: (state: any) => state.Product.showSpinner,
+    route: (state: any) => state.Product.buttonRoute
   }),
   methods: {
-    editValue(_id, att, value) {
+    toMagnitude: toMagnitude,
+    editValue(_id: any, att: any, value: any) {
       this.$emit("edit-item-value", _id, att, value);
     }
   }
-};
+});
 </script>
 
 <style lang="scss" scoped>

@@ -1,5 +1,8 @@
 # Peach
 
+> Programa para la administración de negocios.
+> /- MongoDB (Optional, fallback on Nedb) - Firebird Server (If you are using Systel) -/
+
 ## MongoDB Installation
 
 download mongodb 32 bits from

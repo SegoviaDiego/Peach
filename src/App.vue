@@ -13,6 +13,7 @@ export default Vue.extend({
   mounted() {
     Server.initServer(this.$store.dispatch).then(() => {
       console.log("Initialized");
+      this.$router.push("/app");
     });
   }
 });
@@ -20,6 +21,7 @@ export default Vue.extend({
 
 <style lang="scss">
 #app {
+  font-family: Lato;
   -webkit-font-smoothing: antialiased;
   -webkit-user-select: none;
   user-select: none;
@@ -30,6 +32,9 @@ html {
   overflow: hidden !important;
   button {
     outline: none !important;
+  }
+  body {
+    margin: 0;
   }
 }
 </style>

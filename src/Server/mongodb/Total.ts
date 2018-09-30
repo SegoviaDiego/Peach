@@ -4,6 +4,7 @@ import { equalDates } from "./Utils";
 import { totals as types } from "@/vuexTypes";
 import CierreClass from "../typings/Cierre";
 import TotalClass from "../typings/Total";
+import Product from "./Product";
 import { Collection } from "mongodb";
 
 export default class Total {
@@ -13,8 +14,11 @@ export default class Total {
 
   public static load(date: Date) {
     return new Promise(async resolve => {
-      if (equalDates(new Date(), date)) resolve(await Total.getCurrent());
-      else resolve(await Total.getTotal(date));
+      if (equalDates(new Date(), date)) {
+        resolve(await Total.getCurrent());
+      } else {
+        resolve(await Total.getTotal(date));
+      }
     });
   }
 
@@ -97,63 +101,57 @@ export default class Total {
     return res;
   }
 
-  // public static addTotal(total: any) {
-  //   return new Promise(resolve => {
-  //     getCurrent();
-  //     db.insert(total, (err, docs) => {
-  //       if (err) throw err;
-  //       resolve(docs);
-  //     });
-  //   });
-  // }
+  public static addTotal(total: any) {
+    return new Promise(resolve => {
+      Total.getCurrent();
+      Total.db().insertOne(total, (err: any, docs: any) => {
+        if (err) throw err;
+        resolve(docs);
+      });
+    });
+  }
 
-  // public static clearTotals() {
-  //   return new Promise(resolve => {
-  //     db.remove(
-  //       {},
-  //       {
-  //         multi: true
-  //       },
-  //       err => {
-  //         if (err) throw err;
-  //         resolve();
-  //       }
-  //     );
-  //   });
-  // }
+  public static clearTotals() {
+    return new Promise(resolve => {
+      Total.db().deleteOne({}, err => {
+        if (err) throw err;
+        resolve();
+      });
+    });
+  }
 
-  // public static saveCierre() {
-  //   return new Promise(async resolve => {
-  //     let currentCierre = await getCurrentCierre();
+  public static saveCierre() {
+    return new Promise(async resolve => {
+      let currentCierre: any = await Total.getCurrentCierre();
 
-  //     if (currentCierre.data.length > 0) {
-  //       let current = await getCurrent();
-  //       currentCierre._current = false;
-  //       currentCierre.date = new Date();
+      if (currentCierre.data.length > 0) {
+        let current = await Total.getCurrent();
+        currentCierre._current = false;
+        currentCierre.date = new Date();
 
-  //       await removeCierreStock(currentCierre.data);
+        await Total.removeCierreStock(currentCierre.data);
 
-  //       current.cierres[
-  //         _.findIndex(current.cierres, cierre => {
-  //           return cierre._current;
-  //         })
-  //       ] = currentCierre;
+        current.cierres[
+          _.findIndex(current.cierres, (cierre: any) => {
+            return cierre._current;
+          })
+        ] = currentCierre;
 
-  //       db.update({ _current: true }, { ...current }, async () => {
-  //         resolve(await createCurrentCierre());
-  //       });
-  //     } else resolve();
-  //   });
-  // }
+        Total.db().replaceOne({ _current: true }, { ...current }, async () => {
+          resolve(await Total.createCurrentCierre());
+        });
+      } else resolve();
+    });
+  }
 
-  // public static removeCierreStock(data) {
-  //   return new Promise(async resolve => {
-  //     for (let item of data) {
-  //       await remove(item._id, item.amount);
-  //     }
-  //     resolve();
-  //   });
-  // }
+  public static removeCierreStock(data: any) {
+    return new Promise(async resolve => {
+      for (let item of data) {
+        await Product.remove(item._id, item.amount);
+      }
+      resolve();
+    });
+  }
 
   public static getCurrent(): Promise<TotalClass> {
     return new Promise(resolve => {
@@ -173,9 +171,7 @@ export default class Total {
     return new Promise(async resolve => {
       Total.db().findOne(
         {
-          $where: function() {
-            return equalDates(date, this.date);
-          }
+          date
         },
         async (err, doc) => {
           if (err) throw err;
@@ -201,7 +197,7 @@ export default class Total {
 
   public static updateCurrent(current: any): Promise<any> {
     return new Promise(async resolve => {
-      Total.db().update({ _current: true }, current, (err: any) => {
+      Total.db().replaceOne({ _current: true }, current, (err: any) => {
         if (err) throw err;
         resolve(true);
       });
@@ -260,7 +256,7 @@ export default class Total {
 
   public static createCurrent(): Promise<TotalClass> {
     return new Promise(async resolve => {
-      Total.db().insert(
+      Total.db().insertOne(
         new TotalClass(true, new Date(), 0, []),
         (err: any, current: any) => {
           if (err) throw err;
@@ -277,7 +273,7 @@ export default class Total {
 
       current.cierres.push(newCierre);
 
-      Total.db().update({ _current: true }, current, err => {
+      Total.db().replaceOne({ _current: true }, current, err => {
         if (err) throw err;
         resolve(newCierre);
       });
@@ -287,9 +283,9 @@ export default class Total {
   public static saveCurrent(current: any): Promise<any> {
     return new Promise(async resolve => {
       current._current = false;
-      Total.db().insert(current, err => {
+      Total.db().replaceOne({ _id: current._id }, current, (err: any) => {
         if (err) throw err;
-        Total.db().remove({ _current: true }, (err: any) => {
+        Total.db().deleteOne({ _current: true }, (err: any) => {
           if (err) throw err;
           resolve(true);
         });

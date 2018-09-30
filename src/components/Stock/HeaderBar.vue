@@ -83,58 +83,68 @@
         </button>
         <div class="select">
           <el-select v-model="type" placeholder="Tipo de egreso">
-            <el-option value="1" label="Transferencia" />
-            <el-option value="2" label="Reciclado" />
-            <el-option value="3" label="Vencimiento" />
+            <el-option :value="1" label="Vencimiento" />
+            <el-option :value="2" label="Reciclado" />
+            <el-option :value="3" label="Transferencia" />
           </el-select>
         </div>
-      </template> 
+      </template>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { products as types } from "../../store/vuexTypes";
-import _ from "lodash";
+import Vue from "vue";
 import { mapState } from "vuex";
+import { products as types } from "@/vuexTypes";
+import _ from "lodash";
 
-export default {
+export default Vue.extend({
   name: "products-header",
   props: {
     newItem: {},
     amount: {},
     selected: {},
-    changes: {},
-    routes: {}
+    changes: {}
   },
   computed: mapState({
-    isLoading: state => state.Products.loading,
-    showSpinner: state => state.Products.showSpinner,
-    route: state => state.Products.buttonRoute,
-    filter: state => state.Products.filter
+    isLoading: (state: any) => state.Product.loading,
+    showSpinner: (state: any) => state.Product.showSpinner,
+    route: (state: any) => state.Product.buttonRoute,
+    filter: (state: any) => state.Product.filter
   }),
   data: () => ({
-    type: null
+    type: null,
+    routes: types.routes
   }),
   methods: {
-    filterChanged(value) {
+    filterChanged(value: any) {
       this.$store.dispatch(types.filter, value);
     },
     print() {
       this.$emit("print");
     },
-    goTo(route, from) {
+    goTo(route: any, from: any) {
       this.type = null;
       this.$emit("go-to", route, from);
     },
     saveInStock() {
-      this.$store.dispatch(types.inStock, this.amount);
-      this.goTo(this.routes.default, this.routes.inStock);
+      let amount = _.pickBy(this.amount, _.identity);
+      if (_.isEmpty(amount)) {
+        this.$notify({
+          title: "Ingreso vacio!",
+          message: "No has colocado ningun valor al ingreso.",
+          type: "warning",
+          duration: 5000,
+          offset: 170
+        });
+      } else {
+        this.$store.dispatch(types.inStock, { amount, magnitude: 2 });
+        this.goTo(types.routes.default, types.routes.inStock);
+      }
     },
     saveOutStock() {
-      let amount = _.pickBy(this.amount, function(n) {
-        return n != null && n != undefined;
-      });
+      let amount = _.pickBy(this.amount, _.identity);
       if (!this.type) {
         this.$notify({
           title: "No has seleccionado un tipo de egreso",
@@ -155,32 +165,33 @@ export default {
       } else {
         this.$store.dispatch(types.outStock, {
           amount: amount,
-          type: this.type
+          type: this.type,
+          magnitude: 2
         });
-        this.goTo(this.routes.default, this.routes.outStock);
+        this.goTo(types.routes.default, types.routes.outStock);
       }
     },
     validateItem() {
-      if (!this.newItem.name) {
+      if (!this.newItem) {
         console.log(1);
         return;
       }
-      if (!this.newItem.price) {
+      if (!this.newItem) {
         console.log(2);
         return;
       }
       this.$store.dispatch(types.create, this.newItem);
-      this.goTo(this.routes.default, this.routes.createItem);
+      this.goTo(types.routes.default, types.routes.createItem);
     },
     saveChanges() {
       // this.amount = [];
     },
     saveDeletes() {
       this.$store.dispatch(types.delete, this.selected);
-      this.goTo(this.routes.default, this.routes.deleteItems);
+      this.goTo(types.routes.default, types.routes.deleteItems);
     }
   }
-};
+});
 </script>
 
 <style lang="scss" scoped>

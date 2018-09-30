@@ -23,25 +23,25 @@
   </div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import Vue from "vue";
+const electron = require("electron");
+
+export default Vue.extend({
   name: "app-header",
   methods: {
-    toggleMenu() {
-      this.showMenu = !this.showMenu;
-    },
-    outterFrameUtils(type) {
+    outterFrameUtils(type: any) {
       switch (type) {
         case 1:
-          this.$electron.remote.BrowserWindow.getFocusedWindow().minimize();
+          electron.remote.BrowserWindow.getFocusedWindow().minimize();
           break;
         case 3:
-          this.$electron.remote.BrowserWindow.getFocusedWindow().close();
+          electron.remote.BrowserWindow.getFocusedWindow().close();
           break;
       }
     }
   }
-};
+});
 </script>
 
 <style lang="scss" scoped>

@@ -15,6 +15,7 @@ export default class Firebird {
 
   public static listenForChanges(db: string) {
     console.log("Listening for Firebird changes");
+    Firebird.identifyChange();
     setInterval(() => {
       fs.writeFileSync(Firebird.data.database, fs.readFileSync(db));
       Firebird.identifyChange();
@@ -23,17 +24,17 @@ export default class Firebird {
 
   private static identifyChange() {
     let totals: any = [];
-
+    
     fb.attach(Firebird.data, (err: any, db: any) => {
       if (err) throw err;
-
+      
       db.query(
         "SELECT ID_PLU, PE, CA FROM TOTALES WHERE ID_PLU!=99998 AND ID_PLU!=99999 AND (CA>0 OR PE>0)",
         [],
         (err: any, res: any) => {
           db.detach();
           if (err) throw err;
-
+          
           if (res.length > 0) {
             res.forEach((item: any) => {
               totals.push({
@@ -42,6 +43,7 @@ export default class Firebird {
                 amount: item.CA
               });
             });
+            
             Total.identifySells(totals);
           } else {
             Total.saveCierre();
