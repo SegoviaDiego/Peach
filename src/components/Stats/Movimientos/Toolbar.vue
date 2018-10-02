@@ -46,6 +46,7 @@
       <div>
         <el-date-picker
           v-model="selectedDate"
+          format="dd/MM/yyyy"
           type="date"
           placeholder="Seleccionar dia"
           :picker-options="datePickOptions">

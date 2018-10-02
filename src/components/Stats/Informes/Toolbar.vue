@@ -3,10 +3,10 @@
     <div v-if="exists" class="sections">
       
       <!-- Select -->
-      <template v-if="cierres > 3">
+      <template v-if="cierres.length > 3">
         <el-select :value="cierreIndex" @change="setIndex($event)" placeholder="Seleccionar cierre">
           <el-option label="Total" :value="totalIndex"/>
-          <template v-for="i of cierres">
+          <template v-for="i of cierres.length">
             <el-option
               :key="'cierre-'+i"
               :label="getLabel(i)"
@@ -17,8 +17,8 @@
       </template>
 
       <!-- Buttons -->
-      <template v-if="cierres <= 3">
-        <template v-for="i of cierres">
+      <template v-if="cierres.length <= 3">
+        <template v-for="i of cierres.length">
           <div
             :key="'sec-' + i"
             @click="setIndex(i)"
@@ -69,6 +69,7 @@
       <div>
         <el-date-picker
           v-model="selectedDate"
+          format="dd/MM/yyyy"
           type="date"
           placeholder="Seleccionar dia"
           :picker-options="datePickOptions">
@@ -85,12 +86,14 @@
       :visible.sync="selectingPrint"
       width="30%">
       <div>
-        <el-select v-model="selectedCierre" placeholder="Seleccionar cierre">
-           <template v-for="i of cierres">
+        <el-select multiple v-model="selectedCierre"  placeholder="Seleccionar cierre">
+           <template v-for="i of cierres.length">
             <el-option
               :key="'cierre-'+i"
               :label="getLabel(i)"
               :value="i">
+              <span style="float: left">{{ getLabel(i) }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px">{{ getHourRange(i) }}</span>
             </el-option>
           </template>
           <el-option :value="0" label="Todos" />
@@ -109,25 +112,29 @@
 import Vue from "vue";
 import { mapState } from "vuex";
 
-import { equalDates } from "../../../store/backendish/Src/Utils";
-import { totals as types } from "../../../store/vuexTypes";
-
 import Print from "@/Server/Src/Print";
-import { composeMagnitude, toHour } from "@/Server/mongodb/Utils";
+import {
+  equalDates,
+  composeMagnitude,
+  toHour,
+  toHumanDate,
+  toMagnitude
+} from "@/Server/mongodb/Utils";
+import { log as types, totals as totalTypes } from "@/vuexTypes";
+import { major } from "semver";
 
 export default Vue.extend({
   name: "informes-toolbar",
   computed: mapState({
+    movements: state => state.Log.mov,
     exists: state => state.Total.exists,
     filter: state => state.Total.filter,
     isLoading: state => state.Total.loading,
     cierreIndex: state => state.Total.cierreIndex,
     date: state => state.Total.date,
     cierres(state) {
-      if (state.Total.data) {
-        return state.Total.data.cierres.length;
-      }
-      return 0;
+      if (state.Total.data) return state.Total.data.cierres;
+      return [];
     },
     products(state) {
       return _.mapKeys(state.Product.data, function(value, key) {
@@ -136,11 +143,11 @@ export default Vue.extend({
     }
   }),
   data: () => ({
-    totalIndex: types.totalIndex,
+    totalIndex: totalTypes.totalIndex,
     selectingDate: false,
     selectingPrint: false,
     selectedDate: null,
-    selectedCierre: null,
+    selectedCierre: [],
     datePickOptions: {
       disabledDate(time) {
         return time.getTime() > Date.now();
@@ -172,25 +179,54 @@ export default Vue.extend({
     }
   }),
   methods: {
+    getHourRange(i) {
+      if (this.cierres.length == i)
+        return `
+      ${toHour(this.cierres[i - 1].start)} - ${toHour(new Date())}`;
+      return `
+      ${toHour(this.cierres[i - 1].start)} - ${toHour(
+        this.cierres[i - 1].end
+      )}`;
+    },
     getLabel(i) {
-      if (this.cierres == i && equalDates(new Date(), this.date))
+      if (this.cierres.length == i && equalDates(new Date(), this.date))
         return "Turno actual";
       return "Cierre " + i;
     },
     filterChanged(value) {
-      this.$store.dispatch(types.filter, value);
+      this.$store.dispatch(totalTypes.filter, value);
     },
     setIndex(index) {
-      this.$store.dispatch(types.setCierreIndex, index);
+      this.$store.dispatch(totalTypes.setCierreIndex, index);
     },
     setDate() {
-      this.$store.dispatch(types.setDate, this.selectedDate).then(() => {
-        this.$store.dispatch(types.load);
+      this.$store.dispatch(totalTypes.setDate, this.selectedDate).then(() => {
+        this.$store.dispatch(totalTypes.load);
+        this.$store.dispatch(types.loadIngreso);
+        this.$store.dispatch(types.loadEgreso);
+        this.$store.dispatch(types.loadMov);
         this.selectingDate = false;
       });
     },
+    getTotal(cierres) {
+      let total = {};
+      let item;
+
+      for (let cierre of cierres) {
+        for (let i of cierre.data) {
+          item = { ...i };
+
+          if (!total[item._id]) total[item._id] = item;
+          else {
+            total[item._id].money += item.money;
+            total[item._id].amount += item.amount;
+          }
+        }
+      }
+      return _.map(total);
+    },
     validatePrint() {
-      if (!this.selectedCierre) {
+      if (!this.selectedCierre || this.selectedCierre.length == 0) {
         this.$notify({
           title: "No seleccionaste un cierre!",
           message: "Selecciona un cierre para poder imprimir.",
@@ -202,36 +238,221 @@ export default Vue.extend({
         this.print();
       }
     },
+    getPrintCierres() {
+      if (_.includes(this.selectedCierre, 0)) {
+        return this.cierres;
+      }
+      let cierres = [];
+      for (let i in this.cierres) {
+        if (_.includes(this.selectedCierre, parseInt(i) + 1))
+          cierres.push(this.cierres[i]);
+      }
+      return cierres;
+    },
+    getIngresos(start, end) {
+      return _.toArray(
+        _.pickBy(this.movements, item => {
+          return item.type == 1 && item.time >= start && item.time <= end;
+        })
+      );
+    },
+    getEgresos(start, end) {
+      return _.toArray(
+        _.pickBy(this.movements, item => {
+          return item.type == 2 && item.time >= start && item.time <= end;
+        })
+      );
+    },
     print() {
-      let printData = [];
+      let cierres = this.getPrintCierres();
 
-      printData.push([
-        { text: "PLU", style: "tableHeader" },
-        { text: "HORA", style: "tableHeader" },
-        { text: "NOMBRE", style: "tableHeader" },
-        { text: "INGRESADO", style: "tableHeader" }
+      let titleHeader,
+        cierresTotales,
+        ingresos,
+        egresos,
+        ventas,
+        totalCierres,
+        totalEgresos,
+        totalIngresos;
+
+      titleHeader = [
+        [{ text: "INFORME: Rey del vigilante", style: "title" }],
+        [{ text: toHumanDate(this.date), style: "title" }]
+      ];
+
+      cierresTotales = [
+        [{ text: "CIERRES", style: "title", colSpan: 4 }, {}, {}, {}],
+        [
+          { text: "DESCRIPCION", style: "title", rowSpan: 2 },
+          { text: "HORA", style: "title", colSpan: 2 },
+          {},
+          { text: "IMPORTE $", style: "title", rowSpan: 2 }
+        ],
+        [
+          {},
+          { text: "INICIO", style: "title" },
+          { text: "CIERRE", style: "title" },
+          {}
+        ]
+      ];
+
+      ingresos = [
+        [{ text: "INGRESOS", style: "title", colSpan: 3 }, {}, {}],
+        [
+          { text: "DESCRIPCION", style: "tableHeader" },
+          { text: "HORA", style: "tableHeader" },
+          { text: "IMPORTE $", style: "tableHeader" }
+        ]
+      ];
+
+      egresos = [
+        [{ text: "EGRESOS", style: "title", colSpan: 3 }, {}, {}],
+        [
+          { text: "DESCRIPCION", style: "tableHeader" },
+          { text: "HORA", style: "tableHeader" },
+          { text: "IMPORTE $", style: "tableHeader" }
+        ]
+      ];
+
+      ventas = [
+        [{ text: "PRODUCTOS VENDIDOS", style: "title", colSpan: 3 }, {}, {}],
+        [
+          { text: "NOMBRE", style: "tableHeader" },
+          { text: "CANTIDAD", style: "tableHeader" },
+          { text: "IMPORTE $", style: "tableHeader" }
+        ]
+      ];
+
+      totalCierres = 0;
+      totalIngresos = 0;
+      totalEgresos = 0;
+
+      for (let i in cierres) {
+        totalCierres += parseFloat(cierres[i].total);
+
+        cierresTotales.push([
+          { text: `Cierre ${parseInt(i) + 1}` },
+          { text: toHour(cierres[i].start) },
+          {
+            text:
+              i + 1 == cierres.length
+                ? toHour(new Date())
+                : toHour(cierres[i].end)
+          },
+          { text: cierres[i].total }
+        ]);
+
+        for (let item of this.getIngresos(
+          cierres[i].start,
+          cierres[i]._current ? new Date() : cierres[i].end
+        )) {
+          totalIngresos += parseFloat(item.money);
+
+          ingresos.push([
+            { text: item.desc },
+            { text: toHour(item.time) },
+            { text: item.money }
+          ]);
+        }
+
+        for (let item of this.getEgresos(
+          cierres[i].start,
+          cierres[i]._current ? new Date() : cierres[i].end
+        )) {
+          totalEgresos += parseFloat(item.money);
+
+          egresos.push([
+            { text: item.desc },
+            { text: toHour(item.time) },
+            { text: item.money }
+          ]);
+        }
+      }
+
+      cierresTotales.push([
+        { text: "Total de ventas", colSpan: 3 },
+        {},
+        {},
+        { text: totalCierres }
       ]);
 
-      let topTable = [
-        { text: "PLU", style: "tableHeader" },
-        { text: "HORA", style: "tableHeader" },
-        { text: "NOMBRE", style: "tableHeader" },
-        { text: "INGRESADO", style: "tableHeader" }
-      ];
+      ingresos.push([
+        { text: "Total de ingresos", colSpan: 2 },
+        {},
+        { text: totalIngresos }
+      ]);
+      egresos.push([
+        { text: "Total de egresos", colSpan: 2 },
+        {},
+        { text: totalEgresos }
+      ]);
+      egresos.push([
+        { text: "Total", colSpan: 2 },
+        {},
+        { text: totalCierres + totalIngresos - totalEgresos }
+      ]);
+
+      for (let item of this.getTotal(cierres)) {
+        ventas.push([
+          { text: this.products[item._id].name },
+          { text: composeMagnitude(item.amount, 2) },
+          { text: item.money }
+        ]);
+      }
 
       Print.print({
         content: [
           {
             table: {
-              headerRows: 1,
+              dontBreakRows: true,
+              widths: ["*"],
+              body: titleHeader
+            }
+          },
+          {
+            table: {
+              headerRows: 3,
               dontBreakRows: true,
               keepWithHeaderRows: 1,
-              widths: [50, 50, "*", "20%"],
-              body: printData
+              widths: ["*", "*", "*", "*"],
+              body: cierresTotales
+            }
+          },
+          {
+            table: {
+              headerRows: 2,
+              dontBreakRows: true,
+              keepWithHeaderRows: 1,
+              widths: ["70%", "10%", "20%"],
+              body: ingresos
+            }
+          },
+          {
+            table: {
+              headerRows: 2,
+              dontBreakRows: true,
+              keepWithHeaderRows: 1,
+              widths: ["70%", "10%", "20%"],
+              body: egresos
+            }
+          },
+          {
+            table: {
+              headerRows: 2,
+              dontBreakRows: true,
+              keepWithHeaderRows: 1,
+              widths: ["60%", "20%", "20%"],
+              body: ventas
             }
           }
         ],
         styles: {
+          title: {
+            alignment: "center",
+            bold: true,
+            fontSize: 15,
+            color: "black"
+          },
           tableHeader: {
             bold: true,
             fontSize: 15,

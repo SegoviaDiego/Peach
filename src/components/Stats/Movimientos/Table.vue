@@ -84,6 +84,16 @@ export default Vue.extend({
   }),
   methods: {
     toHour: toHour,
+    getType(type) {
+      switch (type) {
+        case 1:
+          return "Ingreso";
+        case 2:
+          return "Egreso";
+        default:
+          return "";
+      }
+    },
     closePrintDialog() {
       this.openPrintDialog = false;
     },

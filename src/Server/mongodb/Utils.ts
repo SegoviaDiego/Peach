@@ -7,6 +7,37 @@ export function equalDates(a: Date, b: Date) {
   );
 }
 
+let months = [
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre"
+];
+
+let days = [
+  "Domingo",
+  "Lunes",
+  "Martes",
+  "Miercoles",
+  "Jueves",
+  "Viernes",
+  "Sabado"
+];
+
+export function toHumanDate(date: Date) {
+  return `${days[date.getDay()]} ${date.getDate()} de ${
+    months[date.getMonth()]
+  } de ${date.getFullYear()}`;
+}
+
 export function toHour(time: Date) {
   let hour: any = time.getHours();
   let minutes: any = time.getMinutes();

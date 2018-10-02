@@ -2,9 +2,6 @@
   <div class="table">
     <div class="header">
       <div class="column">
-        Codigo
-      </div>
-      <div class="column">
         Producto
       </div>
       <div class="column">
@@ -13,65 +10,27 @@
       <div class="column">
         En Stock
       </div>
-      <template v-if="route === routes.inStock || route === routes.outStock">
-        <div class="column">
-          Cantidad
-        </div>
-      </template>
+      <div class="column">
+        Cantidad
+      </div>
     </div>
     <div class="body" v-loading="isLoading">
-      <div v-if="route === routes.createItem" class="row">
-        <div class="column">
-          <input placeholder="Codigo" type="text" v-model.lazy="newItem._id">
-        </div>
-        <div class="column">
-          <input placeholder="Nombre" type="text" v-model.lazy="newItem.name">
-        </div>
-        <div class="column">
-          <input placeholder="Precio" type="number" min="0" v-model.lazy="newItem.price">
-        </div>
-        <div class="column">
-        </div>
-      </div>
       <div
       v-for="item in products"
       :key="item._id"
       class="row">
         <div class="column">
-            {{item._id}}
-        </div>
-        <div class="column">
-          <template v-if="route === routes.editItems">
-            <input
-              :value="changes[item._id]['name']"
-              @change="editValue(item._id, 'name' , $event.target.value)"
-              :placeholder="item.name" type="text">
-          </template>
-          <template v-else>
             {{item.name}}
-          </template>
         </div>
         <div class="column">
-          <template v-if="route === routes.editItems">
-            <input
-              :value="changes[item._id]['price']"
-              @change="editValue(item._id, 'price' , $event.target.value)"
-              :placeholder="item.price" type="number" min="0">
-          </template>
-          <template v-else>
             {{item.price}}
-          </template>
         </div>
         <div class="column">
-          {{toMagnitude(item.stock, 2)}}
+          {{item.stock}}
         </div>
-        <template v-if="route === routes.inStock || route === routes.outStock">
-          <div class="column">
-            <el-input-number
-              v-model.lazy="amount[item._id]"
-              :min="0" :value="0" />
-          </div>
-        </template>
+        <div class="column">
+          <el-input placeholder="Please input" v-model="input"></el-input>
+        </div>
       </div>
     </div>
     <div class="background">
@@ -81,7 +40,6 @@
         <div class="column"></div>
         <div class="column darker"></div>
         <div class="column"></div>
-        <div class="column darker"></div>
       </div>
     </div>
   </div>
@@ -94,28 +52,35 @@ import { products as types } from "@/vuexTypes";
 
 import { composeMagnitude as toMagnitude } from "@/Server/mongodb/Utils";
 
+function addKeyValues(obj: any) {
+  let values = "";
+  for (let val of Object.values(obj)) {
+    values += val;
+  }
+  return values.toLowerCase();
+}
+function filterData(data: any, filter: any) {
+  return data.filter((item: any) => {
+    return addKeyValues(item).includes(filter.toLowerCase());
+  });
+}
+function sortData(data: any) {
+  return data.sort((a: any, b: any) => {
+    return a._id - b._id;
+  });
+}
+
 export default Vue.extend({
-  name: "products-table",
-  props: {
-    products: Array,
-    newItem: {},
-    amount: {},
-    selected: {},
-    changes: {}
-  },
-  data: () => ({
-    routes: types.routes
-  }),
+  name: "sell-table",
   computed: mapState({
     isLoading: (state: any) => state.Product.loading,
-    showSpinner: (state: any) => state.Product.showSpinner,
-    route: (state: any) => state.Product.buttonRoute
+    filter: (state: any) => state.Product.filter,
+    products(state: any) {
+      return sortData(filterData([...state.Product.data], this.filter));
+    }
   }),
   methods: {
-    toMagnitude: toMagnitude,
-    editValue(_id: any, att: any, value: any) {
-      this.$emit("edit-item-value", _id, att, value);
-    }
+    toMagnitude: toMagnitude
   }
 });
 </script>
@@ -138,10 +103,9 @@ $scrollbarSize: 16px;
     z-index: 2;
     display: grid;
     grid-template-rows: 1fr;
-    grid-template-columns: 1fr 3fr 1fr 1fr 3fr;
+    grid-template-columns: 3fr 2fr 2fr 2fr;
     .column {
       display: flex;
-      align-items: center;
       padding-left: 10px;
       align-items: center;
       color: $fontColor;
@@ -175,12 +139,12 @@ $scrollbarSize: 16px;
       min-height: $h;
       display: grid;
       grid-template-rows: 1fr;
-      grid-template-columns: 1fr 3fr 1fr 1fr 3fr;
+      grid-template-columns: 3fr 2fr 2fr 2fr;
       .column {
         overflow: hidden;
         display: flex;
         padding: 0 $scrollbarSize;
-        align-items: center;
+        // align-items: center;
         color: $fontColor;
         font-size: $fs;
         font-family: Lato;
@@ -235,14 +199,15 @@ $scrollbarSize: 16px;
       flex: 9;
       display: flex;
       flex-direction: row;
+      grid-template-columns: 3fr 2fr 2fr 2fr;
       .column {
-        flex: 1;
+        flex: 2;
       }
-      .column:nth-of-type(2) {
+      .column:nth-of-type(1) {
         flex: 3;
       }
-      .column:nth-of-type(5) {
-        flex: 3;
+      .column:nth-of-type(4) {
+        // flex: 3;
       }
       .darker {
         background-color: rgba(225, 226, 225, 0.56);

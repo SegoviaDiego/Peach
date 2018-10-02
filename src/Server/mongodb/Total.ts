@@ -126,8 +126,9 @@ export default class Total {
 
       if (currentCierre.data.length > 0) {
         let current = await Total.getCurrent();
+
         currentCierre._current = false;
-        currentCierre.date = new Date();
+        currentCierre.end = new Date();
 
         await Total.removeCierreStock(currentCierre.data);
 
@@ -242,7 +243,7 @@ export default class Total {
   public static checkCurrent(current: any): Promise<TotalClass> {
     return new Promise(async resolve => {
       if (current) {
-        if (equalDates(new Date(), current.date)) {
+        if (equalDates(new Date(), current.day)) {
           resolve(current);
         } else {
           await Total.saveCurrent(current);
@@ -257,7 +258,7 @@ export default class Total {
   public static createCurrent(): Promise<TotalClass> {
     return new Promise(async resolve => {
       Total.db().insertOne(
-        new TotalClass(true, new Date(), 0, []),
+        new TotalClass(true, 0, []),
         (err: any, current: any) => {
           if (err) throw err;
           resolve(current);
@@ -269,7 +270,7 @@ export default class Total {
   public static createCurrentCierre() {
     return new Promise(async resolve => {
       let current = await Total.getCurrent();
-      let newCierre = new CierreClass(true, new Date(), 0, []);
+      let newCierre = new CierreClass(true, 0, []);
 
       current.cierres.push(newCierre);
 

@@ -18,6 +18,8 @@ import { products as types } from "@/vuexTypes";
 
 import Print from "@/Server/Src/Print";
 
+import { composeMagnitude } from "@/Server/mongodb/Utils";
+
 import HeaderBar from "./HeaderBar.vue";
 import Table from "./Table.vue";
 
@@ -84,7 +86,7 @@ export default Vue.extend({
       ]);
 
       for (let item of this.data) {
-        printData.push([item._id, item.name, item.stock]);
+        printData.push([item._id, item.name, composeMagnitude(item.stock, 2)]);
       }
 
       Print.print({

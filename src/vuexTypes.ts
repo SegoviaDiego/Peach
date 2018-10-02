@@ -41,6 +41,7 @@ export const log = {
   loadIngreso: "Log_Ingreso",
   loadEgreso: "Log_Egreso",
   loadMov: "Log_Mov",
+  loadMovByRange: "Load_Mov_By_range",
   createMov: "create_Mov",
   filter: "FILTER_CHANGE",
   setDate: "SET_LOGS_DATE",

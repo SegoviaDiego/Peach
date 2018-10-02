@@ -51,6 +51,24 @@ export default class Log {
     });
   }
 
+  public static getMovs(start: Date, end: number): Promise<any> {
+    return new Promise(async (resolve: any) => {
+      Log.db(types.movLog)
+        .find({
+          $gte: {
+            start
+          },
+          $lte: {
+            end
+          }
+        })
+        .toArray((err: any, docs: any) => {
+          if (err) throw err;
+          resolve(docs);
+        });
+    });
+  }
+
   private static createMov(payload: any) {
     return new Promise(async (resolve: any) => {
       let { desc, money, type } = payload;

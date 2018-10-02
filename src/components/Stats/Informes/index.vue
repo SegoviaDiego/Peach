@@ -59,7 +59,7 @@ import Toolbar from "./Toolbar.vue";
 import Table from "./Table.vue";
 import Sidebar from "./Sidebar.vue";
 
-import { totals as types } from "@/vuexTypes";
+import { totals as types, log as logTypes } from "@/vuexTypes";
 
 export default Vue.extend({
   name: "informes",
@@ -67,6 +67,12 @@ export default Vue.extend({
     Toolbar,
     Table,
     Sidebar
+  },
+  mounted() {
+    this.$store.dispatch(types.load);
+    this.$store.dispatch(logTypes.loadIngreso);
+    this.$store.dispatch(logTypes.loadEgreso);
+    this.$store.dispatch(logTypes.loadMov);
   },
   computed: mapState({
     isLoading: state => state.Total.loading

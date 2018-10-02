@@ -29,6 +29,12 @@ export default new Router({
             import(/* webpackChunkName: "Stock" */ "@/components/Stock/index.vue")
         },
         {
+          path: "/Sell",
+          name: "Sell",
+          component: () =>
+            import(/* webpackChunkName: "Sell" */ "@/components/Sell/index.vue")
+        },
+        {
           path: "/stats",
           component: () =>
             import(/* webpackChunkName: "stats" */ "@/components/Stats/index.vue"),

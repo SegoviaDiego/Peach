@@ -20,8 +20,8 @@ export default Vue.extend({
     Navbar
   },
   mounted() {
-    this.$router.push("/updater");
-    // this.$router.push("/stock");
+    // this.$router.push("/sell");
+    this.$router.push("/stock");
   }
 });
 </script>
