@@ -1,16 +1,30 @@
 <template>
   <div class="ticketGrid">
     <div class="container">
-      <template v-for="i in 50">
-        <div :key="i" class="item">
+      <div class="item">
+        <div class="amount">
+          Cantidad
+        </div>
+        <div class="name">
+          Producto
+        </div>
+        <div class="amount">
+          Dinero
+        </div>
+      </div>
+      <template v-for="sell in sells">
+        <div :key="sell.item._id" class="item">
+          <div class="amount">
+            {{composeMagnitude(sell.amount, sell.item.type)}}
+          </div>
           <div class="name">
-            Pan frances
+            {{sell.item.name}}
           </div>
           <div class="amount">
-            89
+            $ {{(sell.money).toFixed(2)}}
           </div>
           <div class="action">
-            <button>
+            <button @click="removeFromSell(sell.item._id)">
               <fontawesome icon="times" />
             </button>
           </div>
@@ -22,9 +36,24 @@
 
 <script lang="ts">
 import Vue from "vue";
+import { mapState } from "vuex";
+import { sell as types } from "@/vuexTypes";
+import _ from "lodash";
+
+import { composeMagnitude } from "@/Server/mongodb/Utils";
 
 export default Vue.extend({
-  name: "sell-ticket"
+  name: "sell-ticket",
+  computed: mapState({
+    sells: (state: any) => state.Sell.data,
+    isLoading: (state: any) => state.Product.loading
+  }),
+  methods: {
+    composeMagnitude: composeMagnitude,
+    removeFromSell(id: any) {
+      this.$store.dispatch(types.removeFromSell, id);
+    }
+  }
 });
 </script>
 
@@ -32,10 +61,11 @@ export default Vue.extend({
 .ticketGrid {
   grid-area: ticket;
   display: flex;
+  padding: 10px;
+  background-color: #eeeeee;
   .container {
     flex: 1;
-    background-color: #eeeeee;
-    padding: 10px;
+    padding: 0 10px;
     overflow-x: hidden;
     overflow-y: scroll;
     // Scrollbar
@@ -62,15 +92,16 @@ export default Vue.extend({
       font-size: 20px;
       color: black;
       .name {
-        flex: 3;
+        flex: 2;
       }
       .amount {
         flex: 1;
         padding-right: 20px;
-        text-align: end;
+        // text-align: end;
       }
       .action {
         button {
+          cursor: pointer;
           $bSize: 25px;
           display: flex;
           justify-content: center;

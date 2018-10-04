@@ -86,7 +86,11 @@ export default Vue.extend({
       ]);
 
       for (let item of this.data) {
-        printData.push([item._id, item.name, composeMagnitude(item.stock, 2)]);
+        printData.push([
+          item._id,
+          item.name,
+          composeMagnitude(item.stock, item.type)
+        ]);
       }
 
       Print.print({
@@ -130,7 +134,7 @@ export default Vue.extend({
             break;
           case types.routes.inStock:
           case types.routes.outStock:
-            this.amount = {};
+            this.$store.dispatch(types.clearInputs);
             break;
         }
     }

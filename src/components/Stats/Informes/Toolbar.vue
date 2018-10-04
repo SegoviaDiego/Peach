@@ -395,7 +395,7 @@ export default Vue.extend({
       for (let item of this.getTotal(cierres)) {
         ventas.push([
           { text: this.products[item._id].name },
-          { text: composeMagnitude(item.amount, 2) },
+          { text: composeMagnitude(item.amount, this.products[item._id].type) },
           { text: item.money }
         ]);
       }

@@ -20,16 +20,23 @@
       :key="item._id"
       class="row">
         <div class="column">
-            {{item.name}}
+          {{item.name}}
         </div>
         <div class="column">
-            {{item.price}}
+          {{item.price}}
         </div>
         <div class="column">
-          {{item.stock}}
+          {{composeMagnitude(item.stock, item.type)}}
         </div>
         <div class="column">
-          <el-input placeholder="Please input" v-model="input"></el-input>
+          <el-input
+          :max="item.stock + 100"
+          :min="0"
+          :step="item.type == 1 ? 0.1 : 1"
+          type="number"
+          :value="sells[item._id] ? sells[item._id].amount : 0"
+          @input="handleChange(item, $event)"
+          placeholder="Cantidad vendida"/>
         </div>
       </div>
     </div>
@@ -48,9 +55,9 @@
 <script lang="ts">
 import Vue from "vue";
 import { mapState } from "vuex";
-import { products as types } from "@/vuexTypes";
+import { sell as types } from "@/vuexTypes";
 
-import { composeMagnitude as toMagnitude } from "@/Server/mongodb/Utils";
+import { composeMagnitude, toMagnitude } from "@/Server/mongodb/Utils";
 
 function addKeyValues(obj: any) {
   let values = "";
@@ -73,6 +80,7 @@ function sortData(data: any) {
 export default Vue.extend({
   name: "sell-table",
   computed: mapState({
+    sells: (state: any) => state.Sell.data,
     isLoading: (state: any) => state.Product.loading,
     filter: (state: any) => state.Product.filter,
     products(state: any) {
@@ -80,7 +88,14 @@ export default Vue.extend({
     }
   }),
   methods: {
-    toMagnitude: toMagnitude
+    composeMagnitude: composeMagnitude,
+    handleChange(item: any, amount: any) {
+      this.$store.dispatch(types.handleChange, {
+        item,
+        amount: parseFloat(amount),
+        money: parseFloat(item.price) * parseFloat(amount)
+      });
+    }
   }
 });
 </script>
@@ -128,9 +143,9 @@ $scrollbarSize: 16px;
     }
     &::-webkit-scrollbar-thumb {
       $borderSize: 7px;
-      background-color: #fdd835;
-      border-top: $borderSize solid black;
-      border-bottom: $borderSize solid black;
+      background-color: #3d3d3d;
+      // border-top: $borderSize solid black;
+      // border-bottom: $borderSize solid black;
     }
     .row {
       margin: 10px 0px;

@@ -1,17 +1,6 @@
 <template>
   <div class="statsGrid">
-    <div class="navtabs">
-      <el-menu
-        :default-active="activeIndex"
-        mode="horizontal"
-        @select="handleSelect"
-        class="el-menu-demo" >
-        <el-menu-item index="1">Informes</el-menu-item>
-        <el-menu-item index="2">Movimientos</el-menu-item>
-        <el-menu-item index="3">Ingresos</el-menu-item>
-        <el-menu-item index="4">Egresos</el-menu-item>
-      </el-menu>
-    </div>
+    <Navbar/>
     <div class="content">
       <router-view/>
     </div>
@@ -20,9 +9,13 @@
 
 <script>
 import Vue from "vue";
+import Navbar from "./navbar";
 
 export default Vue.extend({
   name: "stats-page",
+  components: {
+    Navbar
+  },
   data: () => ({
     activeIndex: "1"
   }),

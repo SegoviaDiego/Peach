@@ -51,11 +51,14 @@ export function toHour(time: Date) {
 
 export function magnitude(type: number) {
   switch (type) {
+    case 0:
+      return " U";
     case 1:
-      return " Gr";
-    case 2:
-    default:
       return " Kg";
+    case 2:
+      return " Gr";
+    default:
+      return "";
   }
 }
 
@@ -65,20 +68,26 @@ export function composeMagnitude(amount: number, type: number) {
 
 export function toMagnitude(amount: number, type: number) {
   switch (type) {
-    case 1:
+    case 0: // Unidad
       return amount;
-    case 2:
-    default:
+    case 1: // Kg
+      return amount;
+    case 2: // Gr
       return amount / 1000;
+    default:
+      return amount;
   }
 }
 
 export function fromMagnitude(amount: number, type: number): number {
   switch (type) {
+    case 0:
+      return amount;
     case 1:
       return amount;
     case 2:
-    default:
       return amount * 1000;
+    default:
+      return amount;
   }
 }

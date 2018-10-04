@@ -1,4 +1,5 @@
 import Product from "@/Server/mongodb/Product";
+import _ from "lodash";
 import { products as types } from "@/vuexTypes";
 
 export default {
@@ -22,6 +23,19 @@ export default {
       await Product.syncToSystel();
       commit(types.load, await Product.loadProducts());
     },
+    [types.handleChange]({ commit }: any, payload: any) {
+      if (payload.input == 0) {
+        commit(types.removeFromInputs, payload.item._id);
+      } else if (payload.input) {
+        commit(types.handleChange, payload);
+      }
+    },
+    [types.removeFromInputs]({ commit }: any, id: any) {
+      commit(types.removeFromInputs, id);
+    },
+    [types.clearInputs]({ commit }: any) {
+      commit(types.clearInputs);
+    },
     async [types.create]({ commit }: any, product: any) {
       commit(types.startLoading);
       await Product.createProduct(product);
@@ -34,15 +48,15 @@ export default {
       commit(types.load, await Product.loadProducts());
       commit(types.stopLoading);
     },
-    async [types.inStock]({ commit }: any, payload: any) {
+    async [types.inStock]({ commit, state }: any) {
       commit(types.startLoading);
-      await Product.inStock(payload.amount, payload.magnitude);
+      await Product.inStock(state.inputs);
       commit(types.load, await Product.loadProducts());
       commit(types.stopLoading);
     },
-    async [types.outStock]({ commit }: any, payload: any) {
+    async [types.outStock]({ commit, state }: any, type: any) {
       commit(types.startLoading);
-      await Product.outStock(payload, payload.magnitude);
+      await Product.outStock(state.inputs, type);
       commit(types.load, await Product.loadProducts());
       commit(types.stopLoading);
     },
@@ -66,6 +80,19 @@ export default {
   mutations: {
     [types.load](state: any, payload: any) {
       state.data = payload;
+    },
+    [types.handleChange](state: any, payload: any) {
+      let d = { ...state.inputs };
+      d[payload.item._id] = payload;
+      state.inputs = { ...d };
+    },
+    [types.removeFromInputs](state: any, id: any) {
+      state.inputs = _.pickBy(state.inputs, item => {
+        return item.item._id != id;
+      });
+    },
+    [types.clearInputs](state: any) {
+      state.inputs = {};
     },
     [types.startLoading](state: any) {
       state.loading = true;

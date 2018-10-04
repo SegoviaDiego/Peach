@@ -1,6 +1,9 @@
 export const products = {
   collection: "Product",
   // actions
+  handleChange: "HANDLE_PRODUCT_CHANGE",
+  removeFromInputs: "REMOVE_FROM_PRODUCT_INPUTS",
+  clearInputs: "CLEAR_PRODUCT_INPUTS",
   filter: "FILTER_CHANGE",
   buttons: "NAVIGATE_BUTTONS",
   create: "CREATE_PRODUCT",
@@ -67,4 +70,23 @@ export const totals = {
   stopLoading: "STOP_LOADING",
   showSpinner: "SHOW_SPINNER",
   hideSpinner: "HIDE_SPINNER"
+};
+
+export const sell = {
+  // general
+  collection: "Sell",
+  // Logs
+  log: "Log_Sell",
+  // actions
+  load: "LOAD_SELL",
+  saveSell: "SAVE_SELL",
+  handleChange: "HANDLE_SELL_CHANGE",
+  removeFromSell: "REMOVE_FROM_SELL",
+  clearSells: "CLEAR_SELLS",
+  create: "CREATE_SELL",
+  filter: "FILTER_CHANGE",
+  setDate: "SET_LOGS_DATE",
+  // mutations
+  startLoading: "START_LOADING",
+  stopLoading: "STOP_LOADING"
 };

@@ -73,14 +73,12 @@ export default class Total {
 
   public static updateTotal(fbTotal: any) {
     return new Promise(async resolve => {
-      Server.getCollection(types.collection).replaceOne(
-        { _id: fbTotal._id },
-        fbTotal,
-        (err: any) => {
+      Total.db().then((db: Collection) => {
+        db.replaceOne({ _id: fbTotal._id }, fbTotal, (err: any) => {
           if (err) throw err;
           resolve();
-        }
-      );
+        });
+      });
 
       // .update(
       //   { _id: fbTotal._id },
@@ -104,18 +102,22 @@ export default class Total {
   public static addTotal(total: any) {
     return new Promise(resolve => {
       Total.getCurrent();
-      Total.db().insertOne(total, (err: any, docs: any) => {
-        if (err) throw err;
-        resolve(docs);
+      Total.db().then(db => {
+        db.insertOne(total, (err: any, docs: any) => {
+          if (err) throw err;
+          resolve(docs);
+        });
       });
     });
   }
 
   public static clearTotals() {
     return new Promise(resolve => {
-      Total.db().deleteOne({}, err => {
-        if (err) throw err;
-        resolve();
+      Total.db().then(db => {
+        db.deleteOne({}, err => {
+          if (err) throw err;
+          resolve();
+        });
       });
     });
   }
@@ -138,8 +140,10 @@ export default class Total {
           })
         ] = currentCierre;
 
-        Total.db().replaceOne({ _current: true }, { ...current }, async () => {
-          resolve(await Total.createCurrentCierre());
+        Total.db().then(db => {
+          db.replaceOne({ _current: true }, { ...current }, async () => {
+            resolve(await Total.createCurrentCierre());
+          });
         });
       } else resolve();
     });
@@ -156,29 +160,33 @@ export default class Total {
 
   public static getCurrent(): Promise<TotalClass> {
     return new Promise(resolve => {
-      Total.db().findOne(
-        {
-          _current: true
-        },
-        async (err: any, doc: any) => {
-          if (err) throw err;
-          resolve(await Total.checkCurrent(doc));
-        }
-      );
+      Total.db().then(db => {
+        db.findOne(
+          {
+            _current: true
+          },
+          async (err: any, doc: any) => {
+            if (err) throw err;
+            resolve(await Total.checkCurrent(doc));
+          }
+        );
+      });
     });
   }
 
   public static getTotal(date: Date) {
     return new Promise(async resolve => {
-      Total.db().findOne(
-        {
-          date
-        },
-        async (err, doc) => {
-          if (err) throw err;
-          resolve(doc);
-        }
-      );
+      Total.db().then(db => {
+        db.findOne(
+          {
+            date
+          },
+          async (err, doc) => {
+            if (err) throw err;
+            resolve(doc);
+          }
+        );
+      });
     });
   }
 
@@ -198,9 +206,11 @@ export default class Total {
 
   public static updateCurrent(current: any): Promise<any> {
     return new Promise(async resolve => {
-      Total.db().replaceOne({ _current: true }, current, (err: any) => {
-        if (err) throw err;
-        resolve(true);
+      Total.db().then(db => {
+        db.replaceOne({ _current: true }, current, (err: any) => {
+          if (err) throw err;
+          resolve(true);
+        });
       });
     });
   }
@@ -257,13 +267,12 @@ export default class Total {
 
   public static createCurrent(): Promise<TotalClass> {
     return new Promise(async resolve => {
-      Total.db().insertOne(
-        new TotalClass(true, 0, []),
-        (err: any, current: any) => {
+      Total.db().then(db => {
+        db.insertOne(new TotalClass(true, 0, []), (err: any, current: any) => {
           if (err) throw err;
           resolve(current);
-        }
-      );
+        });
+      });
     });
   }
 
@@ -274,9 +283,11 @@ export default class Total {
 
       current.cierres.push(newCierre);
 
-      Total.db().replaceOne({ _current: true }, current, err => {
-        if (err) throw err;
-        resolve(newCierre);
+      Total.db().then(db => {
+        db.replaceOne({ _current: true }, current, err => {
+          if (err) throw err;
+          resolve(newCierre);
+        });
       });
     });
   }
@@ -284,11 +295,13 @@ export default class Total {
   public static saveCurrent(current: any): Promise<any> {
     return new Promise(async resolve => {
       current._current = false;
-      Total.db().replaceOne({ _id: current._id }, current, (err: any) => {
-        if (err) throw err;
-        Total.db().deleteOne({ _current: true }, (err: any) => {
+      Total.db().then(db => {
+        db.replaceOne({ _id: current._id }, current, (err: any) => {
           if (err) throw err;
-          resolve(true);
+          db.deleteOne({ _current: true }, (err: any) => {
+            if (err) throw err;
+            resolve(true);
+          });
         });
       });
     });

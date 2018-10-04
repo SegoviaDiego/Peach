@@ -1,7 +1,6 @@
 <template>
   <div class="grid">
     <Header class="header" />
-    <Navbar class="nav" />
     <div class="content">
       <router-view/>
     </div>
@@ -11,17 +10,15 @@
 <script lang="ts">
 import Vue from "vue";
 import Header from "./header.vue";
-import Navbar from "./navbar.vue";
 
 export default Vue.extend({
   name: "app-main",
   components: {
-    Header,
-    Navbar
+    Header
   },
   mounted() {
-    // this.$router.push("/sell");
-    this.$router.push("/stock");
+    this.$router.push("/egresos");
+    // this.$router.push("/dashboard");
   }
 });
 </script>
@@ -36,7 +33,8 @@ export default Vue.extend({
   grid-template-columns: 68px 2fr 1fr;
   grid-template-areas:
     "header     header  header"
-    "navigation content content";
+    "content content content";
+  // "navigation content content";
   overflow: hidden;
 }
 .header {

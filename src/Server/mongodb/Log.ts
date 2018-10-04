@@ -29,7 +29,7 @@ export default class Log {
   public static getLog(db: string, date: Date, type?: number): Promise<any> {
     return new Promise(async (resolve: any) => {
       date.setHours(0, 0, 0, 0);
-      let query;
+      let query: any;
 
       if (type && type != 4) {
         query = {
@@ -42,30 +42,30 @@ export default class Log {
         };
       }
 
-      Log.db(db)
-        .find(query)
-        .toArray((err: any, docs: any) => {
+      Log.db(db).then(db => {
+        db.find(query).toArray((err: any, docs: any) => {
           if (err) throw err;
           resolve(docs);
         });
+      });
     });
   }
 
   public static getMovs(start: Date, end: number): Promise<any> {
     return new Promise(async (resolve: any) => {
-      Log.db(types.movLog)
-        .find({
+      Log.db(types.movLog).then(db => {
+        db.find({
           $gte: {
             start
           },
           $lte: {
             end
           }
-        })
-        .toArray((err: any, docs: any) => {
+        }).toArray((err: any, docs: any) => {
           if (err) throw err;
           resolve(docs);
         });
+      });
     });
   }
 
@@ -76,54 +76,58 @@ export default class Log {
       let time = new Date();
       date.setHours(0, 0, 0, 0);
 
-      await Log.db(types.movLog).insertOne({
-        date,
-        time,
-        desc,
-        type,
-        money
+      Log.db(types.movLog).then(db => {
+        db.insertOne({
+          date,
+          time,
+          desc,
+          type,
+          money
+        }).then(() => {
+          resolve();
+        });
       });
-
-      resolve();
     });
   }
 
-  private static inStock(payload: any) {
+  private static inStock(inputs: any) {
     return new Promise(async (resolve: any) => {
-      let { amount, magnitude } = payload;
       let date = new Date();
       let time = new Date();
       date.setHours(0, 0, 0, 0);
 
-      for (let id in amount) {
-        await Log.db(types.inStock).insertOne({
-          date,
-          time,
-          productId: id,
-          amount: fromMagnitude(amount[id], magnitude)
-        });
-      }
-      resolve();
+      Log.db(types.inStock).then(db => {
+        for (let i in inputs) {
+          db.insertOne({
+            date,
+            time,
+            productId: inputs[i].item._id,
+            amount: fromMagnitude(inputs[i].input, inputs[i].item.type)
+          });
+          resolve();
+        }
+      });
     });
   }
 
-  private static outStock(payload: any) {
+  private static outStock({ inputs, type }: any) {
     return new Promise(async (resolve: any) => {
-      let { amount, type, magnitude } = payload;
       let date = new Date();
       let time = new Date();
       date.setHours(0, 0, 0, 0);
 
-      for (let id in amount) {
-        await Log.db(types.outStock).insertOne({
-          date,
-          time,
-          productId: id,
-          amount: fromMagnitude(amount[id], magnitude),
-          type
-        });
-      }
-      resolve();
+      Log.db(types.outStock).then(db => {
+        for (let i in inputs) {
+          db.insertOne({
+            date,
+            time,
+            productId: inputs[i].item._id,
+            amount: fromMagnitude(inputs[i].input, inputs[i].item.type),
+            type
+          });
+          resolve();
+        }
+      });
     });
   }
 }

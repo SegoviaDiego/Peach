@@ -14,11 +14,9 @@ export default class Server {
 
   public static initServer(dispatch: any) {
     return new Promise(async resolve => {
-      Server.initMongo().then(() => {
-        dispatch(pTypes.syncToSystel).then(() => {
-          Firebird.listenForChanges("C:/projects/qendra.fdb");
-          resolve();
-        });
+      dispatch(pTypes.syncToSystel).then(() => {
+        Firebird.listenForChanges("C:/projects/qendra.fdb");
+        resolve();
       });
     });
   }
@@ -47,8 +45,13 @@ export default class Server {
     });
   }
 
-  static getCollection(name: string): Collection {
-    if (Server.data.mongodb) return Server.db.collection(name);
-    return Server.db.collection("none");
+  static getCollection(name: string): Promise<Collection> {
+    return new Promise((resolve: any) => {
+      if (Server.data.mongodb) resolve(Server.db.collection(name));
+      else
+        Server.initMongo().then(() => {
+          resolve(Server.db.collection(name));
+        });
+    });
   }
 }

@@ -25,10 +25,10 @@
             {{products[log.productId].name}}
           </div>
           <div class="column">
-            {{composeMagnitude(log.amount, 2)}}
+            {{composeMagnitude(log.amount, products[log.productId].type)}}
           </div>
           <div class="column">
-            ${{products[log.productId].price * toMagnitude(log.amount)}}
+            ${{products[log.productId].price * toMagnitude(log.amount, products[log.productId].type)}}
           </div>
         </div>
       </template>

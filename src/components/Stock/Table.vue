@@ -63,13 +63,17 @@
           </template>
         </div>
         <div class="column">
-          {{toMagnitude(item.stock, 2)}}
+          {{toMagnitude(item.stock, item.type)}}
         </div>
         <template v-if="route === routes.inStock || route === routes.outStock">
           <div class="column">
-            <el-input-number
-              v-model.lazy="amount[item._id]"
-              :min="0" :value="0" />
+            <el-input
+              :min="0"
+              :step="item.type == 1 ? 0.1 : 1"
+              type="number"
+              :value="inputs[item._id] ? inputs[item._id].input : 0"
+              @input="handleChange(item, $event)"
+              placeholder="Cantidad"/>
           </div>
         </template>
       </div>
@@ -99,7 +103,6 @@ export default Vue.extend({
   props: {
     products: Array,
     newItem: {},
-    amount: {},
     selected: {},
     changes: {}
   },
@@ -108,13 +111,17 @@ export default Vue.extend({
   }),
   computed: mapState({
     isLoading: (state: any) => state.Product.loading,
+    inputs: (state: any) => state.Product.inputs,
     showSpinner: (state: any) => state.Product.showSpinner,
     route: (state: any) => state.Product.buttonRoute
   }),
   methods: {
     toMagnitude: toMagnitude,
-    editValue(_id: any, att: any, value: any) {
-      this.$emit("edit-item-value", _id, att, value);
+    handleChange(item: any, input: any) {
+      this.$store.dispatch(types.handleChange, {
+        item,
+        input: parseFloat(input)
+      });
     }
   }
 });

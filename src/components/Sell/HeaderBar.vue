@@ -14,7 +14,7 @@
       </div>
     </div>
     <div class="buttons">
-      <button @click="goTo(routes.default, routes.outStock)" class="rounded">
+      <button @click="goBack()" class="rounded">
         Volver atras
       </button>
     </div>
@@ -52,9 +52,8 @@ export default Vue.extend({
     print() {
       this.$emit("print");
     },
-    goTo(route: any, from: any) {
-      this.type = null;
-      this.$emit("go-to", route, from);
+    goBack() {
+      this.$router.replace({ path: "/dashboard" });
     },
     saveInStock() {
       let amount = _.pickBy(this.amount, _.identity);

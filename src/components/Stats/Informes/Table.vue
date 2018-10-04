@@ -35,7 +35,7 @@
                 $ {{products[total._id].price}}
               </div>
               <div class="column">
-                {{toMagnitude(total.amount, 2)}}
+                {{toMagnitude(total.amount, products[total._id].type)}}
               </div>
               <div class="column">
                 $ {{total.money}}

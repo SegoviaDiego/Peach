@@ -211,7 +211,7 @@ export default Vue.extend({
             toHour(item.time),
             getType(item.type),
             this.products[item.productId].name,
-            composeMagnitude(item.amount, 2)
+            composeMagnitude(item.amount, this.products[item.productId].type)
           ]);
       }
 

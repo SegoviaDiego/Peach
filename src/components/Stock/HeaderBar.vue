@@ -24,6 +24,9 @@
         <button @click="print()" class="circle gray">
           <fontawesome icon="print" />
         </button>
+        <button @click="goBack()" class="circle">
+          <fontawesome icon="chevron-left" />
+        </button>
         <!-- <button @click="goTo(routes.more)" class="circle">
           <fontawesome icon="ellipsis-h" />
         </button> -->
@@ -103,12 +106,12 @@ export default Vue.extend({
   name: "products-header",
   props: {
     newItem: {},
-    amount: {},
     selected: {},
     changes: {}
   },
   computed: mapState({
     isLoading: (state: any) => state.Product.loading,
+    inputs: (state: any) => state.Product.inputs,
     showSpinner: (state: any) => state.Product.showSpinner,
     route: (state: any) => state.Product.buttonRoute,
     filter: (state: any) => state.Product.filter
@@ -124,13 +127,16 @@ export default Vue.extend({
     print() {
       this.$emit("print");
     },
+    goBack() {
+      this.$router.replace({ path: "/dashboard" });
+    },
     goTo(route: any, from: any) {
       this.type = null;
       this.$emit("go-to", route, from);
     },
     saveInStock() {
-      let amount = _.pickBy(this.amount, _.identity);
-      if (_.isEmpty(amount)) {
+      let inputs = _.pickBy(this.inputs, _.identity);
+      if (_.isEmpty(inputs)) {
         this.$notify({
           title: "Ingreso vacio!",
           message: "No has colocado ningun valor al ingreso.",
@@ -139,12 +145,12 @@ export default Vue.extend({
           offset: 170
         });
       } else {
-        this.$store.dispatch(types.inStock, { amount, magnitude: 2 });
+        this.$store.dispatch(types.inStock);
         this.goTo(types.routes.default, types.routes.inStock);
       }
     },
     saveOutStock() {
-      let amount = _.pickBy(this.amount, _.identity);
+      let inputs = _.pickBy(this.inputs, _.identity);
       if (!this.type) {
         this.$notify({
           title: "No has seleccionado un tipo de egreso",
@@ -154,7 +160,7 @@ export default Vue.extend({
           duration: 5000,
           offset: 170
         });
-      } else if (_.isEmpty(amount)) {
+      } else if (_.isEmpty(inputs)) {
         this.$notify({
           title: "Egreso vacio!",
           message: "No has colocado ningun valor al egreso.",
@@ -163,11 +169,7 @@ export default Vue.extend({
           offset: 170
         });
       } else {
-        this.$store.dispatch(types.outStock, {
-          amount: amount,
-          type: this.type,
-          magnitude: 2
-        });
+        this.$store.dispatch(types.outStock, this.type);
         this.goTo(types.routes.default, types.routes.outStock);
       }
     },

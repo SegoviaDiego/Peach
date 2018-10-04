@@ -17,6 +17,12 @@ export default new Router({
         import(/* webpackChunkName: "Frame" */ "@/components/Frame/index.vue"),
       children: [
         {
+          path: "/dashboard",
+          name: "Dashboard",
+          component: () =>
+            import(/* webpackChunkName: "Dashboard" */ "@/components/Dashboard/index.vue")
+        },
+        {
           path: "/Updater",
           name: "Updater",
           component: () =>
@@ -63,7 +69,7 @@ export default new Router({
         },
         {
           path: "*",
-          redirect: "/stock"
+          redirect: "/dashboard"
         }
       ]
     }
