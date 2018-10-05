@@ -1,10 +1,7 @@
 <template>
   <div class="grid">
     <template v-if="cierreIndex">
-      <template v-if="!exists">
-        asdasd
-      </template>
-      <template v-else>
+      <template v-if="exists">
         <div class="info">
           <div class="date">
             {{getDate()}}
@@ -47,8 +44,8 @@
 </template>
 
 <script>
-import { equalDates } from "../../../store/backendish/Src/Utils";
-import { totals as types } from "../../../store/vuexTypes";
+import { equalDates } from "@/Server/mongodb/Utils";
+import { totals as types } from "@/vuexTypes";
 
 import Vue from "vue";
 import { mapState } from "vuex";

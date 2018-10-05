@@ -17,8 +17,7 @@ export default Vue.extend({
     Header
   },
   mounted() {
-    this.$router.push("/egresos");
-    // this.$router.push("/dashboard");
+    this.$router.push("/dashboard");
   }
 });
 </script>

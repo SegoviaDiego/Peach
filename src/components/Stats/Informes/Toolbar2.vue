@@ -1,21 +1,66 @@
 <template>
-  <div class="toolbarFlex">
-    <div class="date">
-      {{getDate()}}
+  <div class="grid">
+    <div v-if="exists" class="sections">
+      
+      <!-- Select -->
+      <template v-if="cierres.length > 3">
+        <el-select :value="cierreIndex" @change="setIndex($event)" placeholder="Seleccionar cierre">
+          <el-option label="Total" :value="totalIndex"/>
+          <template v-for="i of cierres.length">
+            <el-option
+              :key="'cierre-'+i"
+              :label="getLabel(i)"
+              :value="i">
+            </el-option>
+          </template>
+        </el-select>
+      </template>
+
+      <!-- Buttons -->
+      <template v-if="cierres.length <= 3">
+        <template v-for="i of cierres.length">
+          <div
+            :key="'sec-' + i"
+            @click="setIndex(i)"
+            :class="{section: true, active: i == cierreIndex }">
+            <div class="title">
+              {{getLabel(i)}}
+            </div>
+            <div class="line"/>
+          </div>
+        </template>
+      </template>
+
+      <!-- Total -->
+      <div
+        @click="setIndex(totalIndex)"
+        :class="{section: true, active: cierreIndex == totalIndex }">
+        <div class="title">
+          Total
+        </div>
+        <div class="line"/>
+      </div>
+
     </div>
-    <div class="searchbar">
-      <input
-        :value="filter"
-        @input="filterChanged($event.target.value)"
-        placeholder="Buscar" type="text">
-    </div>
-    <button @click="selectingDate = true" class="rect">
-      Fecha
-    </button>
-    <button @click="selectingPrint = true" class="circle">
-      <fontawesome icon="print" />
-    </button>
     
+    <template v-if="cierreIndex">
+      <div class="searchbar">
+        <input
+          :value="filter"
+          @input="filterChanged($event.target.value)"
+          placeholder="Buscar" type="text">
+      </div>
+      
+      <div class="btnTools">
+        <button @click="selectingDate = true" class="rect">
+          Fecha
+        </button>
+        <button @click="selectingPrint = true" class="circle">
+          <fontawesome icon="print" />
+        </button>
+      </div>
+    </template>
+
     <!-- Dialog -->
     <el-dialog
       title="Seleccionar fecha"
@@ -66,19 +111,20 @@
 <script>
 import Vue from "vue";
 import { mapState } from "vuex";
-import { log as types, totals as totalTypes } from "@/vuexTypes";
+
 import Print from "@/Server/Src/Print";
 import {
+  equalDates,
   composeMagnitude,
   toHour,
-  equalDates,
-  toHumanDate
+  toHumanDate,
+  toMagnitude
 } from "@/Server/mongodb/Utils";
+import { log as types, totals as totalTypes } from "@/vuexTypes";
+import { major } from "semver";
 
 export default Vue.extend({
   name: "informes-toolbar",
-  components: {},
-  mounted() {},
   computed: mapState({
     movements: state => state.Log.mov,
     exists: state => state.Total.exists,
@@ -152,18 +198,6 @@ export default Vue.extend({
     },
     setIndex(index) {
       this.$store.dispatch(totalTypes.setCierreIndex, index);
-    },
-    getDate() {
-      let now = new Date();
-      if (
-        now.getDate() == this.date.getDate() &&
-        now.getMonth() == this.date.getMonth() &&
-        now.getFullYear() == this.date.getFullYear()
-      ) {
-        return "Hoy";
-      }
-
-      return `${this.date.getDate()}/${this.date.getMonth()}/${this.date.getFullYear()}`;
     },
     setDate() {
       this.$store.dispatch(totalTypes.setDate, this.selectedDate).then(() => {
@@ -335,16 +369,6 @@ export default Vue.extend({
         }
       }
 
-      for (let item of this.getTotal(cierres)) {
-        ventas.push([
-          { text: this.products[item._id].name },
-          {
-            text: composeMagnitude(item.amount, this.products[item._id].type)
-          },
-          { text: item.money }
-        ]);
-      }
-
       cierresTotales.push([
         { text: "Total de ventas", colSpan: 3 },
         {},
@@ -367,6 +391,14 @@ export default Vue.extend({
         {},
         { text: totalCierres + totalIngresos - totalEgresos }
       ]);
+
+      for (let item of this.getTotal(cierres)) {
+        ventas.push([
+          { text: this.products[item._id].name },
+          { text: composeMagnitude(item.amount, this.products[item._id].type) },
+          { text: item.money }
+        ]);
+      }
 
       Print.print({
         content: [
@@ -434,40 +466,60 @@ export default Vue.extend({
 </script>
 
 <style lang="scss" scoped>
-.datePicker {
-  background: red !important;
-}
-.dateDialog {
-  overflow: visible;
-  .container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: visible;
-  }
-}
-.toolbarFlex {
+.grid {
   grid-area: toolbar;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: center;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr;
+  grid-template-columns: 3fr 300px 2fr;
+  grid-template-areas: "sections searchbar buttons";
   overflow: hidden;
-  border-bottom: 2px solid #959595;
-  .date {
-    padding-left: 10px;
-    grid-area: date;
+  .sections {
+    grid-area: sections;
     display: flex;
     flex-direction: row;
-    justify-content: flex-start;
+    justify-content: space-around;
     align-items: center;
-    font-family: Lato;
-    font-weight: bold;
-    font-size: 26px;
-    color: #000;
+    overflow: hidden;
+    .section {
+      flex: 1;
+      height: 100%;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      * {
+        transition: 200ms;
+      }
+      &:hover .line,
+      &.active .line {
+        margin-top: 7px;
+        background-color: #000;
+        width: 60%;
+        height: 5px;
+      }
+      .title {
+        margin: 0;
+        text-transform: capitalize;
+        font-family: Lato;
+        font-weight: bold;
+        font-size: 25px;
+        color: #000;
+      }
+      .line {
+        margin-top: 5px;
+        background-color: #a0a0a0;
+        width: 30%;
+        height: 3px;
+      }
+    }
   }
   .searchbar {
-    margin: 0px 20px;
+    grid-area: searchbar;
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -486,25 +538,33 @@ export default Vue.extend({
       width: 250px;
     }
   }
-  button {
-    margin-right: 10px;
-    background-color: #fdd835;
-    border: none;
-    text-decoration: none;
-    text-transform: capitalize;
-    font-family: Lato;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 300ms;
-    &:hover {
-      color: #ff5722;
+  .btnTools {
+    grid-area: buttons;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    overflow: hidden;
+    button {
+      margin-right: 10px;
+      background-color: #fdd835;
+      border: none;
+      text-decoration: none;
+      text-transform: capitalize;
+      font-family: Lato;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 300ms;
+      &:hover {
+        color: #ff5722;
+      }
     }
-    &.rect {
+    .rect {
       height: 40px;
-      min-width: 100px;
+      width: 100px;
     }
-    &.circle {
+    .circle {
       $circleSize: 40px;
       height: $circleSize;
       width: $circleSize;

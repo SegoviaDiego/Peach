@@ -43,7 +43,6 @@
     </template>
     <template v-else>
       <div class="indexGrid">
-        <Toolbar/>
         <Table/>
         <Sidebar/>
       </div>
@@ -176,9 +175,9 @@ export default Vue.extend({
     flex: 1;
     position: relative;
     display: grid;
-    grid-template-rows: 100px 1fr;
+    grid-template-rows: 1fr;
     grid-template-columns: 3fr 1fr;
-    grid-template-areas: "toolbar toolbar" "table sidebar";
+    grid-template-areas: "table sidebar";
     overflow: hidden;
     padding: 20px 40px;
   }

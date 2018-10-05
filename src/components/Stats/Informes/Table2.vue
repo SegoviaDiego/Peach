@@ -1,44 +1,12 @@
 <template>
-  <div class="grid">
-    <Toolbar/>
-    <div class="head">
-      <div class="column">
-        Articulo
+  <div class="tableGrid">
+    <template v-if="!exists">
+      asdasd
+    </template>
+    <template v-else>
+      <div class="grid">
       </div>
-      <div class="column">
-        Precio
-      </div>
-      <div class="column">
-        Cantidad
-      </div>
-      <div class="column">
-        Total
-      </div>
-    </div>
-    <div class="body" v-loading="isLoading">
-      <template v-if="cierreIndex == null">
-        No has seleccionado un cierre
-      </template>
-      <template v-else-if="cierre.length <= 0">
-        No se realizaron ventas el dia seleccionado
-      </template>
-      <template v-else v-for="total in filteredData">
-        <div :key="total._id" class="row">
-          <div class="column">
-            {{products[total._id].name}}
-          </div>
-          <div class="column">
-            $ {{products[total._id].price}}
-          </div>
-          <div class="column">
-            {{composeMagnitude(total.amount, 3)}}
-          </div>
-          <div class="column">
-            $ {{(total.money).toFixed(2)}}
-          </div>
-        </div>
-      </template>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -46,40 +14,25 @@
 import Vue from "vue";
 import { mapState } from "vuex";
 
-import Log from "@/Server/mongodb/Log";
-import Toolbar from "./Toolbar.vue";
+import _ from "lodash";
+
 import { totals as types } from "@/vuexTypes";
-
-import { composeMagnitude } from "@/Server/mongodb/Utils";
-
-function getTotal(cierres) {
-  let total = {};
-  let item;
-
-  for (let cierre of cierres) {
-    for (let i of cierre.data) {
-      item = { ...i };
-
-      if (!total[item._id]) total[item._id] = item;
-      else {
-        total[item._id].money += item.money;
-        total[item._id].amount += item.amount;
-      }
-    }
-  }
-  return _.map(total);
-}
+import { composeMagnitude as toMagnitude } from "@/Server/mongodb/Utils";
 
 export default Vue.extend({
   name: "informes-table",
-  components: {
-    Toolbar
-  },
   data: () => ({
     totalIndex: types.totalIndex,
     openPrintDialog: false
   }),
   computed: mapState({
+    exists: state => state.Total.exists,
+    products(state) {
+      return _.mapKeys(state.Product.data, function(value, key) {
+        return value._id;
+      });
+    },
+    filter: state => state.Total.filter,
     isLoading: state => state.Total.loading,
     current: state => state.Total.data,
     cierreIndex: state => state.Total.cierreIndex,
@@ -93,18 +46,11 @@ export default Vue.extend({
       return [];
     },
     filteredData(state) {
-      return this.sortData(
-        this.filterData([...this.cierre], state.Total.filter)
-      );
-    },
-    products(state) {
-      return _.mapKeys(state.Product.data, function(value, key) {
-        return value._id;
-      });
+      return this.sortData(this.filterData([...this.cierre]));
     }
   }),
   methods: {
-    composeMagnitude: composeMagnitude,
+    toMagnitude: toMagnitude,
     getTotal(cierres) {
       let total = {};
       let item;
@@ -122,6 +68,12 @@ export default Vue.extend({
       }
       return _.map(total);
     },
+    closePrintDialog() {
+      this.openPrintDialog = false;
+    },
+    print() {
+      this.openPrintDialog = true;
+    },
     addKeyValues(obj) {
       let values = "";
       for (let val of Object.values(obj)) {
@@ -132,14 +84,21 @@ export default Vue.extend({
       }
       return values.toLowerCase();
     },
-    filterData(data, filter) {
+    filterData(data) {
       return data.filter(item => {
-        return this.addKeyValues(item).includes(filter.toLowerCase());
+        return this.addKeyValues(item).includes(this.filter.toLowerCase());
       });
     },
     sortData(data) {
       return data.sort((a, b) => {
-        return parseInt(a._id) - parseInt(b._id);
+        switch (this.type) {
+          case 1:
+            return parseInt(a._id) - parseInt(b._id);
+            break;
+          case 2:
+            return a.name.localeCompare(b.name);
+            break;
+        }
       });
     }
   }
@@ -158,14 +117,18 @@ $hFontSize: 20px;
 $bFontSize: 17px;
 $bFontColor: #a0a0a0;
 
+.tableGrid {
+  grid-area: table;
+  display: flex;
+}
+
 .grid {
   flex: 1;
   padding: 10px;
-  grid-area: table;
   display: grid;
-  grid-template-rows: 70px 50px 1fr;
+  grid-template-rows: 50px 9fr;
   grid-template-columns: 1fr;
-  grid-template-areas: "toolbar" "head" "body";
+  grid-template-areas: "head" "body";
   overflow: hidden;
   background-color: #eeeeee;
   border-radius: 7px;

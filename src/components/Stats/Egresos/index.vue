@@ -1,18 +1,15 @@
 <template>
   <div class="indexGrid">
-    <Topbar/>
     <Table/>
   </div>
 </template>
 
 <script>
-import Topbar from "./Topbar.vue";
 import Table from "./Table.vue";
 
 export default {
   name: "informes",
   components: {
-    Topbar,
     Table
   },
   mounted() {}

@@ -60,7 +60,7 @@ export default Vue.extend({
           this.$router.push("/sell");
           break;
         case 3:
-          this.$router.push("/informes");
+          this.$router.push("/stats");
           break;
         case 4:
           this.$router.push("/settings");

@@ -27,7 +27,8 @@ import {
   faSearch,
   faPrint,
   faCog,
-  faWindowMinimize
+  faWindowMinimize,
+  faChevronCircleDown
 } from "@fortawesome/free-solid-svg-icons";
 
 //Font awesome
@@ -45,7 +46,8 @@ library.add(
   faSearch,
   faPrint,
   faCog,
-  faWindowMinimize
+  faWindowMinimize,
+  faChevronCircleDown
 );
 
 // dependencies

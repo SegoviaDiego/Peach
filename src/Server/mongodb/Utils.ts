@@ -54,6 +54,7 @@ export function magnitude(type: number) {
     case 0:
       return " U";
     case 1:
+    case 3: //Gr to Kg
       return " Kg";
     case 2:
       return " Gr";
@@ -73,6 +74,7 @@ export function toMagnitude(amount: number, type: number) {
     case 1: // Kg
       return amount;
     case 2: // Gr
+    case 3: // Gr to Kg
       return amount / 1000;
     default:
       return amount;

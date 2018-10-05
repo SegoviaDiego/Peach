@@ -13,15 +13,13 @@ export default Vue.extend({
   mounted() {
     Server.initServer(this.$store.dispatch).then(() => {
       console.log("Initialized");
-      // this.$router.push("/app");
-      this.$router.push("/sell");
+      this.$router.push("/stats");
     });
   }
 });
 </script>
 
 <style lang="scss">
-
 #app {
   font-family: Lato, "Avenir", Helvetica, Arial, sans-serif !important;
   -webkit-font-smoothing: antialiased;
