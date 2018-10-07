@@ -202,7 +202,16 @@ export default Vue.extend({
             } else {
               this.payDivisionDialog = true;
             }
-          } else break;
+          } else {
+            this.$store.dispatch(types.saveSell, {
+              total: parseFloat(this.total),
+              methods: this.payMethods
+            });
+            this.methods = [];
+            this.payDivision = {};
+            this.payDivisionDialog = false;
+            break;
+          }
       }
     }
   }

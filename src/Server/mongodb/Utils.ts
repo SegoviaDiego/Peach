@@ -1,3 +1,5 @@
+import Product from "@/Server/mongodb/Product";
+
 export function equalDates(a: Date, b: Date) {
   if (!a || !b) return false;
   return (
@@ -49,6 +51,25 @@ export function toHour(time: Date) {
   return hour + ":" + minutes;
 }
 
+export function composeSystelToKg(systelTotals: [any]): Promise<any> {
+  return new Promise(async resolve => {
+    let totals: any = [];
+    let products: any = await Product.loadProducts();
+
+    for (let item of systelTotals) {
+
+      totals.push({
+        _id: item.ID_PLU,
+        money: item.PE,
+        amount:
+          products[item.ID_PLU].type == 1 ? toMagnitude(item.CA, 3) : item.CA
+      });
+    }
+
+    resolve(totals);
+  });
+}
+
 export function magnitude(type: number) {
   switch (type) {
     case 0:
@@ -73,7 +94,8 @@ export function toMagnitude(amount: number, type: number) {
       return amount;
     case 1: // Kg
       return amount;
-    case 2: // Gr
+    case 2: // Kg to Gr
+      return amount * 1000;
     case 3: // Gr to Kg
       return amount / 1000;
     default:

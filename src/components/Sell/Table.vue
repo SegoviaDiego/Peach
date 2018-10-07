@@ -30,11 +30,11 @@
         </div>
         <div class="column">
           <el-input
-          :max="item.stock + 100"
+          :max="item.stock > 0 ? item.stock : 100"
           :min="0"
           :step="item.type == 1 ? 0.1 : 1"
           type="number"
-          :value="sells[item._id] ? sells[item._id].amount : 0"
+          :value="getSellAmount(item._id)"
           @input="handleChange(item, $event)"
           placeholder="Cantidad vendida"/>
         </div>
@@ -95,6 +95,10 @@ export default Vue.extend({
         amount: parseFloat(amount),
         money: parseFloat(item.price) * parseFloat(amount)
       });
+    },
+    getSellAmount(id: any) {
+      if (this.sells[id]) return this.sells[id].amount;
+      return 0;
     }
   }
 });

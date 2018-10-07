@@ -1,6 +1,7 @@
 import { products as pTypes } from "@/vuexTypes";
 import Firebird from "./db/Firebird";
 import { MongoClient, Db, Collection } from "mongodb";
+firebase.initializeApp(config);
 
 export default class Server {
   private static db: Db;
@@ -10,6 +11,14 @@ export default class Server {
     loading: true,
     mongodb: false,
     poolSize: 5
+  };
+  private static firebaseConfig = {
+    apiKey: "AIzaSyBDSvOGpiIoDsQ4cxw_UO1yupgDVKIchOQ",
+    authDomain: "oxymoron-peach.firebaseapp.com",
+    databaseURL: "https://oxymoron-peach.firebaseio.com",
+    projectId: "oxymoron-peach",
+    storageBucket: "oxymoron-peach.appspot.com",
+    messagingSenderId: "904895848471"
   };
 
   public static initServer(dispatch: any) {

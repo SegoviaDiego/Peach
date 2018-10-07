@@ -15,7 +15,7 @@
       <template v-for="sell in sells">
         <div :key="sell.item._id" class="item">
           <div class="amount">
-            {{composeMagnitude(sell.amount, sell.item.type)}}
+            {{getSellAmount(sell.item._id)}}
           </div>
           <div class="name">
             {{sell.item.name}}
@@ -50,6 +50,10 @@ export default Vue.extend({
   }),
   methods: {
     composeMagnitude: composeMagnitude,
+    getSellAmount(id: any) {
+      if (this.sells[id]) return this.sells[id].amount;
+      return 0;
+    },
     removeFromSell(id: any) {
       this.$store.dispatch(types.removeFromSell, id);
     }

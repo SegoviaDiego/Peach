@@ -31,7 +31,7 @@
             $ {{products[total._id].price}}
           </div>
           <div class="column">
-            {{composeMagnitude(total.amount, 3)}}
+            {{composeMagnitude(total.amount, products[total._id].type)}}
           </div>
           <div class="column">
             $ {{(total.money).toFixed(2)}}

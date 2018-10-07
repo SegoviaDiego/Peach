@@ -1,6 +1,7 @@
 import path from "path";
 import { remote } from "electron";
 import Total from "../mongodb/Total";
+import { composeSystelToKg } from "@/Server/mongodb/Utils";
 import fb from "node-firebird";
 import fs from "fs";
 
@@ -23,28 +24,18 @@ export default class Firebird {
   }
 
   private static identifyChange() {
-    let totals: any = [];
-    
     fb.attach(Firebird.data, (err: any, db: any) => {
       if (err) throw err;
-      
+
       db.query(
         "SELECT ID_PLU, PE, CA FROM TOTALES WHERE ID_PLU!=99998 AND ID_PLU!=99999 AND (CA>0 OR PE>0)",
         [],
-        (err: any, res: any) => {
+        async (err: any, res: any) => {
           db.detach();
           if (err) throw err;
-          
+
           if (res.length > 0) {
-            res.forEach((item: any) => {
-              totals.push({
-                _id: item.ID_PLU,
-                money: item.PE,
-                amount: item.CA
-              });
-            });
-            
-            Total.identifySells(totals);
+            Total.identifySells(await composeSystelToKg(res));
           } else {
             Total.saveCierre();
           }

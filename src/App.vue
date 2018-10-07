@@ -13,7 +13,7 @@ export default Vue.extend({
   mounted() {
     Server.initServer(this.$store.dispatch).then(() => {
       console.log("Initialized");
-      this.$router.push("/stats");
+      this.$router.push("/sell");
     });
   }
 });

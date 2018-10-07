@@ -5,6 +5,7 @@ import { totals as types } from "@/vuexTypes";
 import CierreClass from "../typings/Cierre";
 import TotalClass from "../typings/Total";
 import Product from "./Product";
+import Sell from "./Sell";
 import { Collection } from "mongodb";
 
 export default class Total {
@@ -22,8 +23,10 @@ export default class Total {
     });
   }
 
-  public static identifySells(systelTotal: []) {
+  public static identifySells(systelTotal: [any]) {
     Total.getCurrentCierre().then(async (current: any) => {
+      let sells: any = [];
+      let mutated: boolean = false;
       let currentCierre = _.mapKeys(current.data, item => {
         return item._id;
       });
@@ -31,32 +34,55 @@ export default class Total {
       _.forEach(systelTotal, (newTotal: any) => {
         let oldTotal = currentCierre[newTotal._id];
 
+        currentCierre[newTotal._id] = newTotal;
+
         if (!oldTotal) {
-          current.data.push(newTotal);
+          mutated = true;
+          sells.push(
+            Sell.createSellFromTotal(
+              {
+                amount: 0,
+                money: 0
+              },
+              newTotal
+            )
+          );
         } else if (!_.isEqual(oldTotal, newTotal)) {
-          current.data[newTotal._id] = newTotal._id;
+          mutated = true;
+          sells.push(Sell.createSellFromTotal(oldTotal, newTotal));
         }
       });
 
-      Total.updateCurrentCierre(current);
+      if (mutated) {
+        current.data = _.toArray(currentCierre);
+        Sell.saveSystelSells(sells);
+        Total.updateCurrentCierre(current);
+      }
+    });
+  }
 
-      // await systelTotal.forEach(async (newTotal, id) => {
-      //   let oldTotal = currentCierre.get(id);
-      //   if (!oldTotal) {
-      //     await addTotal(newTotal);
-      //     // await identifySell(
-      //     //   {
-      //     //     money: 0,
-      //     //     amount: 0
-      //     //   },
-      //     //   newTotal
-      //     // );
-      //   } else if (!isEqual(oldTotal, newTotal)) {
-      //     console.log(2);
-      //     await identifySell(oldTotal, newTotal);
-      //     await updateTotal(newTotal);
-      //   }
-      // });
+  public static addSellsToCierre(sells: any) {
+    Total.getCurrentCierre().then(async (current: any) => {
+      let currentCierre = _.mapKeys(current.data, item => {
+        return item._id;
+      });
+
+      _.forEach(sells, (sell: any) => {
+        let oldTotal = {
+          amount: 0,
+          money: 0,
+          ...currentCierre[sell.productId]
+        };
+
+        currentCierre[sell.productId] = {
+          _id: sell.productId,
+          amount: oldTotal.amount + sell.amount,
+          money: oldTotal.money + sell.money
+        };
+      });
+
+      current.data = _.toArray(currentCierre);
+      Total.updateCurrentCierre(current);
     });
   }
 
@@ -131,8 +157,6 @@ export default class Total {
 
         currentCierre._current = false;
         currentCierre.end = new Date();
-
-        await Total.removeCierreStock(currentCierre.data);
 
         current.cierres[
           _.findIndex(current.cierres, (cierre: any) => {

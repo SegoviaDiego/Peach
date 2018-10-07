@@ -86,6 +86,11 @@ export default Vue.extend({
       ]);
 
       for (let item of this.data) {
+        // console.log(
+        //   item.stock,
+        //   item.type,
+        //   composeMagnitude(item.stock, item.type)
+        // );
         printData.push([
           item._id,
           item.name,
