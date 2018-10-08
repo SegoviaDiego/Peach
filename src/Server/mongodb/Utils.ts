@@ -57,7 +57,6 @@ export function composeSystelToKg(systelTotals: [any]): Promise<any> {
     let products: any = await Product.loadProducts();
 
     for (let item of systelTotals) {
-
       totals.push({
         _id: item.ID_PLU,
         money: item.PE,
@@ -85,7 +84,7 @@ export function magnitude(type: number) {
 }
 
 export function composeMagnitude(amount: number, type: number) {
-  return toMagnitude(amount, type) + magnitude(type);
+  return toMagnitude(amount, type).toFixed(3) + magnitude(type);
 }
 
 export function toMagnitude(amount: number, type: number) {

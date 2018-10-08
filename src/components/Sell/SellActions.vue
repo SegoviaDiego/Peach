@@ -39,21 +39,29 @@
     </div>
     <!-- Dialog -->
     <el-dialog
-      title="Seleccionar rango horario para la impresion"
+      title="Dividir monto a pagar"
       :visible.sync="payDivisionDialog"
       width="30%">
       <div>
         <template v-for="i of payMethods">
-          {{getMethodLabel(i)}}
-          <el-input
-            :key="i"
-            :min="0"
-            type="number"
-            :value="0"
-            v-model="payDivision[i]"
-            :placeholder="getMethodLabel(i)"/>
+          <div :key="i" class="method">
+            <div class="label">
+              {{getMethodLabel(i)}}
+            </div>
+            <div class="input">
+              <el-input
+                :key="i"
+                :min="0"
+                type="number"
+                :value="0"
+                v-model="payDivision[i]"
+                :placeholder="getMethodLabel(i)"/>
+            </div>
+          </div>
         </template>
-        {{getPayDivisionMessage()}}
+        <div class="restante">
+          {{getPayDivisionMessage()}}
+        </div>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="payDivisionDialog = false">Cancelar</el-button>
@@ -88,7 +96,7 @@ export default Vue.extend({
     isLoading: (state: any) => state.Product.loading
   }),
   data: () => ({
-    payDivisionDialog: false,
+    payDivisionDialog: true,
     payMethods: [],
     payDivision: {}
   }),
@@ -125,14 +133,22 @@ export default Vue.extend({
       let sell;
 
       printData.push([
+        { text: "TOTAL", colSpan: 3, style: "tableHeader" },
+        {},
+        {},
+        { text: "$ 2100", style: "tableHeader" }
+      ]);
+
+      printData.push([
         { text: "PLU", style: "tableHeader" },
         { text: "NOMBRE", style: "tableHeader" },
         { text: "CANTIDAD", style: "tableHeader" },
         { text: "IMPORTE", style: "tableHeader" }
       ]);
 
-      for (let i in this.sells) {
-        sell = this.sells[i];
+      for (let sell of _.toArray(this.sells)) {
+        total += sell.money;
+
         printData.push([
           sell.item._id,
           sell.item.name,
@@ -141,11 +157,13 @@ export default Vue.extend({
         ]);
       }
 
+      printData[0][3] = { text: `$ ${total.toFixed(2)}`, style: "tableHeader" };
+
       Print.print({
         content: [
           {
             table: {
-              headerRows: 1,
+              headerRows: 2,
               dontBreakRows: true,
               keepWithHeaderRows: 1,
               widths: [50, "*", "20%", "20%"],
@@ -219,6 +237,25 @@ export default Vue.extend({
 </script>
 
 <style lang="scss" scoped>
+.method {
+  margin-bottom: 5px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+
+  .label {
+    flex: 1;
+    font-family: Lato;
+    font-weight: bold;
+    font-size: 20px;
+    color: black;
+  }
+  .input {
+    flex: 3;
+  }
+}
+
 .actionsGrid {
   grid-area: actions;
   display: flex;

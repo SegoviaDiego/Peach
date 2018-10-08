@@ -84,7 +84,7 @@ export default Vue.extend({
     current: state => state.Total.data,
     cierreIndex: state => state.Total.cierreIndex,
     cierre() {
-      if (this.cierreIndex == this.totalIndex)
+      if (this.cierreIndex == this.totalIndex && this.current)
         return this.getTotal(this.current.cierres);
       if (this.current)
         if (this.current.cierres)

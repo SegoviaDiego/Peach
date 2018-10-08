@@ -29,17 +29,23 @@
       </div>
       <!-- Dialog -->
       <el-dialog
-        title="Seleccionar fecha"
-        :visible.sync="selectingDate"
-        width="30%">
-        <div>
-          <input v-model="selectedDate" type="date">
-        </div>
-        <span slot="footer" class="dialog-footer">
-          <el-button @click="selectingDate = false">Cancelar</el-button>
-          <el-button type="primary" @click="setDate()">Aceptar</el-button>
-        </span>
-      </el-dialog>
+      title="Seleccionar fecha"
+      :visible.sync="selectingDate"
+      width="30%">
+      <div>
+        <el-date-picker
+          v-model="selectedDate"
+          format="dd/MM/yyyy"
+          type="date"
+          placeholder="Seleccionar dia"
+          :picker-options="datePickOptions">
+        </el-date-picker>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="selectingDate = false">Cancelar</el-button>
+        <el-button type="primary" @click="setDate()">Aceptar</el-button>
+      </span>
+    </el-dialog>
     </template>
     <template v-else>
       <div class="indexGrid">
@@ -79,7 +85,36 @@ export default Vue.extend({
   data: () => ({
     dateSelected: false,
     selectingDate: false,
-    selectedDate: null
+    selectedDate: null,
+    datePickOptions: {
+      disabledDate(time) {
+        return time.getTime() > Date.now();
+      },
+      shortcuts: [
+        {
+          text: "Hoy",
+          onClick(picker) {
+            picker.$emit("pick", new Date());
+          }
+        },
+        {
+          text: "Ayer",
+          onClick(picker) {
+            const date = new Date();
+            date.setTime(date.getTime() - 3600 * 1000 * 24);
+            picker.$emit("pick", date);
+          }
+        },
+        {
+          text: "Semana pasada",
+          onClick(picker) {
+            const date = new Date();
+            date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
+            picker.$emit("pick", date);
+          }
+        }
+      ]
+    }
   }),
   methods: {
     selectDate(i) {
@@ -125,6 +160,15 @@ export default Vue.extend({
 </script>
 
 <style lang="scss" scoped>
+.dateDialog {
+  overflow: visible;
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: visible;
+  }
+}
 .informesBox {
   flex: 1;
   position: relative;

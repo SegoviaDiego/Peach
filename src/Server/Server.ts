@@ -1,7 +1,7 @@
 import { products as pTypes } from "@/vuexTypes";
 import Firebird from "./db/Firebird";
+import Settings from "@/Server/Settings";
 import { MongoClient, Db, Collection } from "mongodb";
-firebase.initializeApp(config);
 
 export default class Server {
   private static db: Db;
@@ -12,20 +12,16 @@ export default class Server {
     mongodb: false,
     poolSize: 5
   };
-  private static firebaseConfig = {
-    apiKey: "AIzaSyBDSvOGpiIoDsQ4cxw_UO1yupgDVKIchOQ",
-    authDomain: "oxymoron-peach.firebaseapp.com",
-    databaseURL: "https://oxymoron-peach.firebaseio.com",
-    projectId: "oxymoron-peach",
-    storageBucket: "oxymoron-peach.appspot.com",
-    messagingSenderId: "904895848471"
-  };
 
   public static initServer(dispatch: any) {
     return new Promise(async resolve => {
-      dispatch(pTypes.syncToSystel).then(() => {
-        Firebird.listenForChanges("C:/projects/qendra.fdb");
-        resolve();
+      Settings.isSystelReady().then(ready => {
+        if (ready) {
+          dispatch(pTypes.syncToSystel).then(async () => {
+            Firebird.listenForChanges(await Settings.getSystelSRC());
+            resolve();
+          });
+        }
       });
     });
   }

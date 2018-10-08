@@ -8,7 +8,7 @@
         Haz click en una de las secciones para continuar.      
       </div>
     </div>
-    <div class="router">
+    <div v-loading="isLoading" class="router">
       <div @click="goTo(1)" class="route">
         <div class="icon">
           <fontawesome icon="box-open" />
@@ -17,9 +17,9 @@
           Stock
         </div>
       </div>
-      <div @click="goTo(2)" class="route">
+      <div v-if="!preferences['systel']" @click="goTo(2)" class="route">
         <div class="icon">
-          <fontawesome icon="box-open" />
+          <fontawesome icon="dollar-sign" />
         </div>
         <div class="title">
           Ventas
@@ -27,7 +27,7 @@
       </div>
       <div @click="goTo(3)" class="route">
         <div class="icon">
-          <fontawesome icon="box-open" />
+          <fontawesome icon="chart-line" />
         </div>
         <div class="title">
           Informes
@@ -35,7 +35,7 @@
       </div>
       <div @click="goTo(4)" class="route">
         <div class="icon">
-          <fontawesome icon="box-open" />
+          <fontawesome icon="cog" />
         </div>
         <div class="title">
           Configuracion
@@ -47,9 +47,18 @@
 
 <script lang="ts">
 import Vue from "vue";
+import { mapState } from "vuex";
+import { settings as types } from "@/vuexTypes";
 
 export default Vue.extend({
   name: "app-main",
+  mounted() {
+    this.$store.dispatch(types.loadPreferences);
+  },
+  computed: mapState({
+    isLoading: (state: any) => state.Settings.loading,
+    preferences: (state: any) => state.Settings.preferences
+  }),
   methods: {
     goTo(route: any) {
       switch (route) {
@@ -77,7 +86,7 @@ export default Vue.extend({
 
   display: grid;
   grid-template-areas: "header" "router";
-  grid-row: 1fr 6fr;
+  grid-template-rows: 1fr 6fr;
   grid-gap: 10px;
 
   overflow: hidden;
@@ -116,6 +125,8 @@ export default Vue.extend({
     padding: 0 10% 5% 10%;
 
     display: grid;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     grid-template-areas: "stock sells" "informes settings";
     grid-gap: 10px;
 

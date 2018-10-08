@@ -86,16 +86,13 @@ export default Vue.extend({
       ]);
 
       for (let item of this.data) {
-        // console.log(
-        //   item.stock,
-        //   item.type,
-        //   composeMagnitude(item.stock, item.type)
-        // );
-        printData.push([
-          item._id,
-          item.name,
-          composeMagnitude(item.stock, item.type)
-        ]);
+        if (item._id != 99998 && item._id != 99999) {
+          printData.push([
+            item._id,
+            item.name,
+            composeMagnitude(item.stock, item.type)
+          ]);
+        }
       }
 
       Print.print({

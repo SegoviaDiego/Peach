@@ -29,6 +29,30 @@ export default new Router({
             import(/* webpackChunkName: "Updater" */ "@/components/Updater/index.vue")
         },
         {
+          path: "/settings",
+          name: "Settings",
+          component: () =>
+            import(/* webpackChunkName: "Settings" */ "@/components/Settings/index.vue")
+        },
+        {
+          path: "/preferences",
+          name: "Preferences",
+          component: () =>
+            import(/* webpackChunkName: "Preferences" */ "@/components/Settings/Preferences/index.vue")
+        },
+        {
+          path: "/database",
+          name: "Database",
+          component: () =>
+            import(/* webpackChunkName: "Preferences" */ "@/components/Settings/Database/index.vue")
+        },
+        // {
+        //   path: "/users",
+        //   name: "Users",
+        //   component: () =>
+        //     import(/* webpackChunkName: "Preferences" */ "@/components/Settings/Users/index.vue")
+        // },
+        {
           path: "/Stock",
           name: "Stock",
           component: () =>

@@ -33,50 +33,53 @@
         <div class="column">
         </div>
       </div>
-      <div
-      v-for="item in products"
-      :key="item._id"
-      class="row">
-        <div class="column">
-            {{item._id}}
-        </div>
-        <div class="column">
-          <template v-if="route === routes.editItems">
-            <input
-              :value="changes[item._id]['name']"
-              @change="editValue(item._id, 'name' , $event.target.value)"
-              :placeholder="item.name" type="text">
-          </template>
-          <template v-else>
-            {{item.name}}
-          </template>
-        </div>
-        <div class="column">
-          <template v-if="route === routes.editItems">
-            <input
-              :value="changes[item._id]['price']"
-              @change="editValue(item._id, 'price' , $event.target.value)"
-              :placeholder="item.price" type="number" min="0">
-          </template>
-          <template v-else>
-            {{item.price}}
-          </template>
-        </div>
-        <div class="column">
-          {{toMagnitude(item.stock, item.type)}}
-        </div>
-        <template v-if="route === routes.inStock || route === routes.outStock">
-          <div class="column">
-            <el-input
-              :min="0"
-              :step="item.type == 1 ? 0.1 : 1"
-              type="number"
-              :value="inputs[item._id] ? inputs[item._id].input : 0"
-              @input="handleChange(item, $event)"
-              placeholder="Cantidad"/>
+      <template v-for="item in products">
+        <template v-if="item._id != 99998 && item._id != 99999">
+          <div
+          :key="item._id"
+          class="row">
+            <div class="column">
+                {{item._id}}
+            </div>
+            <div class="column">
+              <template v-if="route === routes.editItems">
+                <input
+                  :value="changes[item._id]['name']"
+                  @change="editValue(item._id, 'name' , $event.target.value)"
+                  :placeholder="item.name" type="text">
+              </template>
+              <template v-else>
+                {{item.name}}
+              </template>
+            </div>
+            <div class="column">
+              <template v-if="route === routes.editItems">
+                <input
+                  :value="changes[item._id]['price']"
+                  @change="editValue(item._id, 'price' , $event.target.value)"
+                  :placeholder="item.price" type="number" min="0">
+              </template>
+              <template v-else>
+                {{item.price}}
+              </template>
+            </div>
+            <div class="column">
+              {{toMagnitude(item.stock, item.type)}}
+            </div>
+            <template v-if="route === routes.inStock || route === routes.outStock">
+              <div class="column">
+                <el-input
+                  :min="0"
+                  :step="item.type == 1 ? 0.1 : 1"
+                  type="number"
+                  :value="inputs[item._id] ? inputs[item._id].input : 0"
+                  @input="handleChange(item, $event)"
+                  placeholder="Cantidad"/>
+              </div>
+            </template>
           </div>
         </template>
-      </div>
+      </template>
     </div>
     <div class="background">
       <div class="header"/>
@@ -171,9 +174,9 @@ $scrollbarSize: 16px;
     }
     &::-webkit-scrollbar-thumb {
       $borderSize: 7px;
-      background-color: #fdd835;
-      border-top: $borderSize solid black;
-      border-bottom: $borderSize solid black;
+      background-color: #3d3d3d;
+      // border-top: $borderSize solid black;
+      // border-bottom: $borderSize solid black;
     }
     .row {
       margin: 10px 0px;

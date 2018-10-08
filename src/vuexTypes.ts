@@ -90,3 +90,16 @@ export const sell = {
   startLoading: "START_LOADING",
   stopLoading: "STOP_LOADING"
 };
+
+export const settings = {
+  // actions
+  loadPreferences: "LOAD_PREFERENCES",
+  savePreferences: "SAVE_PREFERENCES",
+  loadDatabase: "LOAD_DATABASE",
+  saveDatabase: "SAVE_DATABASE",
+  loadUsers: "LOAD_Users",
+  saveUsers: "SAVE_Users",
+  // mutations
+  startLoading: "START_LOADING",
+  stopLoading: "STOP_LOADING"
+};

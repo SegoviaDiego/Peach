@@ -15,7 +15,6 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 import {
   faBoxOpen,
-  faSignature,
   faCalendarCheck,
   faEllipsisH,
   faTrashAlt,
@@ -26,15 +25,19 @@ import {
   faSave,
   faSearch,
   faPrint,
-  faCog,
   faWindowMinimize,
-  faChevronCircleDown
+  faChevronCircleDown,
+  faCog,
+  faSlidersH,
+  faDollarSign,
+  faChartLine,
+  faUsers,
+  faDatabase
 } from "@fortawesome/free-solid-svg-icons";
 
 //Font awesome
 library.add(
   faBoxOpen,
-  faSignature,
   faCalendarCheck,
   faEllipsisH,
   faTrashAlt,
@@ -47,7 +50,12 @@ library.add(
   faPrint,
   faCog,
   faWindowMinimize,
-  faChevronCircleDown
+  faChevronCircleDown,
+  faSlidersH,
+  faDollarSign,
+  faChartLine,
+  faUsers,
+  faDatabase
 );
 
 // dependencies

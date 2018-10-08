@@ -28,7 +28,7 @@ export default class Firebird {
       if (err) throw err;
 
       db.query(
-        "SELECT ID_PLU, PE, CA FROM TOTALES WHERE ID_PLU!=99998 AND ID_PLU!=99999 AND (CA>0 OR PE>0)",
+        "SELECT ID_PLU, PE, CA FROM TOTALES WHERE (CA>0 OR PE>0)",
         [],
         async (err: any, res: any) => {
           db.detach();
@@ -51,7 +51,7 @@ export default class Firebird {
 
         const p: any = [];
         db.query(
-          "SELECT ID, DESCRIPCION, TIPO_VENTA, PRECIO FROM PLU WHERE ID!=99998 AND ID!=99999",
+          "SELECT ID, DESCRIPCION, TIPO_VENTA, PRECIO FROM PLU",
           [],
           (err: any, res: any) => {
             db.detach();
@@ -73,72 +73,63 @@ export default class Firebird {
 
   // Faker functions
 
-  // private static clearSales() {
-  //   return new Promise(resolve => {
-  //     fb.attach(
-  //       { ...options, database: "C:/projects/qendra.fdb" },
-  //       (err, db) => {
-  //         if (err) throw err;
+  private static clearSales() {
+    return new Promise(resolve => {
+      fb.attach(Firebird.data, (err, db) => {
+        if (err) throw err;
 
-  //         db.query(
-  //           "DELETE FROM TOTALES WHERE ID_PLU!=99998 AND ID_PLU!=99999 AND (CA>0 OR PE>0)",
-  //           [],
-  //           (err, res) => {
-  //             db.detach();
-  //             if (err) throw err;
-  //             console.log("success");
-  //             resolve();
-  //           }
-  //         );
-  //       }
-  //     );
-  //   });
-  // }
+        db.query(
+          "DELETE FROM TOTALES WHERE ID_PLU!=99998 AND ID_PLU!=99999 AND (CA>0 OR PE>0)",
+          [],
+          (err, res) => {
+            db.detach();
+            if (err) throw err;
+            console.log("success");
+            resolve();
+          }
+        );
+      });
+    });
+  }
 
-  // private static createSell() {
-  //   return new Promise(resolve => {
-  //     fb.attach(
-  //       { ...options, database: "C:/projects/qendra.fdb" },
-  //       (err, db) => {
-  //         if (err) throw err;
+  private static createSell() {
+    return new Promise(resolve => {
+      fb.attach(Firebird.data, (err, db) => {
+        if (err) throw err;
 
-  //         // "UPDATE TOTALES SET CA=CA+100 WHERE ID_PLU=1"
-  //         db.query(
-  //           "INSERT INTO TOTALES (IP, NUMERO, V1, V2, V3, V4, ID_PLU, ID_SECCION, PE, CA) VALUES (1,1,1,1,1,1,1, 1, 100, 100)",
-  //           [],
-  //           err => {
-  //             db.detach();
-  //             if (err) throw err;
-  //             setTimeout(() => {
-  //               resolve();
-  //             }, 500);
-  //           }
-  //         );
-  //       }
-  //     );
-  //   });
-  // }
+        // "UPDATE TOTALES SET CA=CA+100 WHERE ID_PLU=1"
+        db.query(
+          "INSERT INTO TOTALES (IP, NUMERO, V1, V2, V3, V4, ID_PLU, ID_SECCION, PE, CA) VALUES (1,1,1,1,1,1,1, 1, 100, 100)",
+          [],
+          err => {
+            db.detach();
+            if (err) throw err;
+            setTimeout(() => {
+              resolve();
+            }, 500);
+          }
+        );
+      });
+    });
+  }
 
-  // private static getTotals() {
-  //   return new Promise(resolve => {
-  //     fb.attach(
-  //       { ...options, database: "C:/projects/qendra.fdb" },
-  //       (err, db) => {
-  //         if (err) throw err;
+  private static getTotals() {
+    return new Promise(resolve => {
+      fb.attach(Firebird.data, (err, db) => {
+        if (err) throw err;
 
-  //         db.query(
-  //           "SELECT ID_PLU, PE, CA FROM TOTALES WHERE ID_PLU!=99998 AND ID_PLU!=99999 AND (CA>0 OR PE>0)",
-  //           [],
-  //           (err, res) => {
-  //             db.detach();
-  //             if (err) throw err;
-  //             setTimeout(() => {
-  //               resolve(res);
-  //             }, 500);
-  //           }
-  //         );
-  //       }
-  //     );
-  //   });
-  // }
+        db.query(
+          "SELECT ID_PLU, PE, CA FROM TOTALES WHERE ID_PLU!=99998 AND ID_PLU!=99999 AND (CA>0 OR PE>0)",
+          [],
+          (err, res) => {
+            db.detach();
+            if (err) throw err;
+            setTimeout(() => {
+              resolve(res);
+            }, 500);
+          }
+        );
+      });
+    });
+  }
 }
