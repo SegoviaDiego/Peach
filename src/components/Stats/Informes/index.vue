@@ -146,10 +146,7 @@ export default Vue.extend({
       this.$store.dispatch(types.setCierreIndex, index);
     },
     setDate() {
-      let newDate = this.selectedDate.split("-");
-      newDate[1]--;
-
-      this.$store.dispatch(types.setDate, new Date(...newDate)).then(() => {
+      this.$store.dispatch(types.setDate, this.selectedDate).then(() => {
         this.$store.dispatch(types.load);
         this.selectingDate = false;
         this.dateSelected = true;

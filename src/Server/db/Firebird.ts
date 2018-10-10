@@ -1,6 +1,7 @@
 import path from "path";
 import { remote } from "electron";
 import Total from "../mongodb/Total";
+import Settings from "@/Server/Settings";
 import { composeSystelToKg } from "@/Server/mongodb/Utils";
 import fb from "node-firebird";
 import fs from "fs";
@@ -14,12 +15,21 @@ export default class Firebird {
     password: "masterkey"
   };
 
-  public static listenForChanges(db: string) {
+  public static createDatabaseCopy() {
+    return new Promise(async resolve => {
+      await fs.writeFileSync(
+        Firebird.data.database,
+        fs.readFileSync(await Settings.getSystelSRC())
+      );
+      resolve();
+    });
+  }
+
+  public static listenForChanges() {
     console.log("Listening for Firebird changes");
-    fs.writeFileSync(Firebird.data.database, fs.readFileSync(db));
     Firebird.identifyChange();
-    setInterval(() => {
-      fs.writeFileSync(Firebird.data.database, fs.readFileSync(db));
+    setInterval(async () => {
+      await Firebird.createDatabaseCopy();
       Firebird.identifyChange();
     }, 5000);
   }
@@ -72,8 +82,9 @@ export default class Firebird {
     });
   }
 
-  public static test() {
-    return new Promise(resolve => {
+  public static test(url: string) {
+    return new Promise(async resolve => {
+      await Firebird.createDatabaseCopy();
       fb.attach(Firebird.data, (err: any, db: any) => {
         if (err) throw err;
 
@@ -83,9 +94,6 @@ export default class Firebird {
           (err: any, res: any) => {
             db.detach();
             console.log(res, err);
-            // if (err) throw err;
-            // console.log(3);
-            // console.log(res);
             resolve();
           }
         );

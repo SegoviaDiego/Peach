@@ -9,7 +9,7 @@
           <div class="total">
             <template v-if="cierreIndex && current">
               <template v-if="cierreIndex == totalIndex">
-                Total: $ {{current.total}}
+                Total: $ {{current.total.toFixed(2)}}
               </template>
               <template v-else>
                 Total en {{getName()}}: $ {{current.cierres[cierreIndex - 1].total}}

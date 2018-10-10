@@ -87,7 +87,11 @@ export function magnitude(type: number) {
 }
 
 export function composeMagnitude(amount: number, type: number) {
-  return toMagnitude(amount, type).toFixed(3) + magnitude(type);
+  if (type === 0) {
+    return toMagnitude(amount, type) + magnitude(type);
+  } else {
+    return toMagnitude(amount, type).toFixed(3) + magnitude(type);
+  }
 }
 
 export function toMagnitude(amount: number, type: number) {

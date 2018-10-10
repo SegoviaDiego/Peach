@@ -17,9 +17,11 @@ export default class Server {
     return new Promise(async resolve => {
       Settings.isSystelReady().then(ready => {
         if (ready) {
-          dispatch(pTypes.syncToSystel).then(async () => {
-            Firebird.listenForChanges(await Settings.getSystelSRC());
-            resolve();
+          Firebird.createDatabaseCopy().then(() => {
+            dispatch(pTypes.syncToSystel).then(async () => {
+              Firebird.listenForChanges();
+              resolve();
+            });
           });
         } else {
           resolve();

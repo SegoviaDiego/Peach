@@ -237,6 +237,7 @@ export default Vue.extend({
         ingresos,
         egresos,
         ventas,
+        resumen,
         totalCierres,
         totalEgresos,
         totalIngresos;
@@ -289,6 +290,8 @@ export default Vue.extend({
         ]
       ];
 
+      resumen = [[{ text: "RESUMEN", style: "title", colSpan: 2 }, {}]];
+
       totalCierres = 0;
       totalIngresos = 0;
       totalEgresos = 0;
@@ -305,7 +308,7 @@ export default Vue.extend({
                 ? toHour(new Date())
                 : toHour(cierres[i].end)
           },
-          { text: cierres[i].total }
+          { text: parseFloat(cierres[i].total).toFixed(2) }
         ]);
 
         for (let item of this.getIngresos(
@@ -317,7 +320,7 @@ export default Vue.extend({
           ingresos.push([
             { text: item.desc },
             { text: toHour(item.time) },
-            { text: item.money }
+            { text: parseFloat(item.money).toFixed(2) }
           ]);
         }
 
@@ -330,7 +333,7 @@ export default Vue.extend({
           egresos.push([
             { text: item.desc },
             { text: toHour(item.time) },
-            { text: item.money }
+            { text: parseFloat(item.money).toFixed(2) }
           ]);
         }
       }
@@ -341,7 +344,7 @@ export default Vue.extend({
           {
             text: composeMagnitude(item.amount, this.products[item._id].type)
           },
-          { text: item.money }
+          { text: parseFloat(item.money).toFixed(2) }
         ]);
       }
 
@@ -349,23 +352,45 @@ export default Vue.extend({
         { text: "Total de ventas", colSpan: 3 },
         {},
         {},
-        { text: totalCierres }
+        { text: parseFloat(totalCierres).toFixed(2) }
       ]);
 
       ingresos.push([
         { text: "Total de ingresos", colSpan: 2 },
         {},
-        { text: totalIngresos }
+        { text: parseFloat(totalIngresos).toFixed(2) }
       ]);
       egresos.push([
         { text: "Total de egresos", colSpan: 2 },
         {},
-        { text: totalEgresos }
+        { text: parseFloat(totalEgresos).toFixed(2) }
       ]);
-      egresos.push([
-        { text: "Total", colSpan: 2 },
-        {},
-        { text: totalCierres + totalIngresos - totalEgresos }
+
+      [
+        { text: "DESCRIPCION", style: "tableHeader" },
+        { text: "IMPORTE $", style: "tableHeader" }
+      ];
+
+      resumen.push([
+        { text: "TOTAL CIERRES", style: "title2" },
+        { text: `$ ${parseFloat(totalCierres).toFixed(2)}`, style: "title2" }
+      ]);
+      resumen.push([
+        { text: "TOTAL INGRESOS", style: "title2" },
+        { text: `$ ${parseFloat(totalIngresos).toFixed(2)}`, style: "title2" }
+      ]);
+      resumen.push([
+        { text: "TOTAL EGRESOS", style: "title2" },
+        { text: `$ ${parseFloat(totalEgresos).toFixed(2)}`, style: "title2" }
+      ]);
+      resumen.push([
+        { text: "TOTAL NETO", style: "title2" },
+        {
+          text: `$ ${parseFloat(
+            totalCierres + totalIngresos - totalEgresos
+          ).toFixed(2)}`,
+          style: "title2"
+        }
       ]);
 
       Print.print({
@@ -406,6 +431,13 @@ export default Vue.extend({
           },
           {
             table: {
+              dontBreakRows: true,
+              widths: ["70%", "30%"],
+              body: resumen
+            }
+          },
+          {
+            table: {
               headerRows: 2,
               dontBreakRows: true,
               keepWithHeaderRows: 1,
@@ -417,6 +449,11 @@ export default Vue.extend({
         styles: {
           title: {
             alignment: "center",
+            bold: true,
+            fontSize: 15,
+            color: "black"
+          },
+          title2: {
             bold: true,
             fontSize: 15,
             color: "black"

@@ -17,7 +17,6 @@ export default Vue.extend({
     Header
   },
   mounted() {
-    this.$router.push("/dashboard");
   }
 });
 </script>

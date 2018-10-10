@@ -28,6 +28,18 @@
               </el-switch>
             </div>
           </div>
+          <!-- <div class="preference">
+            <div class="label">
+              AutoStart:
+            </div>
+            <div class="switch">
+              <el-switch
+                v-model="data['autoStart']"
+                active-color="#13ce66"
+                inactive-color="#ff4949">
+              </el-switch>
+            </div>
+          </div> -->
         </div>
         <div class="bottom">
           <button @click="save()">
@@ -52,18 +64,34 @@ export default Vue.extend({
     });
   },
   data: () => ({
-    data: {}
+    data: {} as any
   }),
   computed: mapState({
     isLoading: (state: any) => state.Settings.loading,
     preferences: (state: any) => state.Settings.preferences
   }),
   methods: {
+    // autoStart() {
+    //   let AutoLaunch = require("auto-launch");
+    //   let peachAutoLauncher = new AutoLaunch({
+    //     name: "Peach",
+    //     path: "/Applications/Peach.exe"
+    //   });
+
+    //   peachAutoLauncher.isEnabled().then((isEnabled: any) => {
+    //     if (!this.data["autoStart"] && isEnabled) {
+    //       peachAutoLauncher.disable();
+    //     } else if (this.data["autoStart"] && !isEnabled) {
+    //       peachAutoLauncher.enable();
+    //     }
+    //   });
+    // },
     goBack() {
       this.$router.replace({ path: "/settings" });
     },
     save() {
       this.$store.dispatch(types.savePreferences, this.data).then(() => {
+        // this.autoStart();
         this.$notify({
           title: "Se han guardado las preferencias con exito.",
           message: "",
