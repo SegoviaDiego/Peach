@@ -2,7 +2,7 @@ module.exports = {
   pluginOptions: {
     electronBuilder: {
       builderOptions: {
-        productName: "Peach!",
+        productName: "Peach",
         appId: "org.oxymoron.peach",
         nsis: {
           artifactName: "peach-setup.${ext}"

@@ -16,6 +16,7 @@ export default class Firebird {
 
   public static listenForChanges(db: string) {
     console.log("Listening for Firebird changes");
+    fs.writeFileSync(Firebird.data.database, fs.readFileSync(db));
     Firebird.identifyChange();
     setInterval(() => {
       fs.writeFileSync(Firebird.data.database, fs.readFileSync(db));
@@ -65,6 +66,27 @@ export default class Firebird {
               });
             });
             resolve(p);
+          }
+        );
+      });
+    });
+  }
+
+  public static test() {
+    return new Promise(resolve => {
+      fb.attach(Firebird.data, (err: any, db: any) => {
+        if (err) throw err;
+
+        db.query(
+          "SELECT ID, DESCRIPCION, TIPO_VENTA, PRECIO FROM PLU",
+          [],
+          (err: any, res: any) => {
+            db.detach();
+            console.log(res, err);
+            // if (err) throw err;
+            // console.log(3);
+            // console.log(res);
+            resolve();
           }
         );
       });

@@ -6,30 +6,41 @@
       </button>
     </div>
     <div class="body">
-      <div @click="goTo(1)" class="route">
-        <div class="icon">
-          <fontawesome icon="sliders-h" />
+      <template v-if="!loggedIn">
+
+        <div class="loginForm">
+          <el-input placeholder="Usuario" v-model="user"/>
+          <el-input placeholder="Password" type="password" v-model="pass"/>
+          <el-button @click="logIn()" type="primary" round>Ingresar</el-button>
         </div>
-        <div class="label">
-          Preferencias
+
+      </template>
+      <template v-else>
+        <div @click="goTo(1)" class="route">
+          <div class="icon">
+            <fontawesome icon="sliders-h" />
+          </div>
+          <div class="label">
+            Preferencias
+          </div>
         </div>
-      </div>
-      <div @click="goTo(2)" class="route">
-        <div class="icon">
-          <fontawesome icon="users" />
+        <div @click="goTo(2)" class="route">
+          <div class="icon">
+            <fontawesome icon="users" />
+          </div>
+          <div class="label">
+            Usuarios
+          </div>
         </div>
-        <div class="label">
-          Usuarios
+        <div @click="goTo(3)" class="route">
+          <div class="icon">
+            <fontawesome icon="database" />
+          </div>
+          <div class="label">
+            Base de datos
+          </div>
         </div>
-      </div>
-      <div @click="goTo(3)" class="route">
-        <div class="icon">
-          <fontawesome icon="database" />
-        </div>
-        <div class="label">
-          Base de datos
-        </div>
-      </div>
+      </template>
     </div>
   </div>
 </template>
@@ -39,7 +50,17 @@ import Vue from "vue";
 
 export default Vue.extend({
   name: "app-settings",
+  data: () => ({
+    loggedIn: false,
+    user: "",
+    pass: ""
+  }),
   methods: {
+    logIn() {
+      if (this.user === "admin" && this.pass === "1128") {
+        this.loggedIn = true;
+      }
+    },
     goBack() {
       this.$router.replace({ path: "/dashboard" });
     },
@@ -102,6 +123,12 @@ export default Vue.extend({
     flex-direction: row;
     align-items: center;
     justify-content: center;
+    .loginForm {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
     .route {
       cursor: pointer;
       flex: 1 1 1;

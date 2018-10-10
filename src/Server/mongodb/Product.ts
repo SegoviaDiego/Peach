@@ -29,14 +29,15 @@ export default class Product {
     return new Promise(resolve => {
       Firebird.getProductList().then(async (list: any) => {
         for (let item of list) {
-          if (!(await Product.productExists(item._id)))
+          if (!(await Product.productExists(item._id))) {
             await Product.createProduct({ ...item, stock: 0 });
-          else
+          } else {
             await Product.modifyProduct(item._id, {
               name: item.name,
               price: item.price,
               type: item.type
             });
+          }
         }
         resolve();
       });

@@ -21,6 +21,8 @@ export default class Server {
             Firebird.listenForChanges(await Settings.getSystelSRC());
             resolve();
           });
+        } else {
+          resolve();
         }
       });
     });

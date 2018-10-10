@@ -6,11 +6,6 @@ Vue.use(Router);
 export default new Router({
   routes: [
     {
-      path: "/",
-      name: "Landpage",
-      component: require("@/components/Landpage/index").default
-    },
-    {
       path: "/app",
       name: "Frame",
       component: () =>

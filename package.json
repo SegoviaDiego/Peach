@@ -1,15 +1,16 @@
 {
   "name": "Peach",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "build:electron": "vue-cli-service build:electron",
-    "dev": "vue-cli-service serve:electron",
     "postinstall": "electron-builder install-app-deps",
-    "serve:electron": "vue-cli-service serve:electron"
+    "build:electron": "vue-cli-service build:electron",
+    "serve:electron": "vue-cli-service serve:electron",
+    "dev": "vue-cli-service serve:electron",
+    "prod": "vue-cli-service build:electron"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.4",

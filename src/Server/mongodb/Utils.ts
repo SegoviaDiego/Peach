@@ -1,4 +1,5 @@
 import Product from "@/Server/mongodb/Product";
+import _ from "lodash";
 
 export function equalDates(a: Date, b: Date) {
   if (!a || !b) return false;
@@ -54,7 +55,9 @@ export function toHour(time: Date) {
 export function composeSystelToKg(systelTotals: [any]): Promise<any> {
   return new Promise(async resolve => {
     let totals: any = [];
-    let products: any = await Product.loadProducts();
+    let products: any = _.mapKeys(await Product.loadProducts(), (item: any) => {
+      return item._id;
+    });
 
     for (let item of systelTotals) {
       totals.push({

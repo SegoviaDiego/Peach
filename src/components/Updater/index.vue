@@ -35,7 +35,7 @@ export default Vue.extend({
         case "downloaded":
           this.status = "success";
           this.title = "Instalando";
-          // electron.ipcRenderer.send("installUpdates");
+          electron.ipcRenderer.send("installUpdates");
           break;
         case "available":
           this.status = "exception";
@@ -51,7 +51,7 @@ export default Vue.extend({
           this.percentage = 100;
           this.title = "Peach! esta actualizado a la ultima version";
           setTimeout(() => {
-            this.$router.replace({ path: "stock" });
+            this.$router.replace({ path: "dashboard" });
           }, 400);
       }
     });

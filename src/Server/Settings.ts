@@ -43,11 +43,13 @@ export default class Settings {
   public static isSystelReady() {
     return new Promise(resolve => {
       Settings.getPreferences().then(async (preferences: any) => {
-        if (preferences["systel"] && (await Settings.getSystelSRC())) {
-          console.log(11);
-          resolve(true);
+        if (preferences) {
+          if (preferences["systel"] && (await Settings.getSystelSRC())) {
+            resolve(true);
+          } else {
+            resolve(false);
+          }
         } else {
-          console.log(22);
           resolve(false);
         }
       });

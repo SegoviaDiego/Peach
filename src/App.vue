@@ -11,9 +11,10 @@ import Server from "@/Server/Server";
 export default Vue.extend({
   name: "home",
   mounted() {
+    this.$router.replace("/Updater");
+    
     Server.initServer(this.$store.dispatch).then(() => {
       console.log("Initialized");
-      this.$router.push("/dashboard");
     });
   }
 });
