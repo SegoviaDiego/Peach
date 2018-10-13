@@ -7,13 +7,14 @@ export default {
     exists: false,
     loading: false,
     filter: "",
-    date: new Date(),
+    date: null,
     cierreIndex: types.totalIndex
   },
   actions: {
-    async [types.load]({ commit, state }: any) {
+    async [types.load]({ commit, dispatch, state }: any) {
       commit(types.startLoading);
       commit(types.load, await Total.load(state.date));
+      dispatch(types.setCierreIndex, types.totalIndex);
       commit(types.stopLoading);
     },
     [types.setDate]({ commit }: any, newDate: any) {

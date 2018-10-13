@@ -28,7 +28,7 @@
               </el-switch>
             </div>
           </div>
-          <!-- <div class="preference">
+          <div class="preference">
             <div class="label">
               AutoStart:
             </div>
@@ -39,7 +39,7 @@
                 inactive-color="#ff4949">
               </el-switch>
             </div>
-          </div> -->
+          </div>
         </div>
         <div class="bottom">
           <button @click="save()">
@@ -55,6 +55,7 @@
 import Vue from "vue";
 import { mapState } from "vuex";
 import { settings as types } from "@/vuexTypes";
+import * as path from "path";
 
 export default Vue.extend({
   name: "app-settings",
@@ -71,27 +72,25 @@ export default Vue.extend({
     preferences: (state: any) => state.Settings.preferences
   }),
   methods: {
-    // autoStart() {
-    //   let AutoLaunch = require("auto-launch");
-    //   let peachAutoLauncher = new AutoLaunch({
-    //     name: "Peach",
-    //     path: "/Applications/Peach.exe"
-    //   });
-
-    //   peachAutoLauncher.isEnabled().then((isEnabled: any) => {
-    //     if (!this.data["autoStart"] && isEnabled) {
-    //       peachAutoLauncher.disable();
-    //     } else if (this.data["autoStart"] && !isEnabled) {
-    //       peachAutoLauncher.enable();
-    //     }
-    //   });
-    // },
+    autoStart() {
+      const app = require("electron").remote.app;
+      if (this.data["autoStart"]) {
+        app.setLoginItemSettings({
+          openAtLogin: true,
+          args: ["--hidden"]
+        });
+      } else {
+        app.setLoginItemSettings({
+          openAtLogin: false
+        });
+      }
+    },
     goBack() {
       this.$router.replace({ path: "/settings" });
     },
     save() {
       this.$store.dispatch(types.savePreferences, this.data).then(() => {
-        // this.autoStart();
+        this.autoStart();
         this.$notify({
           title: "Se han guardado las preferencias con exito.",
           message: "",

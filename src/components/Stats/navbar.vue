@@ -18,7 +18,7 @@
           </el-dropdown-menu>
         </el-dropdown>
 
-        <template v-if="selectedRoute == routes.informes">
+        <template v-if="selectedRoute == routes.informes && date">
           <el-dropdown trigger="click" @command="setCierreIndex">
             <span class="selector">
               {{getCierreLabel(cierreIndex)}} <fontawesome icon="chevron-circle-down" />
@@ -135,11 +135,10 @@ export default Vue.extend({
       return "Cierre " + i;
     },
     getHourRange(i) {
-      if (this.cierres.length == i)
-        return `
-      ${toHour(this.cierres[i - 1].start)} - ${toHour(new Date())}`;
-      return `
-      ${toHour(this.cierres[i - 1].start)} - ${toHour(
+      if (this.cierres.length == i && equalDates(new Date(), this.date)) {
+        return `${toHour(this.cierres[i - 1].start)} - ${toHour(new Date())}`;
+      }
+      return `${toHour(this.cierres[i - 1].start)} - ${toHour(
         this.cierres[i - 1].end
       )}`;
     }

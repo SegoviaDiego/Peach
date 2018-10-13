@@ -9,10 +9,10 @@
           <div class="total">
             <template v-if="cierreIndex && current">
               <template v-if="cierreIndex == totalIndex">
-                Total: $ {{current.total.toFixed(2)}}
+                Total: ${{parseFloat(current.total).toFixed(2)}}
               </template>
               <template v-else>
-                Total en {{getName()}}: $ {{current.cierres[cierreIndex - 1].total}}
+                Total en {{getName()}}: ${{parseFloat(current.cierres[cierreIndex - 1].total).toFixed(2)}}
               </template>
             </template>
           </div>
@@ -44,7 +44,7 @@
 </template>
 
 <script>
-import { equalDates } from "@/Server/mongodb/Utils";
+import { equalDates, toHour } from "@/Server/mongodb/Utils";
 import { totals as types } from "@/vuexTypes";
 
 import Vue from "vue";
@@ -97,10 +97,10 @@ export default Vue.extend({
           return time;
         } else {
           time = `
-          ${this.current.cierres[this.cierreIndex - 1].date.getHours()}:
-          ${this.current.cierres[this.cierreIndex - 1].date.getMinutes()}`;
+          ${toHour(this.current.cierres[this.cierreIndex - 1].start)} - 
+          ${toHour(this.current.cierres[this.cierreIndex - 1].end)} `;
         }
-        return date + " a las " + time;
+        return date + " | " + time;
       }
     }
   }
@@ -128,6 +128,12 @@ export default Vue.extend({
       font-weight: bold;
       font-family: Lato;
       margin-bottom: 10px;
+    }
+    .date {
+    }
+    .total {
+      text-align: center;
+      word-break: break-word;
     }
   }
   .buttons {

@@ -11,6 +11,15 @@
       </div>
     </div>
     <div class="windowtools">
+      <!-- <button @click="test(1)">
+          Nueva venta
+      </button>
+      <button @click="test(2)">
+          Cierre
+      </button>
+      <button @click="test(3)">
+          Totals
+      </button> -->
       <button @click="outterFrameUtils(1)">
           <i class="el-icon-minus"></i>
           <!-- <fontawesome icon="window-minimize" /> -->
@@ -25,18 +34,32 @@
 
 <script lang="ts">
 import Vue from "vue";
+import Firebird from "@/Server/db/Firebird";
 const electron = require("electron");
 
 export default Vue.extend({
   name: "app-header",
   methods: {
+    test(type: any) {
+      switch (type) {
+        case 1:
+          Firebird.createSell();
+          break;
+        case 2:
+          Firebird.clearSales();
+          break;
+        case 3:
+          Firebird.getTotals();
+          break;
+      }
+    },
     outterFrameUtils(type: any) {
       switch (type) {
         case 1:
           electron.remote.BrowserWindow.getFocusedWindow().minimize();
           break;
         case 3:
-          electron.remote.BrowserWindow.getFocusedWindow().close();
+          electron.remote.BrowserWindow.getFocusedWindow().hide();
           break;
       }
     }

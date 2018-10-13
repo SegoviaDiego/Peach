@@ -5,7 +5,9 @@ import {
   protocol,
   BrowserWindow,
   globalShortcut,
-  ipcMain
+  ipcMain,
+  Menu,
+  Tray
 } from "electron";
 import { autoUpdater } from "electron-updater";
 import * as path from "path";
@@ -22,9 +24,108 @@ if (isDevelopment) {
 
 // global reference to mainWindow (necessary to prevent window from being garbage collected)
 let mainWindow: any;
+let mainTray: any;
+declare var __static: any;
 
 // Standard scheme must be registered before the app is ready
 protocol.registerStandardSchemes(["app"], { secure: true });
+
+//Make Peach a Single Instance Application
+let shouldQuit = app.makeSingleInstance(() => {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    else if (!mainWindow.isVisible()) mainWindow.show();
+    mainWindow.center();
+    mainWindow.focus();
+  }
+});
+
+if (shouldQuit) {
+  app.quit();
+} else {
+  // quit application when all windows are closed
+  app.on("window-all-closed", () => {
+    // on macOS it is common for applications to stay open until the user explicitly quits
+    if (process.platform !== "darwin") {
+      app.quit();
+    }
+  });
+
+  app.on("activate", () => {
+    // on macOS it is common to re-create a window even after all windows have been closed
+    if (mainWindow === null) {
+      mainWindow = createMainWindow();
+    }
+  });
+
+  // create main BrowserWindow when electron is ready
+  app.on("ready", async () => {
+    if (isDevelopment && !process.env.IS_TEST) {
+      // Install Vue Devtools
+      await installVueDevtools();
+    }
+    mainWindow = createMainWindow();
+    buildTray();
+
+    const startMinimized = (process.argv || []).indexOf("--hidden") !== -1;
+    if (startMinimized) mainWindow.hide();
+  });
+
+  // Auto update
+  ipcMain.on("installUpdates", () => {
+    autoUpdater.quitAndInstall();
+  });
+
+  ipcMain.on("checkForUpdates", (event: any) => {
+    autoUpdater.on("error", (e: any) => {
+      event.sender.send("updates-reply", {
+        type: "error",
+        payload: {
+          ...e
+        }
+      });
+    });
+    autoUpdater.on("update-available", (e: any) => {
+      event.sender.send("updates-reply", {
+        type: "available",
+        payload: {
+          ...e
+        }
+      });
+    });
+    autoUpdater.on("update-not-available", (e: any) => {
+      event.sender.send("updates-reply", {
+        type: "not-available",
+        payload: {
+          ...e
+        }
+      });
+    });
+    autoUpdater.on("update-downloaded", () => {
+      event.sender.send("updates-reply", {
+        type: "downloaded"
+      });
+    });
+    autoUpdater.on("download-progress", ({ percent }: any) => {
+      event.sender.send("updates-reply", {
+        type: "progress",
+        payload: {
+          percent: percent
+        }
+      });
+    });
+
+    autoUpdater.setFeedURL({
+      owner: "Holthain",
+      provider: "github",
+      repo: "peach",
+      url: "https://github.com/Holthain/Peach"
+    });
+
+    autoUpdater.checkForUpdates();
+  });
+}
+
 function createMainWindow() {
   const window = new BrowserWindow({
     frame: false,
@@ -66,80 +167,25 @@ function createMainWindow() {
   return window;
 }
 
-// quit application when all windows are closed
-app.on("window-all-closed", () => {
-  // on macOS it is common for applications to stay open until the user explicitly quits
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
-});
+function buildTray() {
+  mainTray = new Tray(path.join(__static, "favicon.ico"));
+  mainTray.setToolTip("Peach");
 
-app.on("activate", () => {
-  // on macOS it is common to re-create a window even after all windows have been closed
-  if (mainWindow === null) {
-    mainWindow = createMainWindow();
-  }
-});
-
-// create main BrowserWindow when electron is ready
-app.on("ready", async () => {
-  if (isDevelopment && !process.env.IS_TEST) {
-    // Install Vue Devtools
-    await installVueDevtools();
-  }
-  mainWindow = createMainWindow();
-});
-
-// Auto update
-ipcMain.on("installUpdates", () => {
-  autoUpdater.quitAndInstall();
-});
-
-ipcMain.on("checkForUpdates", (event: any) => {
-  autoUpdater.on("error", (e: any) => {
-    event.sender.send("updates-reply", {
-      type: "error",
-      payload: {
-        ...e
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: "Cerrar",
+      type: "normal",
+      click: () => {
+        mainWindow.close();
       }
-    });
-  });
-  autoUpdater.on("update-available", (e: any) => {
-    event.sender.send("updates-reply", {
-      type: "available",
-      payload: {
-        ...e
-      }
-    });
-  });
-  autoUpdater.on("update-not-available", (e: any) => {
-    event.sender.send("updates-reply", {
-      type: "not-available",
-      payload: {
-        ...e
-      }
-    });
-  });
-  autoUpdater.on("update-downloaded", () => {
-    event.sender.send("updates-reply", {
-      type: "downloaded"
-    });
-  });
-  autoUpdater.on("download-progress", ({ percent }: any) => {
-    event.sender.send("updates-reply", {
-      type: "progress",
-      payload: {
-        percent: percent
-      }
-    });
-  });
+    }
+  ]);
+  mainTray.setContextMenu(contextMenu);
 
-  autoUpdater.setFeedURL({
-    owner: "Holthain",
-    provider: "github",
-    repo: "peach",
-    url: "https://github.com/Holthain/Peach"
+  mainTray.on("click", () => {
+    if (!mainWindow.isVisible()) {
+      mainWindow.center();
+      mainWindow.show();
+    }
   });
-
-  autoUpdater.checkForUpdates();
-});
+}

@@ -201,9 +201,11 @@ export default class Total {
   public static getTotal(date: Date) {
     return new Promise(async resolve => {
       Total.db().then(db => {
+        date.setHours(0, 0, 0, 0);
+
         db.findOne(
           {
-            date
+            day: date
           },
           async (err, doc) => {
             if (err) throw err;
@@ -318,7 +320,13 @@ export default class Total {
 
   public static saveCurrent(current: any): Promise<any> {
     return new Promise(async resolve => {
+      const currentIndex = _.findIndex(current.cierres, (cierre: any) => {
+        return cierre._current;
+      });
       current._current = false;
+      current.cierres[currentIndex]._current = false;
+      current.cierres[currentIndex].end = new Date();
+
       Total.db().then(db => {
         db.replaceOne({ _id: current._id }, current, (err: any) => {
           if (err) throw err;

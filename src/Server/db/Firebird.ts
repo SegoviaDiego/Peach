@@ -103,63 +103,65 @@ export default class Firebird {
 
   // Faker functions
 
-  private static clearSales() {
+  public static clearSales() {
     return new Promise(resolve => {
-      fb.attach(Firebird.data, (err, db) => {
-        if (err) throw err;
+      fb.attach(
+        { ...Firebird.data, database: "C:/projects/qendra.fdb" },
+        (err, db) => {
+          if (err) throw err;
 
-        db.query(
-          "DELETE FROM TOTALES WHERE ID_PLU!=99998 AND ID_PLU!=99999 AND (CA>0 OR PE>0)",
-          [],
-          (err, res) => {
+          db.query("DELETE FROM TOTALES", [], err => {
             db.detach();
             if (err) throw err;
-            console.log("success");
+            console.log("deleted");
             resolve();
-          }
-        );
-      });
+          });
+        }
+      );
     });
   }
 
-  private static createSell() {
+  public static createSell() {
     return new Promise(resolve => {
-      fb.attach(Firebird.data, (err, db) => {
-        if (err) throw err;
+      fb.attach(
+        { ...Firebird.data, database: "C:/projects/qendra.fdb" },
+        (err, db) => {
+          if (err) throw err;
 
-        // "UPDATE TOTALES SET CA=CA+100 WHERE ID_PLU=1"
-        db.query(
-          "INSERT INTO TOTALES (IP, NUMERO, V1, V2, V3, V4, ID_PLU, ID_SECCION, PE, CA) VALUES (1,1,1,1,1,1,1, 1, 100, 100)",
-          [],
-          err => {
-            db.detach();
-            if (err) throw err;
-            setTimeout(() => {
+          db.query(
+            "INSERT INTO TOTALES (IP, NUMERO, V1, V2, V3, V4, ID_PLU, ID_SECCION, PE, CA) VALUES (1,1,1,1,1,1,1, 1, 100, 100)",
+            [],
+            err => {
+              db.detach();
+              if (err) throw err;
+              console.log("created");
               resolve();
-            }, 500);
-          }
-        );
-      });
+            }
+          );
+        }
+      );
     });
   }
 
-  private static getTotals() {
+  public static getTotals() {
     return new Promise(resolve => {
-      fb.attach(Firebird.data, (err, db) => {
-        if (err) throw err;
+      fb.attach(
+        { ...Firebird.data, database: "C:/projects/qendra.fdb" },
+        (err, db) => {
+          if (err) throw err;
 
-        db.query(
-          "SELECT ID_PLU, PE, CA FROM TOTALES WHERE ID_PLU!=99998 AND ID_PLU!=99999 AND (CA>0 OR PE>0)",
-          [],
-          (err, res) => {
-            db.detach();
-            if (err) throw err;
-            setTimeout(() => {
-              resolve(res);
-            }, 500);
-          }
-        );
-      });
+          db.query(
+            "SELECT ID_PLU, PE, CA FROM TOTALES WHERE (CA>0 OR PE>0)",
+            [],
+            (err, res) => {
+              db.detach();
+              if (err) throw err;
+              console.log(res);
+              resolve();
+            }
+          );
+        }
+      );
     });
   }
 }

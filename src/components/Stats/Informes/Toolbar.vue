@@ -134,11 +134,10 @@ export default Vue.extend({
   }),
   methods: {
     getHourRange(i) {
-      if (this.cierres.length == i)
-        return `
-      ${toHour(this.cierres[i - 1].start)} - ${toHour(new Date())}`;
-      return `
-      ${toHour(this.cierres[i - 1].start)} - ${toHour(
+      if (this.cierres.length == i && equalDates(new Date(), this.date)) {
+        return `${toHour(this.cierres[i - 1].start)} - ${toHour(new Date())}`;
+      }
+      return `${toHour(this.cierres[i - 1].start)} - ${toHour(
         this.cierres[i - 1].end
       )}`;
     },

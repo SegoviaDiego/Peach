@@ -42,7 +42,7 @@ export default Vue.extend({
           this.title = "Descargando actualizacion";
           break;
         case "progress":
-          this.percentage = res.payload.percent;
+          this.percentage = parseInt(res.payload.percent);
           break;
         case "not-available":
         case "error":
