@@ -1,5 +1,5 @@
 import electron from "electron";
-let { Menu, MenuItem, BrowserWindow } = electron.remote;
+let { Menu, MenuItem, BrowserWindow, dialog } = electron.remote;
 import path from "path";
 import fs from "fs";
 
@@ -15,24 +15,40 @@ export default class Print {
         plugins: true
       }
     });
-
     const menu = new Menu();
 
-    // // menu.append(
-    // //   new MenuItem({
-    // //     label: "Imprimir",
-    // //     click() {
-    // //     }
-    // //   })
-    // // );
-    // // menu.append(
-    // //   new MenuItem({
-    // //     label: "Guardar en PDF",
-    // //     click() {
-    // //       Print.file.download();
-    // //     }
-    // //   })
-    // // );
+    menu.append(
+      new MenuItem({
+        label: "Imprimir",
+        click() {
+          win.webContents.print();
+        }
+      })
+    );
+    menu.append(
+      new MenuItem({
+        label: "Guardar en PDF",
+        click() {
+          dialog.showSaveDialog(
+            {
+              title: "Guardar como PDF",
+              filters: [
+                {
+                  name: "PDF",
+                  extensions: ["pdf"]
+                }
+              ]
+            },
+            path => {
+              if (path) {
+                fs.writeFileSync(path, fs.readFileSync(Print.route));
+                win.close();
+              }
+            }
+          );
+        }
+      })
+    );
 
     win.setMenu(menu);
     win.maximize();

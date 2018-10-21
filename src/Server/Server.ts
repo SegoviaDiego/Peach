@@ -56,11 +56,18 @@ export default class Server {
 
   static getCollection(name: string): Promise<Collection> {
     return new Promise((resolve: any) => {
-      if (Server.data.mongodb) resolve(Server.db.collection(name));
-      else
-        Server.initMongo().then(() => {
-          resolve(Server.db.collection(name));
+      if (Server.data.mongodb) {
+        resolve(Server.db.collection(name));
+      } else {
+        Settings.getMongoURL().then((url: any) => {
+          if (url) {
+            Server.data.url = url;
+            Server.initMongo().then(() => {
+              resolve(Server.db.collection(name));
+            });
+          }
         });
+      }
     });
   }
 }

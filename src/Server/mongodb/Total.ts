@@ -1,6 +1,6 @@
 import _ from "lodash";
 import Server from "../Server";
-import { equalDates } from "./Utils";
+import { equalDates, equalSells } from "./Utils";
 import { totals as types } from "@/vuexTypes";
 import CierreClass from "../typings/Cierre";
 import TotalClass from "../typings/Total";
@@ -27,19 +27,22 @@ export default class Total {
     Total.getCurrentCierre().then(async (current: any) => {
       let sells: any = [];
       let mutated: boolean = false;
-      let currentCierre = _.mapKeys(current.data, item => {
-        return item._id;
+
+      console.log(current.data);
+
+      let currentCierre = _.mapKeys(current.data, total => {
+        return total.item._id;
       });
 
-      _.forEach(systelTotal, (newTotal: any) => {
-        let oldTotal = currentCierre[newTotal._id];
+      for (let newTotal of systelTotal) {
+        let oldTotal = currentCierre[newTotal.item._id];
 
-        currentCierre[newTotal._id] = newTotal;
+        currentCierre[newTotal.item._id] = newTotal;
 
         if (!oldTotal) {
           mutated = true;
           sells.push(
-            Sell.createSellFromTotal(
+            await Sell.createSellFromTotal(
               {
                 amount: 0,
                 money: 0
@@ -47,11 +50,11 @@ export default class Total {
               newTotal
             )
           );
-        } else if (!_.isEqual(oldTotal, newTotal)) {
+        } else if (!equalSells(oldTotal, newTotal)) {
           mutated = true;
-          sells.push(Sell.createSellFromTotal(oldTotal, newTotal));
+          sells.push(await Sell.createSellFromTotal(oldTotal, newTotal));
         }
-      });
+      }
 
       if (mutated) {
         current.data = _.toArray(currentCierre);
@@ -63,25 +66,35 @@ export default class Total {
 
   public static addSellsToCierre(sells: any) {
     Total.getCurrentCierre().then(async (current: any) => {
-      let currentCierre = _.mapKeys(current.data, item => {
-        return item._id;
+      let oldTotal;
+
+      // Indexo los totales del cierre actual mediante las _id de sus prodctos
+      let currentTotals = _.mapKeys(current.data, total => {
+        return total.item._id;
       });
 
+      // Creo un total base con money y amount = 0 y sobreescribo lo que se tenga
+      // que sobre escribir.
       _.forEach(sells, (sell: any) => {
-        let oldTotal = {
+        oldTotal = {
           amount: 0,
           money: 0,
-          ...currentCierre[sell.productId]
+          ...currentTotals[sell.item._id]
         };
 
-        currentCierre[sell.productId] = {
-          _id: sell.productId,
+        // Reemplazo el total actual con la suma del viejo mas el nuevo.
+        currentTotals[sell.item._id] = {
+          item: sell.item,
           amount: oldTotal.amount + sell.amount,
           money: oldTotal.money + sell.money
         };
       });
 
-      current.data = _.toArray(currentCierre);
+      // El current indexado lo vuelvo a hacer array para poder
+      // Guardarlo en la base de datos.
+      current.data = _.toArray(currentTotals);
+
+      // Actualizo la base de datos con la nueva data
       Total.updateCurrentCierre(current);
     });
   }

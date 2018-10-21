@@ -25,13 +25,13 @@
       <template v-else v-for="total in filteredData">
         <div :key="total._id" class="row">
           <div class="column">
-            {{products[total._id].name}}
+            {{total.item.name}}
           </div>
           <div class="column">
-            $ {{products[total._id].price}}
+            $ {{total.item.price}}
           </div>
           <div class="column">
-            {{composeMagnitude(total.amount, products[total._id].type)}}
+            {{composeMagnitude(total.amount, total.item.type)}}
           </div>
           <div class="column">
             $ {{(total.money).toFixed(2)}}
@@ -52,22 +52,46 @@ import { totals as types } from "@/vuexTypes";
 
 import { composeMagnitude } from "@/Server/mongodb/Utils";
 
+// Agrupacion de las ventas de todos los cierres que se hicieron en el dia
 function getTotal(cierres) {
-  let total = {};
-  let item;
+  let res = {};
+  let total;
 
   for (let cierre of cierres) {
     for (let i of cierre.data) {
-      item = { ...i };
+      total = { ...i };
 
-      if (!total[item._id]) total[item._id] = item;
-      else {
-        total[item._id].money += item.money;
-        total[item._id].amount += item.amount;
+      if (!res[total.item._id]) {
+        res[total.item._id] = total;
+      } else {
+        res[total.item._id].money += total.money;
+        res[total.item._id].amount += total.amount;
       }
     }
   }
-  return _.map(total);
+
+  return _.map(res);
+}
+
+function addKeyValues(obj) {
+  let values = "";
+  for (let val of Object.values(obj)) {
+    values += val;
+  }
+  return values.toLowerCase();
+}
+function filterData(data, filter) {
+  return data.filter(item => {
+    return (addKeyValues(item) + addKeyValues(item.item)).includes(
+      filter.toLowerCase()
+    );
+  });
+}
+function sortData(data) {
+  // Sort de la lista de totales. a y b son objetos total = {amount, item, money}
+  return data.sort((a, b) => {
+    return parseInt(a.item._id) - parseInt(b.item._id);
+  });
 }
 
 export default Vue.extend({
@@ -85,7 +109,7 @@ export default Vue.extend({
     cierreIndex: state => state.Total.cierreIndex,
     cierre() {
       if (this.cierreIndex == this.totalIndex && this.current)
-        return this.getTotal(this.current.cierres);
+        return getTotal(this.current.cierres);
       if (this.current)
         if (this.current.cierres)
           if (this.current.cierres.length >= this.cierreIndex)
@@ -93,55 +117,11 @@ export default Vue.extend({
       return [];
     },
     filteredData(state) {
-      return this.sortData(
-        this.filterData([...this.cierre], state.Total.filter)
-      );
-    },
-    products(state) {
-      return _.mapKeys(state.Product.data, function(value, key) {
-        return value._id;
-      });
+      return sortData(filterData([...this.cierre], state.Total.filter));
     }
   }),
   methods: {
-    composeMagnitude: composeMagnitude,
-    getTotal(cierres) {
-      let total = {};
-      let item;
-
-      for (let cierre of cierres) {
-        for (let i of cierre.data) {
-          item = { ...i };
-
-          if (!total[item._id]) total[item._id] = item;
-          else {
-            total[item._id].money += item.money;
-            total[item._id].amount += item.amount;
-          }
-        }
-      }
-      return _.map(total);
-    },
-    addKeyValues(obj) {
-      let values = "";
-      for (let val of Object.values(obj)) {
-        values += val;
-      }
-      for (let val of Object.values(this.products[obj._id])) {
-        values += val;
-      }
-      return values.toLowerCase();
-    },
-    filterData(data, filter) {
-      return data.filter(item => {
-        return this.addKeyValues(item).includes(filter.toLowerCase());
-      });
-    },
-    sortData(data) {
-      return data.sort((a, b) => {
-        return parseInt(a._id) - parseInt(b._id);
-      });
-    }
+    composeMagnitude: composeMagnitude
   }
 });
 </script>

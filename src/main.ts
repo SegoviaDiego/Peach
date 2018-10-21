@@ -32,7 +32,8 @@ import {
   faDollarSign,
   faChartLine,
   faUsers,
-  faDatabase
+  faDatabase,
+  faServer
 } from "@fortawesome/free-solid-svg-icons";
 
 //Font awesome
@@ -55,7 +56,8 @@ library.add(
   faDollarSign,
   faChartLine,
   faUsers,
-  faDatabase
+  faDatabase,
+  faServer
 );
 
 // dependencies

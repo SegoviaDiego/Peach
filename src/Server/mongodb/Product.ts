@@ -3,10 +3,27 @@ import { products as types, log as logTypes } from "@/vuexTypes";
 import Firebird from "@/Server/db/Firebird";
 import Log from "@/Server/mongodb/Log";
 import { fromMagnitude } from "@/Server/mongodb/Utils";
+import Firebase from "../db/Firebase";
 
 export default class Product {
   private static db() {
     return Server.getCollection(types.collection);
+  }
+
+  public static getProduct(_id: any) {
+    return new Promise((resolve, reject) => {
+      Product.db().then(db => {
+        db.findOne(
+          {
+            _id
+          },
+          (err, doc) => {
+            if (err) throw err;
+            resolve(doc);
+          }
+        );
+      });
+    });
   }
 
   public static loadProducts() {
@@ -32,7 +49,7 @@ export default class Product {
           if (!(await Product.productExists(item._id))) {
             await Product.createProduct({ ...item, stock: 0 });
           } else {
-            await Product.modifyProduct(item._id, {
+            await Product.mutateProduct(item._id, {
               name: item.name,
               price: item.price,
               type: item.type
@@ -77,22 +94,40 @@ export default class Product {
                 message: "Ha ocurrido un error inesperado."
               });
               throw err;
+            } else {
+              Firebase.saveProduct({
+                ...product,
+                price: parseFloat(parseFloat(product.price).toFixed(2))
+              });
+              resolve(true);
             }
-            resolve(true);
           }
         );
       });
     });
   }
 
-  public static modifyProduct(_id: any, modifiedProduct: any): Promise<any> {
+  public static mutateProducts(mutations: any) {
+    return new Promise(async resolve => {
+      let keys = Object.keys(mutations);
+      for (let id of keys) {
+        if (mutations[id]) await Product.mutateProduct(id, mutations[id]);
+      }
+      resolve();
+    });
+  }
+
+  public static mutateProduct(_id: any, modifiedProduct: any): Promise<any> {
     return new Promise((resolve, reject) => {
       Product.db().then(db => {
         db.findOne({ _id }, (err, doc) => {
           if (err) throw err;
           db.replaceOne({ _id }, { ...doc, ...modifiedProduct }, {}, err => {
             if (err) throw err;
-            resolve();
+            else {
+              Firebase.saveProduct({ ...doc, ...modifiedProduct });
+              resolve();
+            }
           });
         });
       });
@@ -120,8 +155,10 @@ export default class Product {
               message: "Ha ocurrido un error inesperado."
             });
             throw err;
+          } else {
+            Firebase.deleteProduct({ _id });
+            resolve();
           }
-          resolve();
         });
       });
     });
@@ -150,7 +187,7 @@ export default class Product {
           { _id: parseInt(_id) },
           { $inc: { stock: parseFloat(amount) } },
           {},
-          err => {
+          (err, res) => {
             resolve();
           }
         );

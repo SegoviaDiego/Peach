@@ -39,13 +39,19 @@ export default new Router({
           path: "/database",
           name: "Database",
           component: () =>
-            import(/* webpackChunkName: "Preferences" */ "@/components/Settings/Database/index.vue")
+            import(/* webpackChunkName: "Database" */ "@/components/Settings/Database/index.vue")
+        },
+        {
+          path: "/cloud",
+          name: "Cloud",
+          component: () =>
+            import(/* webpackChunkName: "Cloud" */ "@/components/Settings/Cloud/index.vue")
         },
         // {
         //   path: "/users",
         //   name: "Users",
         //   component: () =>
-        //     import(/* webpackChunkName: "Preferences" */ "@/components/Settings/Users/index.vue")
+        //     import(/* webpackChunkName: "Users" */ "@/components/Settings/Users/index.vue")
         // },
         {
           path: "/Stock",
@@ -62,7 +68,7 @@ export default new Router({
         {
           path: "/stats",
           component: () =>
-            import(/* webpackChunkName: "stats" */ "@/components/Stats/index.vue"),
+            import(/* webpackChunkName: "Stats" */ "@/components/Stats/index.vue"),
           children: [
             {
               path: "/informes",

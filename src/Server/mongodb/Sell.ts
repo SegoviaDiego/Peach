@@ -8,6 +8,7 @@ import Product from "./Product";
 import { toMagnitude } from "./Utils";
 import { Collection } from "mongodb";
 import Total from "@/Server/mongodb/Total";
+import { resolve } from "dns";
 
 export default class Sell {
   private static db() {
@@ -25,13 +26,13 @@ export default class Sell {
   }
 
   public static createSellFromTotal(oldTotal: any, newTotal: any) {
-    return {
-      item: {
-        _id: newTotal._id
-      },
-      amount: newTotal.amount - oldTotal.amount,
-      money: newTotal.money - oldTotal.money
-    };
+    return new Promise(async resolve => {
+      resolve({
+        item: newTotal.item,
+        amount: newTotal.amount - oldTotal.amount,
+        money: newTotal.money - oldTotal.money
+      });
+    });
   }
 
   public static saveSystelSells(sells: [any]) {
@@ -46,18 +47,12 @@ export default class Sell {
   ): Promise<Boolean> {
     return new Promise(resolve => {
       Sell.db().then(async (db: Collection) => {
-        let dbSells: any = [];
+        sells = _.toArray(sells);
         let time = new Date();
         let day = new Date();
         day.setHours(0, 0, 0, 0);
 
-        for (let sell of _.toArray(sells)) {
-          dbSells.push({
-            productId: sell.item._id,
-            amount: sell.amount,
-            money: sell.money
-          });
-
+        for (let sell of sells) {
           await Product.remove(sell.item._id, sell.amount);
         }
 
@@ -66,7 +61,7 @@ export default class Sell {
             systel: systel ? true : false,
             day,
             time,
-            sells: dbSells,
+            sells,
             total,
             methods,
             payDivision
@@ -74,7 +69,7 @@ export default class Sell {
           (err: any) => {
             if (err) throw err;
 
-            if (!systel) Total.addSellsToCierre(dbSells);
+            if (!systel) Total.addSellsToCierre(sells);
 
             resolve(true);
           }

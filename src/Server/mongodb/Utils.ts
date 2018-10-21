@@ -10,6 +10,14 @@ export function equalDates(a: Date, b: Date) {
   );
 }
 
+export function equalSells(a: any, b: any) {
+  if (!a || !b) return false;
+  return (
+    parseFloat(a.money) == parseFloat(b.money) &&
+    parseFloat(a.amount) == parseFloat(b.amount)
+  );
+}
+
 let months = [
   "Enero",
   "Febrero",
@@ -61,10 +69,12 @@ export function composeSystelToKg(systelTotals: [any]): Promise<any> {
 
     for (let item of systelTotals) {
       totals.push({
-        _id: item.ID_PLU,
-        money: item.PE,
+        item: products[item.ID_PLU],
+        money: parseFloat(item.PE),
         amount:
-          products[item.ID_PLU].type == 1 ? toMagnitude(item.CA, 3) : item.CA
+          products[item.ID_PLU].type == 1
+            ? toMagnitude(item.CA, 3)
+            : parseFloat(item.CA)
       });
     }
 

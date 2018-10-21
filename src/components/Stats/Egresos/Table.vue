@@ -25,16 +25,16 @@
             {{toHour(log.time)}}
           </div>
           <div class="column">
-            {{products[log.productId].name}}
+            {{log.item.name}}
           </div>
           <div v-if="type == 4" class="column">
             {{getType(log.type)}}
           </div>
           <div class="column">
-            {{composeMagnitude(log.amount, products[log.productId].type)}}
+            {{composeMagnitude(log.amount, log.item.type)}}
           </div>
           <div class="column">
-            ${{products[log.productId].price * toMagnitude(log.amount, products[log.productId].type)}}
+            ${{log.item.price * toMagnitude(log.amount, log.item.type)}}
           </div>
         </div>
       </template>
@@ -59,11 +59,11 @@ function addKeyValues(obj) {
   }
   return values.toLowerCase();
 }
-function filterData(data, products, filter) {
+function filterData(data, filter) {
   return data.filter(item => {
-    return (
-      addKeyValues(item) + addKeyValues(products[item.productId])
-    ).includes(filter.toLowerCase());
+    return (addKeyValues(item) + addKeyValues(item.item)).includes(
+      filter.toLowerCase()
+    );
   });
 }
 function sortData(data) {
@@ -89,14 +89,7 @@ export default Vue.extend({
     isLoading: state => state.Log.loading,
     showSpinner: state => state.Log.showSpinner,
     filteredData(state) {
-      return sortData(
-        filterData([...state.Log.egreso], this.products, this.filter)
-      );
-    },
-    products(state) {
-      return _.mapKeys(state.Product.data, function(value, key) {
-        return value._id;
-      });
+      return sortData(filterData([...state.Log.egreso], this.filter));
     }
   }),
   methods: {

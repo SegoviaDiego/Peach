@@ -40,6 +40,14 @@
             Base de datos
           </div>
         </div>
+        <div @click="goTo(4)" class="route">
+          <div class="icon">
+            <fontawesome icon="server" />
+          </div>
+          <div class="label">
+            Cloud
+          </div>
+        </div>
       </template>
     </div>
   </div>
@@ -51,7 +59,7 @@ import Vue from "vue";
 export default Vue.extend({
   name: "app-settings",
   data: () => ({
-    loggedIn: false,
+    loggedIn: process.env.NODE_ENV !== "production",
     user: "",
     pass: ""
   }),
@@ -74,6 +82,9 @@ export default Vue.extend({
           break;
         case 3:
           this.$router.replace({ path: "/database" });
+          break;
+        case 4:
+          this.$router.replace({ path: "/cloud" });
           break;
       }
     }
@@ -121,6 +132,7 @@ export default Vue.extend({
     width: 100%;
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
     .loginForm {

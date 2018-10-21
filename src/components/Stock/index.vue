@@ -2,11 +2,11 @@
   <div class="mainGrid">
     <HeaderBar
       v-on:go-to="goTo" v-on:print="print"
-      :amount="amount" :selected="selected" :changes="changes"
+      :amount="amount" :deleteSelection="deleteSelection" :mutatedProducts="mutatedProducts"
       :newItem="newItem" />
     <Table
       :products="filteredData"
-      :amount="amount" :selected="selected" :changes="changes"
+      :amount="amount" :deleteSelection="deleteSelection" :mutatedProducts="mutatedProducts"
       :newItem="newItem" />
   </div>
 </template>
@@ -15,6 +15,7 @@
 import Vue from "vue";
 import { mapState } from "vuex";
 import { products as types } from "@/vuexTypes";
+import _ from "lodash";
 
 import Print from "@/Server/Src/Print";
 
@@ -52,26 +53,41 @@ export default Vue.extend({
   },
   data: () => ({
     newItem: {
-      _id: undefined,
-      name: null,
-      price: null,
+      _id: "",
+      name: "",
+      type: 0,
+      price: 0,
       stock: 0
     },
     amount: {},
     outType: undefined,
-    selected: {},
-    changes: {}
+    deleteSelection: {}
   }),
   computed: mapState({
     data: (state: any) => state.Product.data,
-    filteredData(state: any) {
-      return sortData(filterData([...state.Product.data], this.filter));
-    },
     type: (state: any) => state.Product.type,
     filter: (state: any) => state.Product.filter,
     isLoading: (state: any) => state.Product.loading,
     showSpinner: (state: any) => state.Product.showSpinner,
-    route: (state: any) => state.Product.buttonRoute
+    route: (state: any) => state.Product.buttonRoute,
+    filteredData(state: any) {
+      return sortData(filterData([...state.Product.data], this.filter));
+    },
+    mutatedProducts(state: any) {
+      let list = {} as any;
+
+      for (let item of sortData(
+        filterData([...state.Product.data], this.filter)
+      )) {
+        list[item._id] = {
+          ...item
+        };
+      }
+
+      return _.mapKeys(list, (item: any) => {
+        return item._id;
+      });
+    }
   }),
   methods: {
     closePrintDialog() {
@@ -122,9 +138,10 @@ export default Vue.extend({
         switch (from) {
           case types.routes.createItem:
             this.newItem = {
-              _id: undefined,
-              name: null,
-              price: null,
+              _id: "",
+              name: "",
+              type: 0,
+              price: 0,
               stock: 0
             };
             break;

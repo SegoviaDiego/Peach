@@ -96,7 +96,7 @@ export default Vue.extend({
     isLoading: (state: any) => state.Product.loading
   }),
   data: () => ({
-    payDivisionDialog: true,
+    payDivisionDialog: false,
     payMethods: [],
     payDivision: {}
   }),

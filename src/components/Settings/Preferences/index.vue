@@ -16,30 +16,20 @@
     <div class="body">
       <div class="container">
         <div class="settings" v-loading="isLoading">
-          <div class="preference">
-            <div class="label">
-              Systel:
+          <template v-for="(preference, i) in pList">
+            <div :key="preference + i" class="preference">
+              <div class="label">
+                {{pNames[i]}}:
+              </div>
+              <div class="switch">
+                <el-switch
+                  v-model="data[preference]"
+                  active-color="#13ce66"
+                  inactive-color="#ff4949">
+                </el-switch>
+              </div>
             </div>
-            <div class="switch">
-              <el-switch
-                v-model="data['systel']"
-                active-color="#13ce66"
-                inactive-color="#ff4949">
-              </el-switch>
-            </div>
-          </div>
-          <div class="preference">
-            <div class="label">
-              AutoStart:
-            </div>
-            <div class="switch">
-              <el-switch
-                v-model="data['autoStart']"
-                active-color="#13ce66"
-                inactive-color="#ff4949">
-              </el-switch>
-            </div>
-          </div>
+          </template>
         </div>
         <div class="bottom">
           <button @click="save()">
@@ -65,7 +55,15 @@ export default Vue.extend({
     });
   },
   data: () => ({
-    data: {} as any
+    data: {} as any,
+    pList: ["systel", "autoStart", "newP", "mutableP", "deleteP"] as any,
+    pNames: [
+      "Sincronizacion con systel",
+      "Iniciar con windows",
+      "Creacion de productos",
+      "Modificacion de productos",
+      "Eliminacion de productos"
+    ] as any
   }),
   computed: mapState({
     isLoading: (state: any) => state.Settings.loading,
@@ -191,8 +189,6 @@ export default Vue.extend({
             font-size: 16px;
             margin-right: 10px;
             text-transform: uppercase;
-          }
-          .switch {
           }
         }
       }

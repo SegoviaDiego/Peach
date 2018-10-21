@@ -8,6 +8,9 @@
         Producto
       </div>
       <div class="column">
+        Tipo
+      </div>
+      <div class="column">
         Precio
       </div>
       <div class="column">
@@ -21,15 +24,34 @@
     </div>
     <div class="body" v-loading="isLoading">
       <div v-if="route === routes.createItem" class="row">
+        <!-- Codigo -->
         <div class="column">
-          <input placeholder="Codigo" type="text" v-model.lazy="newItem._id">
+          <input placeholder="Codigo" type="number" min="0" v-model.lazy="newItem._id">
         </div>
+        <!-- Nombre -->
         <div class="column">
           <input placeholder="Nombre" type="text" v-model.lazy="newItem.name">
         </div>
+        <!-- Tipo -->
+        <div class="column">
+          <el-select v-model.lazy="newItem.type" placeholder="Tipo">
+            <el-option
+              label="Unidad"
+              :value="0"/>
+            <el-option
+              label="Kilogramo"
+              :value="1"/>
+          </el-select>
+        </div>
+        <!-- Precio -->
         <div class="column">
           <input placeholder="Precio" type="number" min="0" v-model.lazy="newItem.price">
         </div>
+        <!-- Stock -->
+        <div class="column">
+          0
+        </div>
+        <!-- Misc -->
         <div class="column">
         </div>
       </div>
@@ -38,45 +60,67 @@
           <div
           :key="item._id"
           class="row">
+            <!-- Codigo -->
             <div class="column">
                 {{item._id}}
             </div>
+            <!-- Producto -->
             <div class="column">
               <template v-if="route === routes.editItems">
                 <input
-                  :value="changes[item._id]['name']"
-                  @change="editValue(item._id, 'name' , $event.target.value)"
+                  v-model="mutatedProducts[item._id]['name']"
                   :placeholder="item.name" type="text">
               </template>
               <template v-else>
                 {{item.name}}
               </template>
             </div>
+            <!-- Tipo -->
+            <div class="column">
+              <template v-if="route === routes.editItems">
+                <el-select v-model.lazy="mutatedProducts[item._id]['type']" placeholder="Tipo">
+                  <el-option
+                    label="Unidad"
+                    :value="0"/>
+                  <el-option
+                    label="Kilogramo"
+                    :value="1"/>
+                </el-select>
+              </template>
+              <template v-else>
+                {{item.type === 0 ? 'Unidad' : 'Kilogramo'}}
+              </template>
+            </div>
+            <!-- Precio -->
             <div class="column">
               <template v-if="route === routes.editItems">
                 <input
-                  :value="changes[item._id]['price']"
-                  @change="editValue(item._id, 'price' , $event.target.value)"
+                  v-model="mutatedProducts[item._id]['price']"
                   :placeholder="item.price" type="number" min="0">
               </template>
               <template v-else>
                 {{item.price}}
               </template>
             </div>
+            <!-- Stock -->
             <div class="column">
               {{toMagnitude(item.stock, item.type)}}
             </div>
-            <template v-if="route === routes.inStock || route === routes.outStock">
-              <div class="column">
-                <el-input
-                  :min="0"
-                  :step="item.type == 1 ? 0.1 : 1"
-                  type="number"
-                  :value="inputs[item._id] ? inputs[item._id].input : 0"
-                  @input="handleChange(item, $event)"
-                  placeholder="Cantidad"/>
-              </div>
-            </template>
+            <!-- Cantidad / Multiple uso -->
+            <div class="column">
+              <template v-if="route === routes.deleteItems">
+                <el-checkbox class="deleteBox" v-model="deleteSelection[item._id]"/>
+              </template>
+              <template v-if="route === routes.inStock || route === routes.outStock">
+                  <el-input
+                    :min="0"
+                    :step="item.type == 1 ? 0.1 : 1"
+                    type="number"
+                    :value="inputs[item._id] ? inputs[item._id].input : 0"
+                    @input="handleChange(item, $event)"
+                    placeholder="Cantidad"/>
+              </template>
+            </div>
           </div>
         </template>
       </template>
@@ -84,11 +128,12 @@
     <div class="background">
       <div class="header"/>
       <div class="body">
-        <div class="column darker"></div>
         <div class="column"></div>
-        <div class="column darker"></div>
         <div class="column"></div>
-        <div class="column darker"></div>
+        <div class="column"></div>
+        <div class="column"></div>
+        <div class="column"></div>
+        <div class="column"></div>
       </div>
     </div>
   </div>
@@ -106,8 +151,8 @@ export default Vue.extend({
   props: {
     products: Array,
     newItem: {},
-    selected: {},
-    changes: {}
+    deleteSelection: {},
+    mutatedProducts: {}
   },
   data: () => ({
     routes: types.routes
@@ -132,6 +177,7 @@ export default Vue.extend({
 
 <style lang="scss" scoped>
 $scrollbarSize: 16px;
+$gridColumnsTemplate: 1fr 2fr 1fr 1fr 1fr 1fr;
 .table {
   position: relative;
   grid-area: table;
@@ -148,7 +194,7 @@ $scrollbarSize: 16px;
     z-index: 2;
     display: grid;
     grid-template-rows: 1fr;
-    grid-template-columns: 1fr 3fr 1fr 1fr 3fr;
+    grid-template-columns: $gridColumnsTemplate;
     .column {
       display: flex;
       align-items: center;
@@ -165,7 +211,7 @@ $scrollbarSize: 16px;
     grid-area: body;
     z-index: 2;
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: scroll;
     &::-webkit-scrollbar {
       width: $scrollbarSize;
     }
@@ -173,10 +219,7 @@ $scrollbarSize: 16px;
       background-color: #e1e2e1;
     }
     &::-webkit-scrollbar-thumb {
-      $borderSize: 7px;
       background-color: #3d3d3d;
-      // border-top: $borderSize solid black;
-      // border-bottom: $borderSize solid black;
     }
     .row {
       margin: 10px 0px;
@@ -185,7 +228,7 @@ $scrollbarSize: 16px;
       min-height: $h;
       display: grid;
       grid-template-rows: 1fr;
-      grid-template-columns: 1fr 3fr 1fr 1fr 3fr;
+      grid-template-columns: $gridColumnsTemplate;
       .column {
         overflow: hidden;
         display: flex;
@@ -241,21 +284,27 @@ $scrollbarSize: 16px;
       background-color: #e1e2e1;
     }
     .body {
-      margin-right: $scrollbarSize;
+      // margin-right: $scrollbarSize;
       flex: 9;
       display: flex;
       flex-direction: row;
       .column {
         flex: 1;
       }
+      .column:nth-of-type(1) {
+        background-color: rgba(225, 226, 225, 0.56);
+      }
       .column:nth-of-type(2) {
-        flex: 3;
+        flex: 2;
+      }
+      .column:nth-of-type(3) {
+        background-color: rgba(225, 226, 225, 0.56);
       }
       .column:nth-of-type(5) {
-        flex: 3;
-      }
-      .darker {
         background-color: rgba(225, 226, 225, 0.56);
+      }
+      .column:nth-of-type(6) {
+        flex: 1;
       }
     }
   }

@@ -8,6 +8,7 @@ export default {
     inputs: {},
     loading: false,
     buttonRoute: 1,
+    newItem: {},
     selected: {},
     filter: "",
     type: 1
@@ -41,6 +42,12 @@ export default {
       await Product.createProduct(product);
       commit(types.load, await Product.loadProducts());
       commit(types.stopLoading);
+    },
+    async [types.modify]({ commit }: any, mutated: any) {
+      await commit(types.startLoading);
+      await Product.mutateProducts(mutated);
+      await commit(types.load, await Product.loadProducts());
+      await commit(types.stopLoading);
     },
     async [types.delete]({ commit }: any, selected: any) {
       commit(types.startLoading);

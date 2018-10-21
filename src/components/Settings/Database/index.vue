@@ -16,6 +16,7 @@
     <div class="body">
       <div class="container">
         <div class="settings" v-loading="isLoading">
+          <!-- Path to Systel FDB -->
           <div class="preference">
             <div class="label">
               Systel Path:
@@ -24,6 +25,17 @@
               <el-input
                 v-model="data['systel']"
                 placeholder="Ingresar path" />
+            </div>
+          </div>
+          <!-- URL to MongoDB server -->
+          <div class="preference">
+            <div class="label">
+              MongoDB Server:
+            </div>
+            <div class="switch">
+              <el-input
+                v-model="data['mongoUrl']"
+                placeholder="Ingresar url" />
             </div>
           </div>
         </div>
@@ -50,7 +62,7 @@ export default Vue.extend({
     });
   },
   data: () => ({
-    data: {}
+    data: {} as any
   }),
   computed: mapState({
     isLoading: (state: any) => state.Settings.loading,

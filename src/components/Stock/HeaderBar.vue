@@ -24,26 +24,34 @@
         <button @click="print()" class="circle gray">
           <fontawesome icon="print" />
         </button>
+        <template v-if="isMoreActive(1)">
+          <button @click="goTo(routes.more)" class="circle">
+            <fontawesome icon="ellipsis-h" />
+          </button>
+        </template>
         <button @click="goBack()" class="circle">
           <fontawesome icon="chevron-left" />
         </button>
-        <!-- <button @click="goTo(routes.more)" class="circle">
-          <fontawesome icon="ellipsis-h" />
-        </button> -->
       </template>
       <template v-else-if="route === routes.more">
         <button @click="goTo(routes.default)" class="circle">
           <fontawesome icon="chevron-left" />
         </button>
-        <button @click="goTo(routes.createItem)" class="circle">
-          <fontawesome icon="plus" />
-        </button>
+        <template v-if="isMoreActive(routes.createItem)">
+          <button @click="goTo(routes.createItem)" class="circle">
+            <fontawesome icon="plus" />
+          </button>
+        </template>
+        <template v-if="isMoreActive(routes.editItems)">
         <button @click="goTo(routes.editItems)" class="circle">
           <fontawesome icon="pen" />
         </button>
+        </template>
+        <template v-if="isMoreActive(routes.deleteItems)">
         <button @click="goTo(routes.deleteItems)" class="circle">
           <fontawesome icon="trash-alt" />
         </button>
+        </template>
       </template>
       <template v-else-if="route === routes.createItem">
         <button @click="goTo(routes.more, routes.createItem)" class="circle">
@@ -100,27 +108,47 @@
 import Vue from "vue";
 import { mapState } from "vuex";
 import { products as types } from "@/vuexTypes";
+import Product from "@/Server/mongodb/Product";
 import _ from "lodash";
 
 export default Vue.extend({
   name: "products-header",
   props: {
-    newItem: {},
-    selected: {},
-    changes: {}
+    newItem: Object,
+    deleteSelection: {},
+    mutatedProducts: {}
   },
   computed: mapState({
     isLoading: (state: any) => state.Product.loading,
     inputs: (state: any) => state.Product.inputs,
     showSpinner: (state: any) => state.Product.showSpinner,
     route: (state: any) => state.Product.buttonRoute,
-    filter: (state: any) => state.Product.filter
+    filter: (state: any) => state.Product.filter,
+    preferences: (state: any) => state.Settings.preferences
   }),
   data: () => ({
     type: null,
     routes: types.routes
   }),
   methods: {
+    isMoreActive(type: any) {
+      switch (type) {
+        case 1:
+          return (
+            this.preferences["newP"] ||
+            this.preferences["mutableP"] ||
+            this.preferences["deleteP"]
+          );
+        case this.routes.createItem:
+          return this.preferences["newP"];
+        case this.routes.editItems:
+          return this.preferences["mutableP"];
+        case this.routes.deleteItems:
+          return this.preferences["deleteP"];
+        default:
+          return false;
+      }
+    },
     filterChanged(value: any) {
       this.$store.dispatch(types.filter, value);
     },
@@ -173,24 +201,71 @@ export default Vue.extend({
         this.goTo(types.routes.default, types.routes.outStock);
       }
     },
-    validateItem() {
-      if (!this.newItem) {
-        console.log(1);
+    async validateItem() {
+      if (!this.newItem["_id"]) {
+        this.$notify({
+          title: "No has colocado un codigo!",
+          message: "No has colocado ningun valor al codigo.",
+          type: "warning",
+          duration: 5000,
+          offset: 170
+        });
+        return;
+      } else if (await Product.productExists(this.newItem["_id"])) {
+        this.$notify({
+          title: "El codigo ingresado ya existe!",
+          message: "El valor del codigo debe ser unico para cada producto.",
+          type: "warning",
+          duration: 5000,
+          offset: 170
+        });
+        return;
+      } else if (!this.newItem["name"]) {
+        this.$notify({
+          title: "No has colocado un nombre!",
+          message: "",
+          type: "warning",
+          duration: 5000,
+          offset: 170
+        });
+        return;
+      } else if (isNaN(this.newItem["price"])) {
+        this.$notify({
+          title: "No has colocado un precio!",
+          message: "",
+          type: "warning",
+          duration: 5000,
+          offset: 170
+        });
+        return;
+      } else if (parseFloat(this.newItem["price"]) < 0) {
+        this.$notify({
+          title: "El precio no puede ser menor a 0!",
+          message: "",
+          type: "warning",
+          duration: 5000,
+          offset: 170
+        });
         return;
       }
-      if (!this.newItem) {
-        console.log(2);
-        return;
-      }
-      this.$store.dispatch(types.create, this.newItem);
-      this.goTo(types.routes.default, types.routes.createItem);
+      this.$store
+        .dispatch(types.create, {
+          ...this.newItem,
+          _id: parseInt(this.newItem._id)
+        })
+        .then(() => {
+          this.goTo(types.routes.default, types.routes.createItem);
+        });
     },
     saveChanges() {
-      // this.amount = [];
+      this.$store.dispatch(types.modify, this.mutatedProducts).then(() => {
+        this.goTo(types.routes.default, types.routes.editItems);
+      });
     },
     saveDeletes() {
-      this.$store.dispatch(types.delete, this.selected);
-      this.goTo(types.routes.default, types.routes.deleteItems);
+      this.$store.dispatch(types.delete, this.deleteSelection).then(() => {
+        this.goTo(types.routes.default, types.routes.deleteItems);
+      });
     }
   }
 });

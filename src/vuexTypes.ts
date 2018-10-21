@@ -93,12 +93,22 @@ export const sell = {
 
 export const settings = {
   // actions
+  // Preferences
+  preferencesId: 1,
   loadPreferences: "LOAD_PREFERENCES",
   savePreferences: "SAVE_PREFERENCES",
+  // Database
+  databaseId: 2,
   loadDatabase: "LOAD_DATABASE",
   saveDatabase: "SAVE_DATABASE",
+  // Users
+  usersId: 3,
   loadUsers: "LOAD_Users",
   saveUsers: "SAVE_Users",
+  // Cloud
+  cloudId: 4,
+  loadCloud: "LOAD_CLOUD",
+  saveCloud: "SAVE_CLOUD",
   // mutations
   startLoading: "START_LOADING",
   stopLoading: "STOP_LOADING"

@@ -9,30 +9,34 @@
       </div>
     </div>
     <div v-loading="isLoading" class="router">
-      <div @click="goTo(1)" class="route">
-        <div class="icon">
-          <fontawesome icon="box-open" />
+      <template v-if="isServerActive">
+        <div @click="goTo(1)" class="route">
+          <div class="icon">
+            <fontawesome icon="box-open" />
+          </div>
+          <div class="title">
+            Stock
+          </div>
         </div>
-        <div class="title">
-          Stock
+        <template v-if="!preferences['systel']">
+          <div @click="goTo(2)" class="route">
+            <div class="icon">
+              <fontawesome icon="dollar-sign" />
+            </div>
+            <div class="title">
+              Ventas
+            </div>
+          </div>
+        </template>
+        <div @click="goTo(3)" class="route">
+          <div class="icon">
+            <fontawesome icon="chart-line" />
+          </div>
+          <div class="title">
+            Informes
+          </div>
         </div>
-      </div>
-      <div v-if="!preferences['systel']" @click="goTo(2)" class="route">
-        <div class="icon">
-          <fontawesome icon="dollar-sign" />
-        </div>
-        <div class="title">
-          Ventas
-        </div>
-      </div>
-      <div @click="goTo(3)" class="route">
-        <div class="icon">
-          <fontawesome icon="chart-line" />
-        </div>
-        <div class="title">
-          Informes
-        </div>
-      </div>
+      </template>
       <div @click="goTo(4)" class="route">
         <div class="icon">
           <fontawesome icon="cog" />
@@ -49,12 +53,19 @@
 import Vue from "vue";
 import { mapState } from "vuex";
 import { settings as types } from "@/vuexTypes";
+import Settings from "@/Server/Settings";
 
 export default Vue.extend({
   name: "app-main",
   mounted() {
     this.$store.dispatch(types.loadPreferences);
+    Settings.getMongoURL().then(url => {
+      this.isServerActive = url;
+    });
   },
+  data: () => ({
+    isServerActive: false
+  }),
   computed: mapState({
     isLoading: (state: any) => state.Settings.loading,
     preferences: (state: any) => state.Settings.preferences

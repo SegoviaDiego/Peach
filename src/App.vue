@@ -11,7 +11,11 @@ import Server from "@/Server/Server";
 export default Vue.extend({
   name: "home",
   mounted() {
-    this.$router.replace("/Updater");
+    if (process.env.NODE_ENV !== "production") {
+      this.$router.replace("/Updater");
+    } else {
+      this.$router.replace("/Updater");
+    }
     Server.initServer(this.$store.dispatch).then(() => {
       console.log("Initialized");
     });
@@ -20,6 +24,16 @@ export default Vue.extend({
 </script>
 
 <style lang="scss">
+.deleteBox * {
+  width: 30px !important;
+  height: 30px !important;
+}
+.el-checkbox__inner::after {
+  width: 6px !important;
+  height: 15px !important;
+  left: 10px !important;
+  top: 4px !important;
+}
 #app {
   font-family: Lato, "Avenir", Helvetica, Arial, sans-serif !important;
   -webkit-font-smoothing: antialiased;

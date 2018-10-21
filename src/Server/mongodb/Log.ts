@@ -101,7 +101,7 @@ export default class Log {
           db.insertOne({
             date,
             time,
-            productId: inputs[i].item._id,
+            item: inputs[i].item,
             amount: fromMagnitude(inputs[i].input, inputs[i].item.type)
           });
           resolve();
@@ -121,7 +121,7 @@ export default class Log {
           db.insertOne({
             date,
             time,
-            productId: inputs[i].item._id,
+            item: inputs[i].item,
             amount: fromMagnitude(inputs[i].input, inputs[i].item.type),
             type
           });

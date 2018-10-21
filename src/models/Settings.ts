@@ -7,9 +7,16 @@ export default {
     preferences: {},
     database: {},
     users: {},
+    cloud: {},
     loading: false
   },
   actions: {
+    [types.startLoading]({ commit }: any) {
+      commit(types.startLoading);
+    },
+    [types.stopLoading]({ commit }: any) {
+      commit(types.stopLoading);
+    },
     async [types.loadPreferences]({ commit }: any) {
       await commit(types.startLoading);
       await commit(types.loadPreferences, await Settings.getPreferences());
@@ -42,6 +49,17 @@ export default {
       await Settings.savePreferences(preferences);
       await dispatch(types.loadPreferences);
       await commit(types.stopLoading);
+    },
+    async [types.loadCloud]({ commit }: any) {
+      await commit(types.startLoading);
+      await commit(types.loadCloud, await Settings.getCloud());
+      await commit(types.stopLoading);
+    },
+    async [types.saveCloud]({ commit, dispatch }: any, cloud: any) {
+      await commit(types.startLoading);
+      await Settings.saveCloud(cloud);
+      await dispatch(types.loadCloud);
+      await commit(types.stopLoading);
     }
   },
   mutations: {
@@ -52,6 +70,10 @@ export default {
     [types.loadDatabase](state: any, database: any) {
       if (!database) state.database = {};
       else state.database = database;
+    },
+    [types.loadCloud](state: any, cloud: any) {
+      if (!cloud) state.cloud = {};
+      else state.cloud = cloud;
     },
     [types.startLoading](state: any) {
       state.loading = true;

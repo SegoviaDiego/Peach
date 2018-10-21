@@ -89,11 +89,6 @@ export default Vue.extend({
     cierres(state) {
       if (state.Total.data) return state.Total.data.cierres;
       return [];
-    },
-    products(state) {
-      return _.mapKeys(state.Product.data, function(value, key) {
-        return value._id;
-      });
     }
   }),
   data: () => ({
@@ -174,21 +169,23 @@ export default Vue.extend({
       });
     },
     getTotal(cierres) {
-      let total = {};
-      let item;
+      let res = {};
+      let total;
 
       for (let cierre of cierres) {
         for (let i of cierre.data) {
-          item = { ...i };
+          total = {...i}
 
-          if (!total[item._id]) total[item._id] = item;
-          else {
-            total[item._id].money += item.money;
-            total[item._id].amount += item.amount;
+          if (!res[total.item._id]) {
+            res[total.item._id] = total;
+          } else {
+            res[total.item._id].money += total.money;
+            res[total.item._id].amount += total.amount;
           }
         }
       }
-      return _.map(total);
+
+      return _.map(res);
     },
     validatePrint() {
       if (!this.selectedCierre || this.selectedCierre.length == 0) {
@@ -296,6 +293,8 @@ export default Vue.extend({
       totalEgresos = 0;
 
       for (let i in cierres) {
+        // Cierres
+
         totalCierres += parseFloat(cierres[i].total);
 
         cierresTotales.push([
@@ -310,6 +309,8 @@ export default Vue.extend({
           { text: parseFloat(cierres[i].total).toFixed(2) }
         ]);
 
+        // Ingresos
+
         for (let item of this.getIngresos(
           cierres[i].start,
           cierres[i]._current ? new Date() : cierres[i].end
@@ -322,6 +323,8 @@ export default Vue.extend({
             { text: parseFloat(item.money).toFixed(2) }
           ]);
         }
+
+        // Egresos
 
         for (let item of this.getEgresos(
           cierres[i].start,
@@ -337,15 +340,19 @@ export default Vue.extend({
         }
       }
 
-      for (let item of this.getTotal(cierres)) {
+      // Total de ventas
+
+      for (let total of this.getTotal(cierres)) {
         ventas.push([
-          { text: this.products[item._id].name },
+          { text: total.item.name },
           {
-            text: composeMagnitude(item.amount, this.products[item._id].type)
+            text: composeMagnitude(total.amount, total.item.type)
           },
-          { text: parseFloat(item.money).toFixed(2) }
+          { text: parseFloat(total.money).toFixed(2) }
         ]);
       }
+
+      // Total de ventas
 
       cierresTotales.push([
         { text: "Total de ventas", colSpan: 3 },
@@ -353,6 +360,8 @@ export default Vue.extend({
         {},
         { text: parseFloat(totalCierres).toFixed(2) }
       ]);
+
+      // Ingreso y egreso header
 
       ingresos.push([
         { text: "Total de ingresos", colSpan: 2 },
