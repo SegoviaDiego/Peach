@@ -7,6 +7,7 @@ import TotalClass from "../typings/Total";
 import Product from "./Product";
 import Sell from "./Sell";
 import { Collection } from "mongodb";
+import Firebird from "../db/Firebird";
 
 export default class Total {
   private static db() {
@@ -28,13 +29,11 @@ export default class Total {
       let sells: any = [];
       let mutated: boolean = false;
 
-      console.log(current.data);
-
       let currentCierre = _.mapKeys(current.data, total => {
         return total.item._id;
       });
 
-      for (let newTotal of systelTotal) {
+      for (const newTotal of systelTotal) {
         let oldTotal = currentCierre[newTotal.item._id];
 
         currentCierre[newTotal.item._id] = newTotal;
@@ -57,6 +56,7 @@ export default class Total {
       }
 
       if (mutated) {
+        // Firebird.backupDatabaseFile();
         current.data = _.toArray(currentCierre);
         Sell.saveSystelSells(sells);
         Total.updateCurrentCierre(current);
@@ -235,11 +235,7 @@ export default class Total {
         return cierre._current;
       });
 
-      if (current) {
-        resolve(current);
-      } else {
-        resolve(await Total.createCurrentCierre());
-      }
+      resolve(current);
     });
   }
 
@@ -307,7 +303,8 @@ export default class Total {
   public static createCurrent(): Promise<TotalClass> {
     return new Promise(async resolve => {
       Total.db().then(db => {
-        db.insertOne(new TotalClass(true, 0, []), (err: any, current: any) => {
+        const current = new TotalClass(true, 0, [new CierreClass(true, 0, [])]);
+        db.insertOne(current, (err: any) => {
           if (err) throw err;
           resolve(current);
         });

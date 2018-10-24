@@ -34,7 +34,7 @@
             {{composeMagnitude(log.amount, log.item.type)}}
           </div>
           <div class="column">
-            ${{log.item.price * toMagnitude(log.amount, log.item.type)}}
+            ${{(log.item.price * toMagnitude(log.amount, log.item.type)).toFixed(2)}}
           </div>
         </div>
       </template>

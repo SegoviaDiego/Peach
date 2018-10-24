@@ -251,7 +251,7 @@ export default Vue.extend({
       this.$store
         .dispatch(types.create, {
           ...this.newItem,
-          _id: parseInt(this.newItem._id)
+          _id: this.newItem._id.toString()
         })
         .then(() => {
           this.goTo(types.routes.default, types.routes.createItem);

@@ -16,13 +16,20 @@ export default class Sell {
   }
 
   public static load(date: Date) {
-    // return new Promise(async resolve => {
-    //   if (equalDates(new Date(), date)) {
-    //     resolve(await Total.getCurrent());
-    //   } else {
-    //     resolve(await Total.getTotal(date));
-    //   }
-    // });
+    return new Promise(async resolve => {
+      date.setHours(0, 0, 0, 0);
+
+      Sell.db().then(db => {
+        db.find({ day: date }).toArray((err, sells) => {
+          if (err) {
+            resolve({});
+            throw err;
+          } else {
+            resolve(sells);
+          }
+        });
+      });
+    });
   }
 
   public static createSellFromTotal(oldTotal: any, newTotal: any) {
@@ -43,7 +50,7 @@ export default class Sell {
 
   public static save(
     sells: any,
-    { total, methods, payDivision, systel }: any
+    { total, payDivision, systel }: any
   ): Promise<Boolean> {
     return new Promise(resolve => {
       Sell.db().then(async (db: Collection) => {
@@ -63,7 +70,6 @@ export default class Sell {
             time,
             sells,
             total,
-            methods,
             payDivision
           },
           (err: any) => {

@@ -184,7 +184,7 @@ export default class Product {
     return new Promise(resolve => {
       Product.db().then(db => {
         db.updateOne(
-          { _id: parseInt(_id) },
+          { _id },
           { $inc: { stock: parseFloat(amount) } },
           {},
           (err, res) => {
@@ -215,7 +215,7 @@ export default class Product {
     return new Promise(resolve => {
       Product.db().then(db => {
         db.updateOne(
-          { _id: parseInt(_id) },
+          { _id },
           { $inc: { stock: -parseFloat(amount) } },
           {},
           err => {

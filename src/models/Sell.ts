@@ -4,10 +4,17 @@ import { sell as types, products as pTypes } from "@/vuexTypes";
 
 export default {
   state: {
+    sells: {},
     data: {},
-    loading: false
+    loading: false,
+    date: new Date()
   },
   actions: {
+    async [types.load]({ commit }: any, date: Date) {
+      commit(types.startLoading);
+      commit(types.load, await Sell.load(date));
+      commit(types.stopLoading);
+    },
     async [types.saveSell]({ dispatch, commit, state }: any, payload: any) {
       commit(types.startLoading);
       await Sell.save(state.data, payload);
@@ -30,6 +37,9 @@ export default {
     }
   },
   mutations: {
+    [types.load](state: any, payload: any) {
+      state.sells = payload;
+    },
     [types.startLoading](state: any) {
       state.loading = true;
     },

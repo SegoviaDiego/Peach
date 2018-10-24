@@ -89,7 +89,13 @@ export default new Router({
               path: "/movimientos",
               component: () =>
                 import(/* webpackChunkName: "Movimientos" */ "@/components/Stats/Movimientos/index.vue")
-            }
+            },
+            {
+              path: "/Sells",
+              name: "Sells",
+              component: () =>
+                import(/* webpackChunkName: "Sells" */ "@/components/Stats/Sells/index.vue")
+            },
           ]
         },
         {

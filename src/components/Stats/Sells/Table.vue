@@ -3,38 +3,44 @@
     <Toolbar/>
     <div class="head">
       <div class="column">
-        Articulo
+        Hora
       </div>
       <div class="column">
-        Precio
+        Efectivo
       </div>
       <div class="column">
-        Cantidad
+        Credito
+      </div>
+      <div class="column">
+        Debito
       </div>
       <div class="column">
         Total
       </div>
     </div>
-    <div class="body" v-loading="isLoading">
-      <template v-if="cierreIndex == null">
-        No has seleccionado un cierre
-      </template>
-      <template v-else-if="cierre.length <= 0">
-        No se realizaron ventas el cierre seleccionado
-      </template>
-      <template v-else v-for="total in filteredData">
-        <div :key="total._id" class="row">
+    <div class="body">
+      <template v-for="sell in filteredData">
+        <div :key="sell._id.toString()" class="row">
           <div class="column">
-            {{total.item.name}}
+            {{toHour(sell.time)}}
           </div>
           <div class="column">
-            $ {{total.item.price}}
+            <template v-if="!sell.systel">
+              {{sell.payDivision['efectivo'] ? `$ ${sell.payDivision['efectivo']}` : '$ 0'}}
+            </template>
           </div>
           <div class="column">
-            {{composeMagnitude(total.amount, total.item.type)}}
+            <template v-if="!sell.systel">
+              {{sell.payDivision['credito'] ? `$ ${sell.payDivision['credito']}` : '$ 0'}}
+            </template>
           </div>
           <div class="column">
-            $ {{(total.money).toFixed(2)}}
+            <template v-if="!sell.systel">
+              {{sell.payDivision['debito'] ? `$ ${sell.payDivision['debito']}` : '$ 0'}}
+            </template>
+          </div>
+          <div class="column">
+            $ {{sell.total}}
           </div>
         </div>
       </template>
@@ -48,30 +54,9 @@ import { mapState } from "vuex";
 
 import Log from "@/Server/mongodb/Log";
 import Toolbar from "./Toolbar.vue";
-import { totals as types } from "@/vuexTypes";
+import { sell as types } from "@/vuexTypes";
 
-import { composeMagnitude } from "@/Server/mongodb/Utils";
-
-// Agrupacion de las ventas de todos los cierres que se hicieron en el dia
-function getTotal(cierres) {
-  let res = {};
-  let total;
-
-  for (let cierre of cierres) {
-    for (let i of cierre.data) {
-      total = { ...i };
-
-      if (!res[total.item._id]) {
-        res[total.item._id] = total;
-      } else {
-        res[total.item._id].money += total.money;
-        res[total.item._id].amount += total.amount;
-      }
-    }
-  }
-
-  return _.map(res);
-}
+import { composeMagnitude, toMagnitude, toHour } from "@/Server/mongodb/Utils";
 
 function addKeyValues(obj) {
   let values = "";
@@ -82,15 +67,12 @@ function addKeyValues(obj) {
 }
 function filterData(data, filter) {
   return data.filter(item => {
-    return (addKeyValues(item) + addKeyValues(item.item)).includes(
-      filter.toLowerCase()
-    );
+    return addKeyValues(item).includes(filter.toLowerCase());
   });
 }
 function sortData(data) {
-  // Sort de la lista de totales. a y b son objetos total = {amount, item, money}
   return data.sort((a, b) => {
-    return parseInt(a.item._id) - parseInt(b.item._id);
+    return b.time - a.time;
   });
 }
 
@@ -99,29 +81,43 @@ export default Vue.extend({
   components: {
     Toolbar
   },
+  mounted() {
+    this.$store.dispatch(types.load, this.date);
+  },
   data: () => ({
-    totalIndex: types.totalIndex,
     openPrintDialog: false
   }),
   computed: mapState({
-    isLoading: state => state.Total.loading,
-    current: state => state.Total.data,
-    cierreIndex: state => state.Total.cierreIndex,
-    cierre() {
-      if (this.cierreIndex == this.totalIndex && this.current)
-        return getTotal(this.current.cierres);
-      if (this.current)
-        if (this.current.cierres)
-          if (this.current.cierres.length >= this.cierreIndex)
-            return this.current.cierres[this.cierreIndex - 1].data;
-      return [];
-    },
+    filter: state => state.Log.filter,
+    date: state => state.Log.date,
+    isLoading: state => state.Sell.loading,
+    showSpinner: state => state.Sell.showSpinner,
     filteredData(state) {
-      return sortData(filterData([...this.cierre], state.Total.filter));
+      return sortData(filterData(_.toArray(state.Sell.sells), this.filter));
     }
   }),
   methods: {
-    composeMagnitude: composeMagnitude
+    toMagnitude: toMagnitude,
+    composeMagnitude: composeMagnitude,
+    toHour: toHour,
+    getType(type) {
+      switch (type) {
+        case 1:
+          return "Vencimiento";
+        case 2:
+          return "Reciclado";
+        case 3:
+          return "Transferencia";
+        default:
+          return "";
+      }
+    },
+    closePrintDialog() {
+      this.openPrintDialog = false;
+    },
+    print() {
+      this.openPrintDialog = true;
+    }
   }
 });
 </script>
@@ -130,7 +126,7 @@ export default Vue.extend({
 // Scrollbar
 $sbSize: 10px;
 // Grid
-$tableColumnTemplate: 2fr 1fr 1fr 1fr;
+$tableColumnTemplate: 1fr 3fr 2fr 2fr 2fr;
 // Head options
 $hFontColor: #000;
 $hFontSize: 20px;

@@ -15,9 +15,9 @@
     <button @click="selectingDate = true" class="rect">
       Fecha
     </button>
-    <button @click="selectingPrint = true" class="circle">
+    <!-- <button @click="selectingPrint = true" class="circle">
       <fontawesome icon="print" />
-    </button>
+    </button> -->
     
     <!-- Dialog -->
     <el-dialog
@@ -96,12 +96,7 @@ export default Vue.extend({
     showSpinner: state => state.Log.showSpinner,
     filter: state => state.Log.filter,
     date: state => state.Log.date,
-    data: state => state.Log.ingreso,
-    products(state) {
-      return _.mapKeys(state.Product.data, function(value, key) {
-        return value._id;
-      });
-    }
+    data: state => state.Log.mov
   }),
   data: () => ({
     selectingDate: false,
@@ -229,23 +224,23 @@ export default Vue.extend({
       let to = this.selectedTime[1];
 
       printData.push([
-        { text: "PLU", style: "tableHeader" },
         { text: "HORA", style: "tableHeader" },
-        { text: "NOMBRE", style: "tableHeader" },
-        { text: "INGRESADO", style: "tableHeader" }
+        { text: "DESCRIPCION", style: "tableHeader" },
+        { text: "TIPO", style: "tableHeader" },
+        { text: "MONTO", style: "tableHeader" }
       ]);
 
       ingresos = ingresos.sort((a, b) => {
         return b.time - a.time;
       });
 
-      for (let item of ingresos) {
-        if (item.time > from && item.time < to)
+      for (let ingreso of ingresos) {
+        if (ingreso.time > from && ingreso.time < to)
           printData.push([
-            item.productId,
-            toHour(item.time),
-            this.products[item.productId].name,
-            composeMagnitude(item.amount, this.products[item.productId].type)
+            ingreso.item._id,
+            toHour(ingreso.time),
+            ingreso.item.name,
+            composeMagnitude(ingreso.amount, ingreso.item.type)
           ]);
       }
 
@@ -271,7 +266,7 @@ export default Vue.extend({
               headerRows: 1,
               dontBreakRows: true,
               keepWithHeaderRows: 1,
-              widths: [50, 50, "*", "20%"],
+              widths: [50, "*", 50, "20%"],
               body: printData
             }
           }

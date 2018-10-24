@@ -55,6 +55,29 @@ export default class Firebird {
     });
   }
 
+  public static backupDatabaseFile() {
+    return new Promise(resolve => {
+      fs.exists(
+        path.join(remote.app.getPath("userData"), `/systelBackup`),
+        async (exists: Boolean) => {
+          if (exists) {
+            const date = new Date();
+            const dbName = `${date.getDate()}-${date.getMonth() +
+              1}-${date.getFullYear()} ${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}hs`;
+            await fs.writeFileSync(
+              path.join(
+                remote.app.getPath("userData"),
+                `/systelBackup/${dbName}.fdb`
+              ),
+              fs.readFileSync(Firebird.data.database)
+            );
+          }
+          resolve();
+        }
+      );
+    });
+  }
+
   public static getProductList() {
     return new Promise(resolve => {
       fb.attach(Firebird.data, (err: any, db: any) => {
@@ -69,9 +92,9 @@ export default class Firebird {
             if (err) throw err;
             res.forEach((item: any) => {
               p.push({
-                _id: item.ID,
-                name: item.DESCRIPCION,
-                price: item.PRECIO,
+                _id: item.ID.toString(),
+                name: item.DESCRIPCION.toString(),
+                price: parseFloat(item.PRECIO),
                 type: item.TIPO_VENTA.toString("utf8") == "Unidad" ? 0 : 1
               });
             });

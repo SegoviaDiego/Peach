@@ -13,15 +13,15 @@
         <el-select v-model="payMethods" multiple placeholder="Seleccionar metodo de pago">
           <el-option
             label="Efectivo"
-            :value="1">
+            value="efectivo">
           </el-option>
           <el-option
             label="Tarjeta de credito"
-            :value="2 ">
+            value="credito">
           </el-option>
           <el-option
             label="Tarjeta de debito"
-            :value="3">
+            value="debito">
           </el-option>
         </el-select>
       </div>
@@ -98,7 +98,7 @@ export default Vue.extend({
   data: () => ({
     payDivisionDialog: false,
     payMethods: [],
-    payDivision: {}
+    payDivision: {} as any
   }),
   methods: {
     getSubTotal() {
@@ -119,11 +119,11 @@ export default Vue.extend({
     },
     getMethodLabel(i: any) {
       switch (i) {
-        case 1:
+        case "efectivo":
           return "Efectivo";
-        case 2:
+        case "credito":
           return "Credito";
-        case 3:
+        case "debito":
           return "Debito";
       }
     },
@@ -131,13 +131,6 @@ export default Vue.extend({
       let printData = [];
       let total = 0;
       let sell;
-
-      printData.push([
-        { text: "TOTAL", colSpan: 3, style: "tableHeader" },
-        {},
-        {},
-        { text: "$ 2100", style: "tableHeader" }
-      ]);
 
       printData.push([
         { text: "PLU", style: "tableHeader" },
@@ -157,7 +150,12 @@ export default Vue.extend({
         ]);
       }
 
-      printData[0][3] = { text: `$ ${total.toFixed(2)}`, style: "tableHeader" };
+      printData.push([
+        { text: "TOTAL", colSpan: 3, style: "tableHeader" },
+        {},
+        {},
+        { text: `$ ${total.toFixed(2)}`, style: "tableHeader" }
+      ]);
 
       Print.print({
         content: [
@@ -209,9 +207,12 @@ export default Vue.extend({
             });
           } else if (this.payMethods.length > 1) {
             if (this.total - this.getSubTotal() == 0) {
+              for (const i in this.payDivision) {
+                this.payDivision[i] = parseFloat(this.payDivision[i]);
+              }
+
               this.$store.dispatch(types.saveSell, {
                 total: parseFloat(this.total),
-                methods: this.payMethods,
                 payDivision: this.payDivision
               });
               this.methods = [];
@@ -221,10 +222,15 @@ export default Vue.extend({
               this.payDivisionDialog = true;
             }
           } else {
+            this.payDivision = {
+              [this.payMethods[0]]: parseFloat(this.total)
+            };
+
             this.$store.dispatch(types.saveSell, {
               total: parseFloat(this.total),
-              methods: this.payMethods
+              payDivision: this.payDivision
             });
+
             this.methods = [];
             this.payDivision = {};
             this.payDivisionDialog = false;

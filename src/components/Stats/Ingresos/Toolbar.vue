@@ -74,12 +74,7 @@ export default Vue.extend({
     showSpinner: state => state.Log.showSpinner,
     filter: state => state.Log.filter,
     date: state => state.Log.date,
-    data: state => state.Log.ingreso,
-    products(state) {
-      return _.mapKeys(state.Product.data, function(value, key) {
-        return value._id;
-      });
-    }
+    data: state => state.Log.ingreso
   }),
   data: () => ({
     selectingDate: false,
@@ -169,13 +164,13 @@ export default Vue.extend({
         return b.time - a.time;
       });
 
-      for (let item of ingresos) {
-        if (item.time > from && item.time < to)
+      for (let ingreso of ingresos) {
+        if (ingreso.time > from && ingreso.time < to)
           printData.push([
-            item.productId,
-            toHour(item.time),
-            this.products[item.productId].name,
-            composeMagnitude(item.amount, this.products[item.productId].type)
+            ingreso.item._id,
+            toHour(ingreso.time),
+            ingreso.item.name,
+            composeMagnitude(ingreso.amount, ingreso.item.type)
           ]);
       }
 

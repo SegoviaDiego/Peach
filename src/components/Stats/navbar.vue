@@ -84,7 +84,8 @@ export default Vue.extend({
       informes: "INFORMES_ROUTE",
       movs: "MOVEMENTS_ROUTE",
       ingreso: "INGRESO_ROUTE",
-      egreso: "EGRESO_ROUTE"
+      egreso: "EGRESO_ROUTE",
+      sells: "VENTAS_ROUTE"
     },
     selectedRoute: null,
     totalIndex: totalTypes.totalIndex
@@ -108,6 +109,9 @@ export default Vue.extend({
         case this.routes.egreso:
           this.$router.replace({ path: "/egresos" });
           break;
+        case this.routes.sells:
+          this.$router.replace({ path: "/Sells" });
+          break;
       }
     },
     getPositionLabel(route) {
@@ -120,6 +124,8 @@ export default Vue.extend({
           return "Ingresos";
         case this.routes.egreso:
           return "Egresos";
+        case this.routes.sells:
+          return "Ventas";
         default:
           return "Seleccionar categoria";
       }

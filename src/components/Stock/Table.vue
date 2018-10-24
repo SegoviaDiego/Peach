@@ -77,19 +77,7 @@
             </div>
             <!-- Tipo -->
             <div class="column">
-              <template v-if="route === routes.editItems">
-                <el-select v-model.lazy="mutatedProducts[item._id]['type']" placeholder="Tipo">
-                  <el-option
-                    label="Unidad"
-                    :value="0"/>
-                  <el-option
-                    label="Kilogramo"
-                    :value="1"/>
-                </el-select>
-              </template>
-              <template v-else>
                 {{item.type === 0 ? 'Unidad' : 'Kilogramo'}}
-              </template>
             </div>
             <!-- Precio -->
             <div class="column">

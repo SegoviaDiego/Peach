@@ -1,7 +1,11 @@
+import path from "path";
+import { remote } from "electron";
 import { products as pTypes } from "@/vuexTypes";
 import Firebird from "./db/Firebird";
 import Settings from "@/Server/Settings";
 import { MongoClient, Db, Collection } from "mongodb";
+import Total from "@/Server/mongodb/Total";
+import fs from "fs";
 
 export default class Server {
   private static db: Db;
@@ -24,6 +28,7 @@ export default class Server {
             });
           });
         } else {
+          Total.checkCurrent(null);
           resolve();
         }
       });
