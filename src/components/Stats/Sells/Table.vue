@@ -25,22 +25,16 @@
             {{toHour(sell.time)}}
           </div>
           <div class="column">
-            <template v-if="!sell.systel">
-              {{sell.payDivision['efectivo'] ? `$ ${sell.payDivision['efectivo']}` : '$ 0'}}
-            </template>
+            {{getPayDivision(sell, 'efectivo')}}
           </div>
           <div class="column">
-            <template v-if="!sell.systel">
-              {{sell.payDivision['credito'] ? `$ ${sell.payDivision['credito']}` : '$ 0'}}
-            </template>
+            {{getPayDivision(sell, 'credito')}}
           </div>
           <div class="column">
-            <template v-if="!sell.systel">
-              {{sell.payDivision['debito'] ? `$ ${sell.payDivision['debito']}` : '$ 0'}}
-            </template>
+            {{getPayDivision(sell, 'debito')}}
           </div>
           <div class="column">
-            $ {{sell.total}}
+            $ {{sell.total.toFixed(2)}}
           </div>
         </div>
       </template>
@@ -100,6 +94,14 @@ export default Vue.extend({
     toMagnitude: toMagnitude,
     composeMagnitude: composeMagnitude,
     toHour: toHour,
+    getPayDivision(sell, type) {
+      if (sell.systel) {
+        return "-";
+      } else if (sell.payDivision && sell.payDivision[type]) {
+        return `$ ${sell.payDivision[type].toFixed(2)}`;
+      }
+      return "$ 0";
+    },
     getType(type) {
       switch (type) {
         case 1:
@@ -126,7 +128,7 @@ export default Vue.extend({
 // Scrollbar
 $sbSize: 10px;
 // Grid
-$tableColumnTemplate: 1fr 3fr 2fr 2fr 2fr;
+$tableColumnTemplate: 1fr 2fr 2fr 2fr 2fr;
 // Head options
 $hFontColor: #000;
 $hFontSize: 20px;

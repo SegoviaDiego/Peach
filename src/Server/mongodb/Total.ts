@@ -33,6 +33,11 @@ export default class Total {
         return total.item._id;
       });
 
+      // Compruebo si se realizo un cierre o no
+      if (Total.checkCierre(systelTotal, currentCierre)) {
+        await Total.saveCierre();
+      }
+
       for (const newTotal of systelTotal) {
         let oldTotal = currentCierre[newTotal.item._id];
 
@@ -58,10 +63,29 @@ export default class Total {
       if (mutated) {
         // Firebird.backupDatabaseFile();
         current.data = _.toArray(currentCierre);
-        Sell.saveSystelSells(sells);
-        Total.updateCurrentCierre(current);
+        await Sell.saveSystelSells(sells);
+        await Total.updateCurrentCierre(current);
       }
     });
+  }
+
+  public static checkCierre(systelTotal: any, mongoTotal: any): Boolean {
+    if (systelTotal.length == 0 && mongoTotal.length != 0) {
+      return true;
+    } else {
+      systelTotal = _.mapKeys(systelTotal, total => {
+        return total.item._id;
+      });
+
+      mongoTotal = _.toArray(mongoTotal);
+
+      for (const total of mongoTotal) {
+        if (!systelTotal[total.item._id]) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   public static addSellsToCierre(sells: any) {

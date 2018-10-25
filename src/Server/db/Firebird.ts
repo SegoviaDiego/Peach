@@ -152,7 +152,7 @@ export default class Firebird {
           if (err) throw err;
 
           db.query(
-            "INSERT INTO TOTALES (IP, NUMERO, V1, V2, V3, V4, ID_PLU, ID_SECCION, PE, CA) VALUES (1,1,1,1,1,1,1, 1, 100, 100)",
+            "INSERT INTO TOTALES (IP, NUMERO, V1, V2, V3, V4, ID_PLU, ID_SECCION, PE, CA) VALUES (1,1,1,1,1,1,3, 1, 100, 100)",
             [],
             err => {
               db.detach();
