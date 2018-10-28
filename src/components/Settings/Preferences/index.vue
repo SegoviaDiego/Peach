@@ -18,16 +18,29 @@
         <div class="settings" v-loading="isLoading">
           <template v-for="(preference, i) in pList">
             <div :key="preference + i" class="preference">
-              <div class="label">
-                {{pNames[i]}}:
-              </div>
-              <div class="switch">
-                <el-switch
-                  v-model="data[preference]"
-                  active-color="#13ce66"
-                  inactive-color="#ff4949">
-                </el-switch>
-              </div>
+              <!-- App name input -->
+              <template v-if="preference === 'appName'">
+                <div class="label">
+                  {{pNames[i]}}:
+                </div>
+                <div class="switch">
+                  <el-input placeholder="Nombre" v-model="data[preference]"/>
+                </div>
+              </template>
+              <!-- Otras opciones -->
+              <template v-else>
+                <div class="label">
+                  {{pNames[i]}}:
+                </div>
+                <div class="switch">
+                  <el-switch
+                    v-model="data[preference]"
+                    active-color="#13ce66"
+                    inactive-color="#ff4949">
+                  </el-switch>
+                </div>
+              </template>
+
             </div>
           </template>
         </div>
@@ -56,8 +69,16 @@ export default Vue.extend({
   },
   data: () => ({
     data: {} as any,
-    pList: ["systel", "autoStart", "newP", "mutableP", "deleteP"] as any,
+    pList: [
+      "appName",
+      "systel",
+      "autoStart",
+      "newP",
+      "mutableP",
+      "deleteP"
+    ] as any,
     pNames: [
+      "Nombre del negocio",
       "Sincronizacion con systel",
       "Iniciar con windows",
       "Creacion de productos",

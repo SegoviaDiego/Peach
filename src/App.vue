@@ -12,7 +12,7 @@ export default Vue.extend({
   name: "home",
   mounted() {
     if (process.env.NODE_ENV !== "production") {
-      this.$router.replace("/Sells");
+      this.$router.replace("/Informes");
     } else {
       this.$router.replace("/Updater");
     }

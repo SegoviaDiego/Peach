@@ -80,6 +80,7 @@ export default Vue.extend({
   components: {},
   mounted() {},
   computed: mapState({
+    preferences: state => state.Settings.preferences,
     movements: state => state.Log.mov,
     exists: state => state.Total.exists,
     filter: state => state.Total.filter,
@@ -174,7 +175,7 @@ export default Vue.extend({
 
       for (let cierre of cierres) {
         for (let i of cierre.data) {
-          total = {...i}
+          total = { ...i };
 
           if (!res[total.item._id]) {
             res[total.item._id] = total;
@@ -238,8 +239,12 @@ export default Vue.extend({
         totalEgresos,
         totalIngresos;
 
+      const title = `INFORME ${
+        this.preferences["appName"] ? `: ${this.preferences["appName"]}` : ""
+      }`;
+
       titleHeader = [
-        [{ text: "INFORME: Rey del vigilante", style: "title" }],
+        [{ text: title, style: "title" }],
         [{ text: toHumanDate(this.date), style: "title" }]
       ];
 

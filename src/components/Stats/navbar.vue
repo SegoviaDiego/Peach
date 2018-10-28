@@ -19,6 +19,7 @@
         </el-dropdown>
 
         <template v-if="selectedRoute == routes.informes && date">
+          <!-- Cierre selection -->
           <el-dropdown trigger="click" @command="setCierreIndex">
             <span class="selector">
               {{getCierreLabel(cierreIndex)}} <fontawesome icon="chevron-circle-down" />
@@ -49,9 +50,18 @@
 
             </el-dropdown-menu>
           </el-dropdown>
+
+          <!-- Crear un cierre manualmente -->
+          <template v-if="equalDates(new Date(), date)">
+            <button @click="makeCierre">
+              Crear cierre
+            </button>
+          </template>
+
         </template>
       </div>
       <div class="buttons">
+        <!-- Go back button -->
         <button @click="goBack">
           Volver atras
         </button>
@@ -63,7 +73,7 @@
 <script>
 import Vue from "vue";
 import { mapState } from "vuex";
-
+import Total from "@/Server/mongodb/Total";
 import { equalDates, toHour, toHumanDate } from "@/Server/mongodb/Utils";
 
 import { totals as totalTypes } from "@/vuexTypes";
@@ -91,6 +101,21 @@ export default Vue.extend({
     totalIndex: totalTypes.totalIndex
   }),
   methods: {
+    equalDates: equalDates,
+    makeCierre() {
+      Total.makeCierre().then(created => {
+        if (created) {
+          this.$store.dispatch(totalTypes.load);
+          this.$notify({
+            title: "Cierre creado",
+            message: "",
+            type: "success",
+            duration: 3000,
+            offset: 170
+          });
+        }
+      });
+    },
     goBack() {
       this.$router.replace({ path: "/dashboard" });
     },
@@ -183,6 +208,9 @@ export default Vue.extend({
       flex-direction: row;
       align-items: center;
       justify-content: flex-start;
+      button {
+        background-color: #e1e2e1;
+      }
       .selector {
         margin-right: 10px;
         height: 55px;
@@ -212,26 +240,26 @@ export default Vue.extend({
       flex-direction: row;
       align-items: center;
       justify-content: flex-end;
-      button {
-        color: black;
-        background-color: #fdd835;
-        height: 55px;
-        min-width: 130px;
-        border: none;
-        padding: 15px 20px;
-        text-decoration: none;
-        text-transform: uppercase;
-        border-radius: 40px;
-        font-family: Lato;
-        font-size: 20px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: 300ms;
-        &:hover {
-          color: #ff5722;
-        }
-      }
     }
+  }
+}
+button {
+  color: black;
+  background-color: #fdd835;
+  height: 55px;
+  min-width: 130px;
+  border: none;
+  padding: 15px 20px;
+  text-decoration: none;
+  text-transform: uppercase;
+  border-radius: 40px;
+  font-family: Lato;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 300ms;
+  &:hover {
+    color: #ff5722;
   }
 }
 </style>

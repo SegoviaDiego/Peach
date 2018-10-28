@@ -74,7 +74,7 @@ export default Vue.extend({
     Sidebar
   },
   mounted() {
-    this.$store.dispatch(types.load);
+    // this.$store.dispatch(types.load);
     this.$store.dispatch(logTypes.loadIngreso);
     this.$store.dispatch(logTypes.loadEgreso);
     this.$store.dispatch(logTypes.loadMov);

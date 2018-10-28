@@ -54,13 +54,13 @@
                 :min="0"
                 type="number"
                 :value="0"
-                v-model="payDivision[i]"
+                @input="handleDivisionChange(i, $event)"
                 :placeholder="getMethodLabel(i)"/>
             </div>
           </div>
         </template>
         <div class="restante">
-          {{getPayDivisionMessage()}}
+          {{payDivisionMessage}}
         </div>
       </div>
       <span slot="footer" class="dialog-footer">
@@ -96,11 +96,21 @@ export default Vue.extend({
     isLoading: (state: any) => state.Product.loading
   }),
   data: () => ({
+    payDivisionMessage: "",
     payDivisionDialog: false,
     payMethods: [],
     payDivision: {} as any
   }),
   methods: {
+    handleDivisionChange(id: any, amount: any) {
+      amount = parseFloat(amount);
+      if (!isNaN(amount)) {
+        this.payDivision[id] = amount;
+      } else {
+        this.payDivision[id] = 0;
+      }
+      this.payDivisionMessage = this.getPayDivisionMessage();
+    },
     getSubTotal() {
       let pd: any = this.payDivision;
       let subTotal: number = 0;
@@ -112,9 +122,11 @@ export default Vue.extend({
     getPayDivisionMessage() {
       let subTotal = this.total - this.getSubTotal();
       if (subTotal < 0) {
-        return `La suma debe ser igual a cero! Actualemtne es ${subTotal}`;
+        return `La suma debe ser igual a cero! Actualemtne es ${subTotal.toFixed(
+          2
+        )}`;
       } else {
-        return `Restante: ${subTotal}`;
+        return `Restante: ${subTotal.toFixed(2)}`;
       }
     },
     getMethodLabel(i: any) {
@@ -216,9 +228,11 @@ export default Vue.extend({
                 payDivision: this.payDivision
               });
               this.methods = [];
+              this.payMethods = [];
               this.payDivision = {};
               this.payDivisionDialog = false;
             } else {
+              this.payDivisionMessage = this.getPayDivisionMessage();
               this.payDivisionDialog = true;
             }
           } else {
@@ -232,6 +246,7 @@ export default Vue.extend({
             });
 
             this.methods = [];
+            this.payMethods = [];
             this.payDivision = {};
             this.payDivisionDialog = false;
             break;

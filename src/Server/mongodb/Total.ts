@@ -185,6 +185,21 @@ export default class Total {
     });
   }
 
+  public static makeCierre() {
+    return new Promise(async resolve => {
+      const current: any = await Total.getCurrentCierre();
+      if (current.data && current.data.length > 0) {
+        console.log(1);
+        Total.saveCierre().then(() => {
+          resolve();
+        });
+      } else {
+        console.log(2);
+        resolve();
+      }
+    });
+  }
+
   public static saveCierre() {
     return new Promise(async resolve => {
       let currentCierre: any = await Total.getCurrentCierre();
