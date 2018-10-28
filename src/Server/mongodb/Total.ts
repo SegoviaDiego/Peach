@@ -189,13 +189,11 @@ export default class Total {
     return new Promise(async resolve => {
       const current: any = await Total.getCurrentCierre();
       if (current.data && current.data.length > 0) {
-        console.log(1);
         Total.saveCierre().then(() => {
-          resolve();
+          resolve(true);
         });
       } else {
-        console.log(2);
-        resolve();
+        resolve(false);
       }
     });
   }

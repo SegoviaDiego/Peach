@@ -28,8 +28,9 @@ export default class Server {
             });
           });
         } else {
-          Total.checkCurrent(null);
-          resolve();
+          Total.getCurrent().then(() => {
+            resolve();
+          });
         }
       });
     });
