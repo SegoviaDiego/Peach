@@ -26,26 +26,33 @@
       <div v-if="route === routes.createItem" class="row">
         <!-- Codigo -->
         <div class="column">
-          <input placeholder="Codigo" type="number" min="0" v-model.lazy="newItem._id">
+          <input
+            placeholder="Codigo"
+            type="number"
+            min="0"
+            v-model="newItem._id">
         </div>
         <!-- Nombre -->
         <div class="column">
-          <input placeholder="Nombre" type="text" v-model.lazy="newItem.name">
+          <input placeholder="Nombre" type="text" v-model="newItem.name">
         </div>
         <!-- Tipo -->
         <div class="column">
-          <el-select v-model.lazy="newItem.type" placeholder="Tipo">
+          <el-select v-model="newItem.type" placeholder="Tipo">
             <el-option
               label="Unidad"
               :value="0"/>
             <el-option
               label="Kilogramo"
               :value="1"/>
+            <el-option
+              label="Metro"
+              :value="2"/>
           </el-select>
         </div>
         <!-- Precio -->
         <div class="column">
-          <input placeholder="Precio" type="number" min="0" v-model.lazy="newItem.price">
+          <input placeholder="Precio" type="number" min="0" v-model="newItem.price">
         </div>
         <!-- Stock -->
         <div class="column">
@@ -77,7 +84,7 @@
             </div>
             <!-- Tipo -->
             <div class="column">
-                {{item.type === 0 ? 'Unidad' : 'Kilogramo'}}
+                {{getProductTypeLabel(item.type)}}
             </div>
             <!-- Precio -->
             <div class="column">
@@ -92,7 +99,7 @@
             </div>
             <!-- Stock -->
             <div class="column">
-              {{toMagnitude(item.stock, item.type)}}
+              {{composeMagnitude(item.stock, item.type)}}
             </div>
             <!-- Cantidad / Multiple uso -->
             <div class="column">
@@ -102,7 +109,7 @@
               <template v-if="route === routes.inStock || route === routes.outStock">
                   <el-input
                     :min="0"
-                    :step="item.type == 1 ? 0.1 : 1"
+                    :step="getProductTypeStep(item.type)"
                     type="number"
                     :value="inputs[item._id] ? inputs[item._id].input : 0"
                     @input="handleChange(item, $event)"
@@ -132,7 +139,11 @@ import Vue from "vue";
 import { mapState } from "vuex";
 import { products as types } from "@/vuexTypes";
 
-import { composeMagnitude as toMagnitude } from "@/Server/mongodb/Utils";
+import {
+  composeMagnitude,
+  getProductTypeLabel,
+  getProductTypeStep
+} from "@/Server/mongodb/Utils";
 
 export default Vue.extend({
   name: "products-table",
@@ -152,7 +163,8 @@ export default Vue.extend({
     route: (state: any) => state.Product.buttonRoute
   }),
   methods: {
-    toMagnitude: toMagnitude,
+    getProductTypeLabel: getProductTypeLabel,
+    composeMagnitude: composeMagnitude,
     handleChange(item: any, input: any) {
       this.$store.dispatch(types.handleChange, {
         item,

@@ -124,6 +124,23 @@ export default class Firebird {
     });
   }
 
+  public static clearTotales() {
+    return new Promise(async resolve => {
+      fb.attach(
+        { ...Firebird.data, database: await Settings.getSystelSRC() },
+        (err, db) => {
+          if (err) throw err;
+
+          db.query("DELETE FROM TOTALES", [], err => {
+            db.detach();
+            if (err) throw err;
+            resolve(true);
+          });
+        }
+      );
+    });
+  }
+
   // Faker functions
 
   public static clearSales() {

@@ -30,9 +30,9 @@
         </div>
         <div class="column">
           <el-input
-          :max="item.stock > 0 ? item.stock : 100"
+          :max="getProductMaxInputVal(item.stock)"
           :min="0"
-          :step="item.type == 1 ? 0.1 : 1"
+          :step="getProductTypeStep(item.type)"
           type="number"
           :value="getSellAmount(item._id)"
           @input="handleChange(item, $event)"
@@ -57,7 +57,12 @@ import Vue from "vue";
 import { mapState } from "vuex";
 import { sell as types } from "@/vuexTypes";
 
-import { composeMagnitude, toMagnitude } from "@/Server/mongodb/Utils";
+import {
+  composeMagnitude,
+  toMagnitude,
+  getProductMaxInputVal,
+  getProductTypeStep
+} from "@/Server/mongodb/Utils";
 
 function addKeyValues(obj: any) {
   let values = "";
@@ -89,6 +94,8 @@ export default Vue.extend({
   }),
   methods: {
     composeMagnitude: composeMagnitude,
+    getProductMaxInputVal: getProductMaxInputVal,
+    getProductTypeStep: getProductTypeStep,
     handleChange(item: any, amount: any) {
       this.$store.dispatch(types.handleChange, {
         item,

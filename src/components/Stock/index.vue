@@ -53,7 +53,7 @@ export default Vue.extend({
   },
   data: () => ({
     newItem: {
-      _id: "",
+      _id: null,
       name: "",
       type: 0,
       price: 0,
@@ -70,6 +70,15 @@ export default Vue.extend({
     isLoading: (state: any) => state.Product.loading,
     showSpinner: (state: any) => state.Product.showSpinner,
     route: (state: any) => state.Product.buttonRoute,
+    nextProductId(state: any) {
+      const item = _.maxBy(_.toArray(state.Product.data), item => {
+        return parseInt(item._id);
+      });
+
+      const id = parseInt(item._id) + 1;
+
+      return id;
+    },
     filteredData(state: any) {
       return sortData(filterData([...state.Product.data], this.filter));
     },
@@ -133,29 +142,51 @@ export default Vue.extend({
       });
     },
     goTo(route: any, from: any) {
+      switch (route) {
+        case types.routes.createItem:
+          this.newItem = {
+            _id: this.nextProductId,
+            name: "",
+            type: 0,
+            price: 0,
+            stock: 0
+          };
+          break;
+        case types.routes.editItems:
+          this.changes = {};
+          break;
+        case types.routes.deleteItems:
+          this.selected = {};
+          break;
+        case types.routes.inStock:
+        case types.routes.outStock:
+          this.$store.dispatch(types.clearInputs);
+          break;
+      }
       this.$store.dispatch(types.buttons, route);
-      if (from)
-        switch (from) {
-          case types.routes.createItem:
-            this.newItem = {
-              _id: "",
-              name: "",
-              type: 0,
-              price: 0,
-              stock: 0
-            };
-            break;
-          case types.routes.editItems:
-            this.changes = {};
-            break;
-          case types.routes.deleteItems:
-            this.selected = {};
-            break;
-          case types.routes.inStock:
-          case types.routes.outStock:
-            this.$store.dispatch(types.clearInputs);
-            break;
-        }
+      // if (from) {
+      //   switch (from) {
+      //     case types.routes.createItem:
+      //       this.newItem = {
+      //         _id: this.nextProductId,
+      //         name: "",
+      //         type: 0,
+      //         price: 0,
+      //         stock: 0
+      //       };
+      //       break;
+      //     case types.routes.editItems:
+      //       this.changes = {};
+      //       break;
+      //     case types.routes.deleteItems:
+      //       this.selected = {};
+      //       break;
+      //     case types.routes.inStock:
+      //     case types.routes.outStock:
+      //       this.$store.dispatch(types.clearInputs);
+      //       break;
+      //   }
+      // }
     }
   }
 });

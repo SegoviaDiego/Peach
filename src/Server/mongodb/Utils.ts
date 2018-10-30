@@ -84,23 +84,61 @@ export function composeSystelToKg(systelTotals: [any]): Promise<any> {
 
 export function magnitude(type: number) {
   switch (type) {
-    case 0:
+    case 0: // Unidad
       return " U";
-    case 1:
+    case 1: // Kilogramo
+      return " Kg";
+    case 2: // Metro
+      return " m";
     case 3: //Gr to Kg
       return " Kg";
-    case 2:
-      return " Gr";
     default:
       return "";
   }
 }
 
 export function composeMagnitude(amount: number, type: number) {
-  if (type === 0) {
-    return toMagnitude(amount, type) + magnitude(type);
-  } else {
-    return toMagnitude(amount, type).toFixed(3) + magnitude(type);
+  const value = toMagnitude(amount, type);
+  const mag = magnitude(type);
+  switch (type) {
+    case 1:
+      return value.toFixed(3) + mag;
+    case 2:
+      return value.toFixed(2) + mag;
+    case 0:
+    default:
+      return value + mag;
+  }
+}
+
+export function getProductMaxInputVal(stock: number) {
+  if (stock < 0) return 0;
+  return stock;
+}
+
+export function getProductTypeStep(type: number) {
+  switch (type) {
+    case 0:
+      return 1;
+    case 1:
+      return 0.1;
+    case 2:
+      return 0.1;
+    default:
+      return 1;
+  }
+}
+
+export function getProductTypeLabel(type: number) {
+  switch (type) {
+    case 0:
+      return "Unidad";
+    case 1:
+      return "Kilogramo";
+    case 2:
+      return "Metro";
+    default:
+      return "";
   }
 }
 
@@ -110,10 +148,12 @@ export function toMagnitude(amount: number, type: number) {
       return amount;
     case 1: // Kg
       return amount;
-    case 2: // Kg to Gr
-      return amount * 1000;
+    case 2: // Metro
+      return amount;
     case 3: // Gr to Kg
       return amount / 1000;
+    case 4: // Kg to Gr
+      return amount * 1000;
     default:
       return amount;
   }
@@ -121,12 +161,11 @@ export function toMagnitude(amount: number, type: number) {
 
 export function fromMagnitude(amount: number, type: number): number {
   switch (type) {
-    case 0:
-      return amount;
-    case 1:
-      return amount;
-    case 2:
+    case 3: // Gr a Kilogramo
       return amount * 1000;
+    case 0: // Unidad
+    case 1: // Kilogramo
+    case 2: // Metro
     default:
       return amount;
   }

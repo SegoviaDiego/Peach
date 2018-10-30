@@ -5,6 +5,7 @@ import { totals as types } from "@/vuexTypes";
 import CierreClass from "../typings/Cierre";
 import TotalClass from "../typings/Total";
 import Product from "./Product";
+import Settings from "@/Server/Settings";
 import Sell from "./Sell";
 import { Collection } from "mongodb";
 import Firebird from "../db/Firebird";
@@ -189,7 +190,10 @@ export default class Total {
     return new Promise(async resolve => {
       const current: any = await Total.getCurrentCierre();
       if (current.data && current.data.length > 0) {
-        Total.saveCierre().then(() => {
+        Total.saveCierre().then(async () => {
+          if (await Settings.isSystelReady()) {
+            await Firebird.clearTotales();
+          }
           resolve(true);
         });
       } else {

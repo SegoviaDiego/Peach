@@ -53,7 +53,7 @@
                 :key="i"
                 :min="0"
                 type="number"
-                :value="0"
+                :value="payDivision[i]"
                 @input="handleDivisionChange(i, $event)"
                 :placeholder="getMethodLabel(i)"/>
             </div>
@@ -218,7 +218,10 @@ export default Vue.extend({
               offset: 170
             });
           } else if (this.payMethods.length > 1) {
-            if (this.total - this.getSubTotal() == 0) {
+            if (
+              this.payDivisionDialog &&
+              this.total - this.getSubTotal() == 0
+            ) {
               for (const i in this.payDivision) {
                 this.payDivision[i] = parseFloat(this.payDivision[i]);
               }
@@ -232,8 +235,9 @@ export default Vue.extend({
               this.payDivision = {};
               this.payDivisionDialog = false;
             } else {
-              this.payDivisionMessage = this.getPayDivisionMessage();
+              this.payDivision = {};
               this.payDivisionDialog = true;
+              this.payDivisionMessage = this.getPayDivisionMessage();
             }
           } else {
             this.payDivision = {
