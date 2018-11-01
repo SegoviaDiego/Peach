@@ -164,6 +164,7 @@ export default Vue.extend({
   }),
   methods: {
     getProductTypeLabel: getProductTypeLabel,
+    getProductTypeStep: getProductTypeStep,
     composeMagnitude: composeMagnitude,
     handleChange(item: any, input: any) {
       this.$store.dispatch(types.handleChange, {

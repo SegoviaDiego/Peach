@@ -226,10 +226,21 @@ export default Vue.extend({
                 this.payDivision[i] = parseFloat(this.payDivision[i]);
               }
 
-              this.$store.dispatch(types.saveSell, {
-                total: parseFloat(this.total),
-                payDivision: this.payDivision
-              });
+              this.$store
+                .dispatch(types.saveSell, {
+                  total: parseFloat(this.total),
+                  payDivision: this.payDivision
+                })
+                .then(() => {
+                  this.$notify({
+                    title: "Se ha realizado la venta con éxito",
+                    message: "",
+                    type: "success",
+                    duration: 2000,
+                    offset: 80
+                  });
+                });
+
               this.methods = [];
               this.payMethods = [];
               this.payDivision = {};
@@ -244,10 +255,20 @@ export default Vue.extend({
               [this.payMethods[0]]: parseFloat(this.total)
             };
 
-            this.$store.dispatch(types.saveSell, {
-              total: parseFloat(this.total),
-              payDivision: this.payDivision
-            });
+            this.$store
+              .dispatch(types.saveSell, {
+                total: parseFloat(this.total),
+                payDivision: this.payDivision
+              })
+              .then(() => {
+                this.$notify({
+                  title: "Se ha realizado la venta con éxito",
+                  message: "",
+                  type: "success",
+                  duration: 2000,
+                  offset: 80
+                });
+              });
 
             this.methods = [];
             this.payMethods = [];

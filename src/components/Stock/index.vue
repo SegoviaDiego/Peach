@@ -71,11 +71,14 @@ export default Vue.extend({
     showSpinner: (state: any) => state.Product.showSpinner,
     route: (state: any) => state.Product.buttonRoute,
     nextProductId(state: any) {
-      const item = _.maxBy(_.toArray(state.Product.data), item => {
+      let id = 1;
+      const item = _.maxBy(_.toArray(), item => {
         return parseInt(item._id);
       });
 
-      const id = parseInt(item._id) + 1;
+      if (item) {
+        id = parseInt(item._id) + 1;
+      }
 
       return id;
     },
