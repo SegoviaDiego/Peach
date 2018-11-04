@@ -42,30 +42,66 @@
       title="Dividir monto a pagar"
       :visible.sync="payDivisionDialog"
       width="30%">
-      <div>
+      <!-- Dialog's body -->
+      <div class="dialogBody">
         <template v-for="i of payMethods">
-          <div :key="i" class="method">
-            <div class="label">
-              {{getMethodLabel(i)}}
+          <template v-if="i == 'credito'">
+            <div :key="i" class="method">
+              <div class="label">
+                {{getMethodLabel(i)}}
+              </div>
+              <div class="input">
+                <el-input
+                  :key="i + 'division'"
+                  :min="0"
+                  type="number"
+                  :value="payDivision[i]"
+                  @input="handleDivisionChange(i, $event)"
+                  :placeholder="getMethodLabel(i)"/>
+                <el-input
+                  :key="i + 'recargo'"
+                  :min="0"
+                  :max="100"
+                  type="number"
+                  v-model="recargoCredito"
+                  placeholder="Recargo"/>
+              </div>
             </div>
-            <div class="input">
-              <el-input
-                :key="i"
-                :min="0"
-                type="number"
-                :value="payDivision[i]"
-                @input="handleDivisionChange(i, $event)"
-                :placeholder="getMethodLabel(i)"/>
+          </template>
+          <template v-else>
+            <div :key="i" class="method">
+              <div class="label">
+                {{getMethodLabel(i)}}
+              </div>
+              <div class="input">
+                <el-input
+                  :key="i"
+                  :min="0"
+                  type="number"
+                  :value="payDivision[i]"
+                  @input="handleDivisionChange(i, $event)"
+                  :placeholder="getMethodLabel(i)"/>
+              </div>
             </div>
-          </div>
+          </template>
+
         </template>
+        <!-- information -->
         <div class="restante">
           {{payDivisionMessage}}
         </div>
+        <div class="recargo">
+          Regargo: ${{getRecargo()}}
+        </div>
+        <div class="total">
+          Total: ${{getTotal()}}
+        </div>
+        <!-- information -->
       </div>
+      <!-- Dialog's body -->
       <span slot="footer" class="dialog-footer">
-        <el-button @click="payDivisionDialog = false">Cancelar</el-button>
-        <el-button :disabled="this.total - this.getSubTotal() != 0" type="primary" @click="handleAction(3)">Vender</el-button>
+        <el-button class="cancel" @click="payDivisionDialog = false">Cancelar</el-button>
+        <el-button class="success" :disabled="this.total - this.getSubTotal() != 0" @click="handleAction(3)">Vender</el-button>
       </span>
     </el-dialog>
   </div>
@@ -99,7 +135,8 @@ export default Vue.extend({
     payDivisionMessage: "",
     payDivisionDialog: false,
     payMethods: [],
-    payDivision: {} as any
+    payDivision: {} as any,
+    recargoCredito: null as any
   }),
   methods: {
     handleDivisionChange(id: any, amount: any) {
@@ -110,6 +147,30 @@ export default Vue.extend({
         this.payDivision[id] = 0;
       }
       this.payDivisionMessage = this.getPayDivisionMessage();
+    },
+    getRecargo() {
+      if (
+        this.recargoCredito >= 0 &&
+        this.recargoCredito <= 100 &&
+        _.includes(this.payMethods, "credito")
+      ) {
+        return this.payDivision["credito"] * (this.recargoCredito / 100);
+      }
+      return 0;
+    },
+    getTotal() {
+      let pd: any = this.payDivision;
+      let subTotal: number = 0;
+      for (let i in pd) {
+        if (this.recargoCredito && i === "credito") {
+          subTotal +=
+            parseFloat(pd[i]) +
+            (parseFloat(pd[i]) * (this.recargoCredito || 0)) / 100;
+        } else {
+          subTotal += parseFloat(pd[i]);
+        }
+      }
+      return subTotal;
     },
     getSubTotal() {
       let pd: any = this.payDivision;
@@ -190,41 +251,35 @@ export default Vue.extend({
         }
       });
     },
+    clearSell() {
+      this.$store.dispatch(types.clearSells);
+      this.methods = [];
+      this.payMethods = [];
+      this.clearSellDialog();
+    },
+    clearSellDialog() {
+      this.payDivision = {};
+      this.recargoCredito = null;
+      this.payDivisionDialog = false;
+      this.payDivisionMessage = this.getPayDivisionMessage();
+    },
     handleAction(type: number) {
       switch (type) {
         case 1: // Cancelar
-          this.$store.dispatch(types.clearSells);
+          this.clearSell();
           break;
         case 2: // Simular
           this.print();
           break;
         case 3: // Vender
-          if (this.payMethods.length == 0) {
-            this.$notify({
-              title: "No has seleccionado un metodo de pago",
-              message:
-                "Antes de realizar la venta debes elegir el metodo de pago",
-              type: "warning",
-              duration: 5000,
-              offset: 170
-            });
-          } else if (_.isEmpty(this.sells)) {
-            this.$notify({
-              title: "No puedes realizar una venta vacia",
-              message:
-                "Antes de realizar la venta debes seleccionar los productos.",
-              type: "warning",
-              duration: 5000,
-              offset: 170
-            });
-          } else if (
-            _.includes(this.payMethods, "credito") ||
-            _.includes(this.payMethods, "debito")
+          if (!this.isReadyToSell()) return;
+          if (
+            this.payMethods.length > 1 ||
+            _.includes(this.payMethods, "credito")
           ) {
-            if (
-              this.payDivisionDialog &&
-              this.total - this.getSubTotal() == 0
-            ) {
+            if (this.payDivisionDialog) {
+              if (!this.validateSell()) return;
+
               for (const i in this.payDivision) {
                 this.payDivision[i] = parseFloat(this.payDivision[i]);
               }
@@ -244,16 +299,15 @@ export default Vue.extend({
                   });
                 });
 
-              this.methods = [];
-              this.payMethods = [];
-              this.payDivision = {};
-              this.payDivisionDialog = false;
+              this.clearSell();
             } else {
-              this.payDivision = {};
+              this.clearSellDialog();
               this.payDivisionDialog = true;
-              this.payDivisionMessage = this.getPayDivisionMessage();
             }
           } else {
+            if (!this.isReadyToSell()) return;
+            if (!this.validateSell()) return;
+
             this.payDivision = {
               [this.payMethods[0]]: parseFloat(this.total)
             };
@@ -273,35 +327,130 @@ export default Vue.extend({
                 });
               });
 
-            this.methods = [];
-            this.payMethods = [];
-            this.payDivision = {};
-            this.payDivisionDialog = false;
+            this.clearSell();
             break;
           }
       }
+    },
+    isReadyToSell() {
+      if (this.payMethods.length == 0) {
+        this.$notify({
+          title: "No has seleccionado un metodo de pago",
+          message: "Antes de realizar la venta debes elegir el metodo de pago",
+          type: "warning",
+          duration: 5000,
+          offset: 170
+        });
+      } else if (_.isEmpty(this.sells)) {
+        this.$notify({
+          title: "No puedes realizar una venta vacia",
+          message:
+            "Antes de realizar la venta debes seleccionar los productos.",
+          type: "warning",
+          duration: 5000,
+          offset: 170
+        });
+      } else {
+        return true;
+      }
+      return false;
+    },
+    validateSell() {
+      if (_.includes(this.payMethods, "credito")) {
+        if (
+          !this.recargoCredito ||
+          this.recargoCredito < 0 ||
+          this.recargoCredito > 100
+        ) {
+          this.$notify({
+            title: "Porcentaje de recargo incorrecto",
+            message: "El valor del porcentaje debe estar entre 0 y 100.",
+            type: "warning",
+            duration: 5000,
+            offset: 60
+          });
+          return false;
+        }
+      }
+      for (let id in this.payDivision) {
+        if (this.payDivision[id] == 0) {
+          this.$notify({
+            title: `El valor del ${id} es incorrecto`,
+            message: `El valor del ${id} no puede ser 0`,
+            type: "warning",
+            duration: 5000,
+            offset: 60
+          });
+          return false;
+        }
+        if (this.payDivision[id] < 0) {
+          this.$notify({
+            title: `El valor del ${id} es incorrecto`,
+            message: `El valor del ${id} no puede ser negativo`,
+            type: "warning",
+            duration: 5000,
+            offset: 60
+          });
+          return false;
+        }
+      }
+      return false;
     }
   }
 });
 </script>
 
 <style lang="scss" scoped>
-.method {
-  margin-bottom: 5px;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-
-  .label {
-    flex: 1;
-    font-family: Lato;
-    font-weight: bold;
-    font-size: 20px;
-    color: black;
+.dialogBody {
+  @media screen and (max-width: 799px) {
+    padding: 0px 5%;
   }
-  .input {
-    flex: 3;
+  @media screen and (min-width: 800px) {
+    padding: 0px 10%;
+  }
+
+  .method {
+    margin-bottom: 5px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    .label {
+      flex: 1;
+      font-family: Lato;
+      font-weight: bold;
+      font-size: 20px;
+      color: black;
+    }
+    .input {
+      flex: 3;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      .el-input {
+        margin-left: 10px;
+      }
+    }
+  }
+  .restante {
+    color: black;
+    font-size: 20px;
+    font-weight: bold;
+  }
+  .recargo {
+    color: black;
+    font-size: 30px;
+    font-weight: bold;
+    text-align: right;
+    text-transform: uppercase;
+  }
+  .total {
+    text-transform: uppercase;
+    color: black;
+    font-size: 30px;
+    font-weight: bold;
+    text-align: right;
   }
 }
 

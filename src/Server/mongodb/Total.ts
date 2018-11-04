@@ -192,12 +192,19 @@ export default class Total {
 
   public static makeCierre() {
     return new Promise(async resolve => {
+      const isSystelActive = await Settings.isSystelReady();
+      if (isSystelActive) {
+        Firebird.stopSystelSyncProcess();
+      }
+
       const current: any = await Total.getCurrentCierre();
       if (current.data && current.data.length > 0) {
         Total.saveCierre().then(async () => {
-          if (await Settings.isSystelReady()) {
+          if (isSystelActive) {
             await Firebird.clearTotales();
+            Firebird.startSystelSyncProcess();
           }
+
           resolve(true);
         });
       } else {

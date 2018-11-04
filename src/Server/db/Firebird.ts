@@ -7,6 +7,7 @@ import fb from "node-firebird";
 import fs from "fs";
 
 export default class Firebird {
+  private static systelSyncProcess: any;
   private static data = {
     host: "127.0.0.1",
     port: 3050,
@@ -28,10 +29,21 @@ export default class Firebird {
   public static listenForChanges() {
     console.log("Listening for Firebird changes");
     Firebird.identifyChange();
-    setInterval(async () => {
+    Firebird.startSystelSyncProcess();
+  }
+
+  public static startSystelSyncProcess() {
+    Firebird.systelSyncProcess = setInterval(async () => {
       await Firebird.createDatabaseCopy();
       Firebird.identifyChange();
     }, 5000);
+  }
+
+  public static stopSystelSyncProcess() {
+    if (Firebird.systelSyncProcess) {
+      clearInterval(Firebird.systelSyncProcess);
+      Firebird.systelSyncProcess = null;
+    }
   }
 
   private static identifyChange() {

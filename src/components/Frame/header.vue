@@ -11,6 +11,9 @@
       </div>
     </div>
     <div class="windowtools">
+      <!-- <button @click="test(4)">
+        kill sync process
+      </button> -->
       <!-- <button @click="test(1)">
           Nueva venta
       </button>
@@ -50,6 +53,9 @@ export default Vue.extend({
           break;
         case 3:
           Firebird.getTotals();
+          break;
+        case 4:
+          Firebird.stopSystelSyncProcess();
           break;
       }
     },
