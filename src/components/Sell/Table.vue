@@ -2,16 +2,19 @@
   <div class="table">
     <div class="header">
       <div class="column">
+        Código
+      </div>
+      <div class="column">
         Producto
       </div>
       <div class="column">
         Precio
       </div>
       <div class="column">
-        En Stock
+        Stock
       </div>
       <div class="column">
-        Cantidad
+        Venta
       </div>
     </div>
     <div class="body" v-loading="isLoading">
@@ -19,6 +22,9 @@
       v-for="item in products"
       :key="item._id"
       class="row">
+        <div class="column">
+          {{item._id}}
+        </div>
         <div class="column">
           {{item.name}}
         </div>
@@ -47,6 +53,7 @@
         <div class="column"></div>
         <div class="column darker"></div>
         <div class="column"></div>
+        <div class="column darker"></div>
       </div>
     </div>
   </div>
@@ -113,6 +120,7 @@ export default Vue.extend({
 
 <style lang="scss" scoped>
 $scrollbarSize: 16px;
+$gridColumnsTemplate: 1fr 2fr 1fr 1fr 1fr;
 .table {
   position: relative;
   grid-area: table;
@@ -124,18 +132,28 @@ $scrollbarSize: 16px;
   grid-template-areas: "header" "body";
   min-height: 0;
   .header {
+    @media screen and (max-width: 899px) {
+      font-size: 16px;
+    }
+    @media screen and (min-width: 900px) and (max-width: 999px) {
+      font-size: 20px;
+    }
+    @media screen and (min-width: 1000px) {
+      font-size: 25px;
+    }
+
     padding-right: $scrollbarSize;
     grid-area: header;
     z-index: 2;
     display: grid;
     grid-template-rows: 1fr;
-    grid-template-columns: 3fr 2fr 2fr 2fr;
+    grid-template-columns: $gridColumnsTemplate;
     .column {
       display: flex;
+      align-items: center;
       padding-left: 10px;
       align-items: center;
       color: $fontColor;
-      font-size: 28px;
       font-family: Lato;
       font-weight: bold;
       overflow: hidden;
@@ -145,7 +163,7 @@ $scrollbarSize: 16px;
     grid-area: body;
     z-index: 2;
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: scroll;
     &::-webkit-scrollbar {
       width: $scrollbarSize;
     }
@@ -153,26 +171,29 @@ $scrollbarSize: 16px;
       background-color: #e1e2e1;
     }
     &::-webkit-scrollbar-thumb {
-      $borderSize: 7px;
       background-color: #3d3d3d;
-      // border-top: $borderSize solid black;
-      // border-bottom: $borderSize solid black;
     }
     .row {
-      margin: 10px 0px;
       $h: 40px;
-      $fs: 25px;
+
+      @media screen and (max-width: 1099px) {
+        font-size: 20px;
+      }
+      @media screen and (min-width: 1100px) {
+        font-size: 25px;
+      }
+
+      margin: 10px 0px;
       min-height: $h;
       display: grid;
       grid-template-rows: 1fr;
-      grid-template-columns: 3fr 2fr 2fr 2fr;
+      grid-template-columns: $gridColumnsTemplate;
       .column {
         overflow: hidden;
         display: flex;
         padding: 0 $scrollbarSize;
-        // align-items: center;
+        align-items: center;
         color: $fontColor;
-        font-size: $fs;
         font-family: Lato;
         font-weight: bold;
         input {
@@ -187,7 +208,6 @@ $scrollbarSize: 16px;
             background-color: transparent;
             font-family: Lato;
             font-weight: bold;
-            font-size: $fs - 5px;
             transition: 0.2s ease;
             &:focus {
               border-bottom: 4px solid #ff8a50;
@@ -221,22 +241,27 @@ $scrollbarSize: 16px;
       background-color: #e1e2e1;
     }
     .body {
-      margin-right: $scrollbarSize;
+      // margin-right: $scrollbarSize;
       flex: 9;
       display: flex;
       flex-direction: row;
-      grid-template-columns: 3fr 2fr 2fr 2fr;
       .column {
-        flex: 2;
+        flex: 1;
       }
       .column:nth-of-type(1) {
-        flex: 3;
-      }
-      .column:nth-of-type(4) {
-        // flex: 3;
-      }
-      .darker {
         background-color: rgba(225, 226, 225, 0.56);
+      }
+      .column:nth-of-type(2) {
+        flex: 2;
+      }
+      .column:nth-of-type(3) {
+        background-color: rgba(225, 226, 225, 0.56);
+      }
+      .column:nth-of-type(5) {
+        background-color: rgba(225, 226, 225, 0.56);
+      }
+      .column:nth-of-type(6) {
+        flex: 1;
       }
     }
   }

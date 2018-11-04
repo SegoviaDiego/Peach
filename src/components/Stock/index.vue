@@ -72,7 +72,7 @@ export default Vue.extend({
     route: (state: any) => state.Product.buttonRoute,
     nextProductId(state: any) {
       let id = 1;
-      const item = _.maxBy(_.toArray(), item => {
+      const item = _.maxBy(_.toArray(state.Product.data), item => {
         return parseInt(item._id);
       });
 
@@ -159,7 +159,7 @@ export default Vue.extend({
           this.changes = {};
           break;
         case types.routes.deleteItems:
-          this.selected = {};
+          this.deleteSelection = {};
           break;
         case types.routes.inStock:
         case types.routes.outStock:

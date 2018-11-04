@@ -217,7 +217,10 @@ export default Vue.extend({
               duration: 5000,
               offset: 170
             });
-          } else if (this.payMethods.length > 1) {
+          } else if (
+            _.includes(this.payMethods, "credito") ||
+            _.includes(this.payMethods, "debito")
+          ) {
             if (
               this.payDivisionDialog &&
               this.total - this.getSubTotal() == 0
@@ -306,27 +309,54 @@ export default Vue.extend({
   grid-area: actions;
   display: flex;
   overflow: hidden;
+  width: 100%;
   .container {
     flex: 1;
     display: flex;
     flex-direction: column;
     background-color: #e1e2e1;
-    padding: 0 5%;
+    padding: 10px 5%;
     .total {
-      flex: 2;
+      flex: 1;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       text-transform: uppercase;
       font-family: Lato;
       font-weight: bold;
       color: black;
+
       .title {
         flex: 1;
         font-size: 2.5em;
       }
       .value {
-        flex: 1;
-        font-size: 5em;
+        flex: 2;
+        font-size: 40px;
+      }
+
+      @media screen and (min-height: 500px) and (max-height: 999px) {
+        .title {
+          font-size: 2.5em;
+        }
+        .value {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 2em;
+        }
+      }
+
+      @media screen and (min-height: 1000px) {
+        flex: 2;
+        flex-direction: column;
+        .title {
+          flex: 1;
+          font-size: 2.5em;
+        }
+        .value {
+          flex: 1;
+          font-size: 3em;
+        }
       }
     }
     .method {

@@ -12,10 +12,11 @@ export default Vue.extend({
   name: "home",
   mounted() {
     if (process.env.NODE_ENV !== "production") {
-      this.$router.replace("/Informes");
+      this.$router.replace("/sell");
     } else {
       this.$router.replace("/Updater");
     }
+    Server.test();
     Server.initServer(this.$store.dispatch).then(() => {
       console.log("Initialized");
     });
@@ -24,6 +25,10 @@ export default Vue.extend({
 </script>
 
 <style lang="scss">
+* {
+  font-family: Lato, "Avenir", Helvetica, Arial, sans-serif;
+}
+
 .deleteBox * {
   width: 30px !important;
   height: 30px !important;

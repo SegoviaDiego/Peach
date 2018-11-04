@@ -15,83 +15,121 @@
     </div>
     <div class="buttons">
       <template v-if="route === routes.default">
-        <button @click="goTo(routes.inStock)" class="rounded">
-          Ingreso
-        </button>
-        <button @click="goTo(routes.outStock)" class="rounded">
-          Egreso
-        </button>
-        <button @click="print()" class="circle gray">
-          <fontawesome icon="print" />
-        </button>
-        <template v-if="isMoreActive(1)">
-          <button @click="goTo(routes.more)" class="circle">
-            <fontawesome icon="ellipsis-h" />
+        <el-tooltip content="Ingresar productos" placement="top">
+          <button @click="goTo(routes.inStock)" class="rounded">
+            Ingreso
           </button>
+        </el-tooltip>
+        <el-tooltip content="Egresar productos" placement="top">
+          <button @click="goTo(routes.outStock)" class="rounded">
+            Egreso
+          </button>
+        </el-tooltip>
+        <el-tooltip content="Imprimir stock" placement="top">
+          <button @click="print()" class="circle gray">
+            <fontawesome icon="print" />
+          </button>
+        </el-tooltip>
+        <template v-if="isMoreActive(1)">
+          <el-tooltip content="Opciones" placement="top">
+            <button @click="goTo(routes.more)" class="circle">
+              <fontawesome icon="ellipsis-h" />
+            </button>
+          </el-tooltip>
         </template>
-        <button @click="goBack()" class="circle">
-          <fontawesome icon="chevron-left" />
-        </button>
+        <el-tooltip content="Volver atras" placement="top">
+          <button @click="goBack()" class="circle">
+            <fontawesome icon="chevron-left" />
+          </button>
+        </el-tooltip>
       </template>
       <template v-else-if="route === routes.more">
-        <button @click="goTo(routes.default)" class="circle">
-          <fontawesome icon="chevron-left" />
-        </button>
-        <template v-if="isMoreActive(routes.createItem)">
-          <button @click="goTo(routes.createItem)" class="circle">
-            <fontawesome icon="plus" />
+        <el-tooltip content="Volver atras" placement="top">
+          <button @click="goTo(routes.default)" class="circle">
+            <fontawesome icon="chevron-left" />
           </button>
+        </el-tooltip>
+        <template v-if="isMoreActive(routes.createItem)">
+          <el-tooltip content="Crear producto" placement="top">
+            <button @click="goTo(routes.createItem)" class="circle">
+              <fontawesome icon="plus" />
+            </button>
+          </el-tooltip>
         </template>
         <template v-if="isMoreActive(routes.editItems)">
-        <button @click="goTo(routes.editItems)" class="circle">
-          <fontawesome icon="pen" />
-        </button>
+          <el-tooltip content="Editar productos" placement="top">
+            <button @click="goTo(routes.editItems)" class="circle">
+              <fontawesome icon="pen" />
+            </button>
+          </el-tooltip>
         </template>
         <template v-if="isMoreActive(routes.deleteItems)">
-        <button @click="goTo(routes.deleteItems)" class="circle">
-          <fontawesome icon="trash-alt" />
-        </button>
+          <el-tooltip content="Borrar productos" placement="top">
+            <button @click="goTo(routes.deleteItems)" class="circle">
+              <fontawesome icon="trash-alt" />
+            </button>
+          </el-tooltip>
         </template>
       </template>
       <template v-else-if="route === routes.createItem">
-        <button @click="goTo(routes.more, routes.createItem)" class="circle">
-          <fontawesome icon="times" />
-        </button>
-        <button @click="validateItem()" class="circle">
-          <fontawesome icon="save" />
-        </button>
+        <el-tooltip content="Cancelar" placement="top">
+          <button @click="goTo(routes.more, routes.createItem)" class="circle">
+            <fontawesome icon="times" />
+          </button>
+        </el-tooltip>
+        <el-tooltip content="Crear producto" placement="top">
+          <button @click="validateItem()" class="circle">
+            <fontawesome icon="save" />
+          </button>
+        </el-tooltip>
       </template>
       <template v-else-if="route === routes.deleteItems">
-        <button @click="goTo(routes.more, routes.deleteItems)" class="circle">
-          <fontawesome icon="times" />
-        </button>
-        <button @click="saveDeletes()" class="circle">
-          <fontawesome icon="save" />
-        </button>
+        <el-tooltip content="Cancelar" placement="top">
+          <button @click="goTo(routes.more, routes.deleteItems)" class="circle">
+            <fontawesome icon="times" />
+          </button>
+        </el-tooltip>
+        <el-tooltip content="Borrar productos" placement="top">
+          <button @click="saveDeletes()" class="circle">
+            <fontawesome icon="save" />
+          </button>
+        </el-tooltip>
       </template>
       <template v-else-if="route === routes.editItems">
-        <button @click="goTo(routes.more, routes.editItems)" class="circle">
-          <fontawesome icon="times" />
-        </button>
-        <button @click="saveChanges()" class="circle">
-          <fontawesome icon="save" />
-        </button>
+        <el-tooltip content="Cancelar" placement="top">
+          <button @click="goTo(routes.more, routes.editItems)" class="circle">
+            <fontawesome icon="times" />
+          </button>
+        </el-tooltip>
+        <el-tooltip content="Guardar cambios" placement="top">
+          <button @click="saveChanges()" class="circle">
+            <fontawesome icon="save" />
+          </button>
+        </el-tooltip>
       </template>
       <template v-else-if="route === routes.inStock">
-        <button @click="goTo(routes.default, routes.inStock)" class="circle">
-          <fontawesome icon="times" />
-        </button>
-        <button @click="saveInStock()" class="circle">
-          <fontawesome icon="save" />
-        </button>
+        <el-tooltip content="Cancelar" placement="top">
+          <button @click="goTo(routes.default, routes.inStock)" class="circle">
+            <fontawesome icon="times" />
+          </button>
+        </el-tooltip>
+        <el-tooltip content="Guardar ingreso" placement="top">
+          <button @click="saveInStock()" class="circle">
+            <fontawesome icon="save" />
+          </button>
+        </el-tooltip>
       </template>
       <template v-else-if="route === routes.outStock">
-        <button @click="goTo(routes.default, routes.outStock)" class="circle">
-          <fontawesome icon="times" />
-        </button>
-        <button @click="saveOutStock()" class="circle">
-          <fontawesome icon="save" />
-        </button>
+        <el-tooltip content="Cancelar" placement="top">
+          <button @click="goTo(routes.default, routes.outStock)" class="circle">
+            <fontawesome icon="times" />
+          </button>
+        </el-tooltip>
+        <el-tooltip content="Guardar egreso" placement="top">
+          <button @click="saveOutStock()" class="circle">
+            <fontawesome icon="save" />
+          </button>
+        </el-tooltip>
         <div class="select">
           <el-select v-model="type" placeholder="Tipo de egreso">
             <el-option :value="1" label="Vencimiento" />

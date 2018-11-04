@@ -15,6 +15,10 @@ export default class Total {
     return Server.getCollection(types.collection);
   }
 
+  public static listenTo(client: any): void {
+    // client.on("load", (data, response) => {});
+  }
+
   public static load(date: Date) {
     return new Promise(async resolve => {
       if (equalDates(new Date(), date)) {
@@ -35,9 +39,9 @@ export default class Total {
       });
 
       // Compruebo si se realizo un cierre o no
-      if (Total.checkCierre(systelTotal, currentCierre)) {
-        await Total.saveCierre();
-      }
+      // if (Total.checkCierre(systelTotal, currentCierre)) {
+      //   await Total.saveCierre();
+      // }
 
       for (const newTotal of systelTotal) {
         let oldTotal = currentCierre[newTotal.item._id];

@@ -144,9 +144,9 @@ export default class Firebird {
   // Faker functions
 
   public static clearSales() {
-    return new Promise(resolve => {
+    return new Promise(async resolve => {
       fb.attach(
-        { ...Firebird.data, database: "C:/projects/qendra.fdb" },
+        { ...Firebird.data, database: await Settings.getSystelSRC() },
         (err, db) => {
           if (err) throw err;
 
@@ -162,9 +162,9 @@ export default class Firebird {
   }
 
   public static createSell() {
-    return new Promise(resolve => {
+    return new Promise(async resolve => {
       fb.attach(
-        { ...Firebird.data, database: "C:/projects/qendra.fdb" },
+        { ...Firebird.data, database: await Settings.getSystelSRC() },
         (err, db) => {
           if (err) throw err;
 
@@ -184,9 +184,9 @@ export default class Firebird {
   }
 
   public static getTotals() {
-    return new Promise(resolve => {
+    return new Promise(async resolve => {
       fb.attach(
-        { ...Firebird.data, database: "C:/projects/qendra.fdb" },
+        { ...Firebird.data, database: await Settings.getSystelSRC() },
         (err, db) => {
           if (err) throw err;
 

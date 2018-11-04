@@ -24,17 +24,11 @@
 <script lang="ts">
 import Vue from "vue";
 import { mapState } from "vuex";
-import { products as types } from "@/vuexTypes";
+import { products as types, sell as sellTypes } from "@/vuexTypes";
 import _ from "lodash";
 
 export default Vue.extend({
   name: "sell-header",
-  props: {
-    newItem: {},
-    amount: {},
-    selected: {},
-    changes: {}
-  },
   computed: mapState({
     isLoading: (state: any) => state.Product.loading,
     showSpinner: (state: any) => state.Product.showSpinner,
@@ -53,6 +47,7 @@ export default Vue.extend({
       this.$emit("print");
     },
     goBack() {
+      this.$store.dispatch(sellTypes.clearSells);
       this.$router.replace({ path: "/dashboard" });
     },
     saveInStock() {
