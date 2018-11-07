@@ -153,6 +153,29 @@ export default class Firebird {
     });
   }
 
+  public static isFirebirdAvailable(): Promise<Boolean> {
+    return new Promise(async resolve => {
+      fb.attach(
+        { ...Firebird.data, database: await Settings.getSystelSRC() },
+        (err, db) => {
+          if (err) {
+            resolve(false);
+            throw err;
+          }
+
+          db.query("SELECT * FROM TOTALES", [], err => {
+            db.detach();
+            if (err) {
+              resolve(false);
+              throw err;
+            }
+            resolve(true);
+          });
+        }
+      );
+    });
+  }
+
   // Faker functions
 
   public static clearSales() {

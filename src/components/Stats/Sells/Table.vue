@@ -12,6 +12,9 @@
         Credito
       </div>
       <div class="column">
+        Recargo
+      </div>
+      <div class="column">
         Debito
       </div>
       <div class="column">
@@ -29,6 +32,9 @@
           </div>
           <div class="column">
             {{getPayDivision(sell, 'credito')}}
+          </div>
+          <div class="column">
+            {{getPayDivision(sell, 'recargo')}}
           </div>
           <div class="column">
             {{getPayDivision(sell, 'debito')}}
@@ -128,7 +134,7 @@ export default Vue.extend({
 // Scrollbar
 $sbSize: 10px;
 // Grid
-$tableColumnTemplate: 1fr 2fr 2fr 2fr 2fr;
+$tableColumnTemplate: 1fr 2fr 2fr 2fr 2fr 2fr;
 // Head options
 $hFontColor: #000;
 $hFontSize: 20px;

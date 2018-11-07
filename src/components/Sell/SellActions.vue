@@ -58,13 +58,28 @@
                   :value="payDivision[i]"
                   @input="handleDivisionChange(i, $event)"
                   :placeholder="getMethodLabel(i)"/>
-                <el-input
+                <template v-if="recargoType">
+                  <el-input
+                  :key="i + 'recargo'"
+                  :min="1"
+                  :max="2"
+                  :step="0.1"
+                  type="number"
+                  :value="recargoCredito"
+                  @input="handleRecargoChange($event)"
+                  placeholder="Recargo"/>
+                </template>
+                <template v-else>
+                  <el-input
                   :key="i + 'recargo'"
                   :min="0"
                   :max="100"
+                  :step="1"
                   type="number"
-                  v-model="recargoCredito"
+                  :value="recargoCredito"
+                  @input="handleRecargoChange($event)"
                   placeholder="Recargo"/>
+                </template>
               </div>
             </div>
           </template>
@@ -91,10 +106,10 @@
           {{payDivisionMessage}}
         </div>
         <div class="recargo">
-          Regargo: ${{getRecargo()}}
+          Regargo: ${{getRecargo().toFixed(2)}}
         </div>
         <div class="total">
-          Total: ${{getTotal()}}
+          Total: ${{getTotal().toFixed(2)}}
         </div>
         <!-- information -->
       </div>
@@ -114,11 +129,17 @@ import { sell as types } from "@/vuexTypes";
 import _ from "lodash";
 
 import Print from "@/Server/Src/Print";
+import Settings from "@/Server/Settings";
 
 import { composeMagnitude } from "@/Server/mongodb/Utils";
 
 export default Vue.extend({
   name: "sell-actions",
+  mounted() {
+    Settings.getRecargoType().then((value: any) => {
+      this.recargoType = true;
+    });
+  },
   computed: mapState({
     total(state: any) {
       if (!state.Sell.data) return (0).toFixed(2);
@@ -132,6 +153,7 @@ export default Vue.extend({
     isLoading: (state: any) => state.Product.loading
   }),
   data: () => ({
+    recargoType: false,
     payDivisionMessage: "",
     payDivisionDialog: false,
     payMethods: [],
@@ -139,22 +161,40 @@ export default Vue.extend({
     recargoCredito: null as any
   }),
   methods: {
+    handleRecargoChange(value: any) {
+      value = parseFloat(value);
+      if (!isNaN(value)) {
+        this.recargoCredito = value;
+      }
+    },
     handleDivisionChange(id: any, amount: any) {
       amount = parseFloat(amount);
       if (!isNaN(amount)) {
         this.payDivision[id] = amount;
-      } else {
-        this.payDivision[id] = 0;
+        this.payDivisionMessage = this.getPayDivisionMessage();
       }
-      this.payDivisionMessage = this.getPayDivisionMessage();
     },
     getRecargo() {
-      if (
-        this.recargoCredito >= 0 &&
-        this.recargoCredito <= 100 &&
-        _.includes(this.payMethods, "credito")
-      ) {
-        return this.payDivision["credito"] * (this.recargoCredito / 100);
+      if (this.recargoType) {
+        if (
+          this.recargoCredito >= 1 &&
+          this.recargoCredito <= 2 &&
+          _.includes(this.payMethods, "credito")
+        ) {
+          const recargo =
+            this.payDivision["credito"] * (this.recargoCredito - 1);
+          return isNaN(recargo) ? 0 : recargo;
+        }
+      } else {
+        if (
+          this.recargoCredito >= 0 &&
+          this.recargoCredito <= 100 &&
+          _.includes(this.payMethods, "credito")
+        ) {
+          const recargo =
+            this.payDivision["credito"] * (this.recargoCredito / 100);
+          return isNaN(recargo) ? 0 : recargo;
+        }
       }
       return 0;
     },
@@ -162,12 +202,12 @@ export default Vue.extend({
       let pd: any = this.payDivision;
       let subTotal: number = 0;
       for (let i in pd) {
-        if (this.recargoCredito && i === "credito") {
-          subTotal +=
-            parseFloat(pd[i]) +
-            (parseFloat(pd[i]) * (this.recargoCredito || 0)) / 100;
-        } else {
-          subTotal += parseFloat(pd[i]);
+        if (i === "efectivo" || i === "credito" || i === "debito") {
+          if (this.recargoCredito && i === "credito") {
+            subTotal += parseFloat(pd[i]) + this.getRecargo();
+          } else {
+            subTotal += parseFloat(pd[i]);
+          }
         }
       }
       return subTotal;
@@ -284,9 +324,14 @@ export default Vue.extend({
                 this.payDivision[i] = parseFloat(this.payDivision[i]);
               }
 
+              if (this.recargoCredito) {
+                this.payDivision["recargo"] = this.getRecargo();
+                this.payDivision["recargoIndex"] = this.recargoCredito;
+              }
+
               this.$store
                 .dispatch(types.saveSell, {
-                  total: parseFloat(this.total),
+                  total: this.getTotal(),
                   payDivision: this.payDivision
                 })
                 .then(() => {
@@ -357,19 +402,36 @@ export default Vue.extend({
     },
     validateSell() {
       if (_.includes(this.payMethods, "credito")) {
-        if (
-          !this.recargoCredito ||
-          this.recargoCredito < 0 ||
-          this.recargoCredito > 100
-        ) {
-          this.$notify({
-            title: "Porcentaje de recargo incorrecto",
-            message: "El valor del porcentaje debe estar entre 0 y 100.",
-            type: "warning",
-            duration: 5000,
-            offset: 60
-          });
-          return false;
+        if (this.recargoType) {
+          if (
+            !this.recargoCredito ||
+            this.recargoCredito < 1 ||
+            this.recargoCredito > 2
+          ) {
+            this.$notify({
+              title: "Porcentaje de recargo incorrecto",
+              message: "El valor del porcentaje debe estar entre 1 y 2.",
+              type: "warning",
+              duration: 5000,
+              offset: 60
+            });
+            return false;
+          }
+        } else {
+          if (
+            !this.recargoCredito ||
+            this.recargoCredito < 0 ||
+            this.recargoCredito > 100
+          ) {
+            this.$notify({
+              title: "Porcentaje de recargo incorrecto",
+              message: "El valor del porcentaje debe estar entre 0 y 100.",
+              type: "warning",
+              duration: 5000,
+              offset: 60
+            });
+            return false;
+          }
         }
       }
       for (let id in this.payDivision) {
@@ -394,7 +456,7 @@ export default Vue.extend({
           return false;
         }
       }
-      return false;
+      return true;
     }
   }
 });

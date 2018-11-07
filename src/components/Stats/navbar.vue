@@ -114,6 +114,18 @@ export default Vue.extend({
             offset: 170
           });
         }
+      })
+      .catch((systel)=>{
+        if(systel){
+          this.$store.dispatch(totalTypes.load);
+          this.$notify({
+            title: "Ha ocurrido un error al crear el cierre",
+            message: "Antes de realizar el cierre debes cerrar el programa Qendra",
+            type: "success",
+            duration: 5000,
+            offset: 170
+          });
+        }
       });
     },
     goBack() {

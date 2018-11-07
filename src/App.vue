@@ -12,11 +12,10 @@ export default Vue.extend({
   name: "home",
   mounted() {
     if (process.env.NODE_ENV !== "production") {
-      this.$router.replace("/informes");
+      this.$router.replace("/Updater");
     } else {
       this.$router.replace("/Updater");
     }
-    Server.test();
     Server.initServer(this.$store.dispatch).then(() => {
       console.log("Initialized");
     });

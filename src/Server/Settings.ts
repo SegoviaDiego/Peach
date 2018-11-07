@@ -41,7 +41,7 @@ export default class Settings {
     });
   }
 
-  public static isSystelReady() {
+  public static isSystelReady(): Promise<Boolean> {
     return new Promise(resolve => {
       Settings.getPreferences().then(async (preferences: any) => {
         if (preferences) {
@@ -91,6 +91,14 @@ export default class Settings {
             resolve(true);
           });
         }
+      });
+    });
+  }
+
+  public static getRecargoType() {
+    return new Promise((resolve, reject) => {
+      Settings.getPreferences().then((preferences: any) => {
+        resolve(preferences["recargoCreditoPorIndice"] || false);
       });
     });
   }

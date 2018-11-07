@@ -10,6 +10,10 @@ export function equalDates(a: Date, b: Date) {
   );
 }
 
+export function validateInt(val: number) {
+  return isNaN(val) ? 0 : val;
+}
+
 export function equalSells(a: any, b: any) {
   if (!a || !b) return false;
   return (

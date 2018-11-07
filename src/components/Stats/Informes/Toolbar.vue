@@ -237,7 +237,8 @@ export default Vue.extend({
         resumen,
         totalCierres,
         totalEgresos,
-        totalIngresos;
+        totalIngresos,
+        totalRecargo;
 
       const title = `INFORME ${
         this.preferences["appName"] ? `: ${this.preferences["appName"]}` : ""
@@ -296,11 +297,13 @@ export default Vue.extend({
       totalCierres = 0;
       totalIngresos = 0;
       totalEgresos = 0;
+      totalRecargo = 0;
 
       for (let i in cierres) {
         // Cierres
 
         totalCierres += parseFloat(cierres[i].total);
+        totalRecargo += parseFloat(cierres[i].payDivision["recargo"] || 0);
 
         cierresTotales.push([
           { text: `Cierre ${parseInt(i) + 1}` },
@@ -397,10 +400,14 @@ export default Vue.extend({
         { text: `$ ${parseFloat(totalEgresos).toFixed(2)}`, style: "title2" }
       ]);
       resumen.push([
+        { text: "TOTAL RECARGOS", style: "title2" },
+        { text: `$ ${parseFloat(totalRecargo).toFixed(2)}`, style: "title2" }
+      ]);
+      resumen.push([
         { text: "TOTAL NETO", style: "title2" },
         {
           text: `$ ${parseFloat(
-            totalCierres + totalIngresos - totalEgresos
+            totalCierres + totalIngresos + totalRecargo - totalEgresos
           ).toFixed(2)}`,
           style: "title2"
         }

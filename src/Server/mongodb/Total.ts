@@ -1,6 +1,6 @@
 import _ from "lodash";
 import Server from "../Server";
-import { equalDates, equalSells } from "./Utils";
+import { equalDates, equalSells, validateInt } from "./Utils";
 import { totals as types } from "@/vuexTypes";
 import CierreClass from "../typings/Cierre";
 import TotalClass from "../typings/Total";
@@ -9,6 +9,7 @@ import Settings from "@/Server/Settings";
 import Sell from "./Sell";
 import { Collection } from "mongodb";
 import Firebird from "../db/Firebird";
+import { rejects } from "assert";
 
 export default class Total {
   private static db() {
@@ -93,38 +94,69 @@ export default class Total {
     return false;
   }
 
+  public static addPayDivisionToCierre(payDivision: any) {
+    return new Promise(resolve => {
+      Total.getCurrentCierre().then(async (current: any) => {
+        const oldPayDivision = current.payDivision || [];
+
+        let newPayDivision = {
+          efectivo:
+            validateInt(payDivision["efectivo"]) +
+            validateInt(oldPayDivision["efectivo"]),
+          credito:
+            validateInt(payDivision["credito"]) +
+            validateInt(oldPayDivision["credito"]),
+          debito:
+            validateInt(payDivision["debito"]) +
+            validateInt(oldPayDivision["debito"]),
+          recargo:
+            validateInt(payDivision["recargo"]) +
+            validateInt(oldPayDivision["recargo"])
+        };
+
+        // Guardo el nuevo total de payDivision
+        current.payDivision = newPayDivision;
+
+        // Actualizo la base de datos con la nueva data
+        resolve(await Total.updateCurrentCierre(current));
+      });
+    });
+  }
+
   public static addSellsToCierre(sells: any) {
-    Total.getCurrentCierre().then(async (current: any) => {
-      let oldTotal;
+    return new Promise(resolve => {
+      Total.getCurrentCierre().then(async (current: any) => {
+        let oldTotal;
 
-      // Indexo los totales del cierre actual mediante las _id de sus prodctos
-      let currentTotals = _.mapKeys(current.data, total => {
-        return total.item._id;
+        // Indexo los totales del cierre actual mediante las _id de sus prodctos
+        let currentTotals = _.mapKeys(current.data, total => {
+          return total.item._id;
+        });
+
+        // Creo un total base con money y amount = 0 y sobreescribo lo que se tenga
+        // que sobre escribir.
+        _.forEach(sells, (sell: any) => {
+          oldTotal = {
+            amount: 0,
+            money: 0,
+            ...currentTotals[sell.item._id]
+          };
+
+          // Reemplazo el total actual con la suma del viejo mas el nuevo.
+          currentTotals[sell.item._id] = {
+            item: sell.item,
+            amount: oldTotal.amount + sell.amount,
+            money: oldTotal.money + sell.money
+          };
+        });
+
+        // El current indexado lo vuelvo a hacer array para poder
+        // Guardarlo en la base de datos.
+        current.data = _.toArray(currentTotals);
+
+        // Actualizo la base de datos con la nueva data
+        resolve(await Total.updateCurrentCierre(current));
       });
-
-      // Creo un total base con money y amount = 0 y sobreescribo lo que se tenga
-      // que sobre escribir.
-      _.forEach(sells, (sell: any) => {
-        oldTotal = {
-          amount: 0,
-          money: 0,
-          ...currentTotals[sell.item._id]
-        };
-
-        // Reemplazo el total actual con la suma del viejo mas el nuevo.
-        currentTotals[sell.item._id] = {
-          item: sell.item,
-          amount: oldTotal.amount + sell.amount,
-          money: oldTotal.money + sell.money
-        };
-      });
-
-      // El current indexado lo vuelvo a hacer array para poder
-      // Guardarlo en la base de datos.
-      current.data = _.toArray(currentTotals);
-
-      // Actualizo la base de datos con la nueva data
-      Total.updateCurrentCierre(current);
     });
   }
 
@@ -191,9 +223,13 @@ export default class Total {
   }
 
   public static makeCierre() {
-    return new Promise(async resolve => {
-      const isSystelActive = await Settings.isSystelReady();
+    return new Promise(async (resolve, reject) => {
+      const isSystelActive: Boolean = await Settings.isSystelReady();
+
       if (isSystelActive) {
+        if (!Firebird.isFirebirdAvailable()) {
+          reject(true);
+        }
         Firebird.stopSystelSyncProcess();
       }
 

@@ -75,7 +75,11 @@ export default class Sell {
           (err: any) => {
             if (err) throw err;
 
-            if (!systel) Total.addSellsToCierre(sells);
+            if (!systel) {
+              Total.addSellsToCierre(sells).then(() => {
+                Total.addPayDivisionToCierre(payDivision);
+              });
+            }
 
             resolve(true);
           }
