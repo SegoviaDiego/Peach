@@ -103,30 +103,31 @@ export default Vue.extend({
   methods: {
     equalDates: equalDates,
     makeCierre() {
-      Total.makeCierre().then(created => {
-        if (created) {
-          this.$store.dispatch(totalTypes.load);
-          this.$notify({
-            title: "Cierre creado",
-            message: "",
-            type: "success",
-            duration: 3000,
-            offset: 170
-          });
-        }
-      })
-      .catch((systel)=>{
-        if(systel){
-          this.$store.dispatch(totalTypes.load);
-          this.$notify({
-            title: "Ha ocurrido un error al crear el cierre",
-            message: "Antes de realizar el cierre debes cerrar el programa Qendra",
-            type: "success",
-            duration: 5000,
-            offset: 170
-          });
-        }
-      });
+      Total.makeCierre()
+        .then(created => {
+          if (created) {
+            this.$store.dispatch(totalTypes.load);
+            this.$notify({
+              title: "Cierre creado",
+              message: "",
+              type: "success",
+              duration: 3000,
+              offset: 170
+            });
+          }
+        })
+        .catch(systel => {
+          if (systel) {
+            this.$notify({
+              title: "Ha ocurrido un error al crear el cierre",
+              message:
+                "Antes de realizar el cierre debes cerrar el programa Qendra",
+              type: "warning",
+              duration: 5000,
+              offset: 70
+            });
+          }
+        });
     },
     goBack() {
       this.$router.replace({ path: "/dashboard" });

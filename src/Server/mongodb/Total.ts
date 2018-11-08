@@ -227,10 +227,12 @@ export default class Total {
       const isSystelActive: Boolean = await Settings.isSystelReady();
 
       if (isSystelActive) {
-        if (!Firebird.isFirebirdAvailable()) {
+        if (!(await Firebird.isFirebirdAvailable())) {
           reject(true);
+          return;
+        } else {
+          Firebird.stopSystelSyncProcess();
         }
-        Firebird.stopSystelSyncProcess();
       }
 
       const current: any = await Total.getCurrentCierre();

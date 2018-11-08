@@ -26,6 +26,8 @@ export default Vue.extend({
 <style lang="scss">
 * {
   font-family: Lato, "Avenir", Helvetica, Arial, sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 // Dialog style

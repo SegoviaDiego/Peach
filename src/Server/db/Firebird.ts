@@ -167,7 +167,8 @@ export default class Firebird {
             db.detach();
             if (err) {
               resolve(false);
-              throw err;
+              console.error(err);
+              return;
             }
             resolve(true);
           });
