@@ -1,5 +1,7 @@
 "use strict";
 
+import SocketServer from "./Server/SocketServer";
+
 import {
   app,
   protocol,
@@ -71,8 +73,15 @@ if (shouldQuit) {
     if (startMinimized) mainWindow.hide();
   });
 
+  // Server
+  ipcMain.on("startServer", (event: any) => {
+    SocketServer.start().then(() => {
+      event.sender.send("startServer");
+    });
+  });
+
   // Auto update
-  ipcMain.on("installUpdates", () => {
+  ipcMain.on("installUpdates", (event: any) => {
     autoUpdater.quitAndInstall();
   });
 

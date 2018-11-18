@@ -73,19 +73,18 @@ function getTotal(cierres) {
   return _.map(res);
 }
 
-function addKeyValues(obj) {
-  let values = "";
-  for (let val of Object.values(obj)) {
-    values += val;
-  }
-  return values.toLowerCase();
-}
 function filterData(data, filter) {
-  return data.filter(item => {
-    return (addKeyValues(item) + addKeyValues(item.item)).includes(
-      filter.toLowerCase()
-    );
-  });
+  if (!filter) {
+    return data;
+  } else if (isNaN(filter)) {
+    return data.filter(item => {
+      return item["name"].toLowerCase().includes(filter.toLowerCase());
+    });
+  } else {
+    return data.filter(item => {
+      return parseFloat(item._id) == parseFloat(filter);
+    });
+  }
 }
 function sortData(data) {
   // Sort de la lista de totales. a y b son objetos total = {amount, item, money}

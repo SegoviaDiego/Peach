@@ -303,7 +303,10 @@ export default Vue.extend({
         // Cierres
 
         totalCierres += parseFloat(cierres[i].total);
-        totalRecargo += parseFloat(cierres[i].payDivision["recargo"] || 0);
+
+        if (_.includes(cierres[i].payDivision, "recargo")) {
+          totalRecargo += parseFloat(cierres[i].payDivision["recargo"]);
+        }
 
         cierresTotales.push([
           { text: `Cierre ${parseInt(i) + 1}` },

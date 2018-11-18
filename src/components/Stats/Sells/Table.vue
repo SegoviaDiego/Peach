@@ -58,17 +58,18 @@ import { sell as types } from "@/vuexTypes";
 
 import { composeMagnitude, toMagnitude, toHour } from "@/Server/mongodb/Utils";
 
-function addKeyValues(obj) {
-  let values = "";
-  for (let val of Object.values(obj)) {
-    values += val;
-  }
-  return values.toLowerCase();
-}
 function filterData(data, filter) {
-  return data.filter(item => {
-    return addKeyValues(item).includes(filter.toLowerCase());
-  });
+  if (!filter) {
+    return data;
+  } else if (isNaN(filter)) {
+    return data.filter(item => {
+      return item["name"].toLowerCase().includes(filter.toLowerCase());
+    });
+  } else {
+    return data.filter(item => {
+      return parseFloat(item._id) == parseFloat(filter);
+    });
+  }
 }
 function sortData(data) {
   return data.sort((a, b) => {

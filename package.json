@@ -1,6 +1,6 @@
 {
   "name": "Peach",
-  "version": "0.1.22",
+  "version": "0.1.23",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -17,7 +17,6 @@
     "@fortawesome/free-solid-svg-icons": "^5.3.1",
     "@fortawesome/vue-fontawesome": "^0.1.1",
     "@types/express": "^4.16.0",
-    "@types/socket.io": "^1.4.38",
     "chart.js": "^2.7.2",
     "electron-pdf-window": "^1.0.12",
     "electron-updater": "^3.1.2",
@@ -43,6 +42,8 @@
     "@types/mongodb": "^3.1.9",
     "@types/nedb": "^1.8.6",
     "@types/semver": "^5.5.0",
+    "@types/socket.io": "^2.1.0",
+    "@types/socket.io-client": "^1.4.32",
     "@vue/cli-plugin-babel": "^3.0.4",
     "@vue/cli-plugin-eslint": "^3.0.4",
     "@vue/cli-plugin-typescript": "^3.0.4",
@@ -82,5 +83,9 @@
     "last 2 versions",
     "not ie <= 8"
   ],
-  "main": "dist_electron/bundled/background.js"
+  "main": "dist_electron/bundled/background.js",
+  "optionalDependencies": {
+    "bufferutil": "^4.0.0",
+    "utf-8-validate": "^5.0.1"
+  }
 }

@@ -11,14 +11,14 @@ import Server from "@/Server/Server";
 export default Vue.extend({
   name: "home",
   mounted() {
+    Server.initServer(this.$store.dispatch).then(() => {
+      console.log("Server initialized");
+    });
     if (process.env.NODE_ENV !== "production") {
       this.$router.replace("/Updater");
     } else {
       this.$router.replace("/Updater");
     }
-    Server.initServer(this.$store.dispatch).then(() => {
-      console.log("Initialized");
-    });
   }
 });
 </script>

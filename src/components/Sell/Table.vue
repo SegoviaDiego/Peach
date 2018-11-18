@@ -71,17 +71,18 @@ import {
   getProductTypeStep
 } from "@/Server/mongodb/Utils";
 
-function addKeyValues(obj: any) {
-  let values = "";
-  for (let val of Object.values(obj)) {
-    values += val;
-  }
-  return values.toLowerCase();
-}
 function filterData(data: any, filter: any) {
-  return data.filter((item: any) => {
-    return addKeyValues(item).includes(filter.toLowerCase());
-  });
+  if (!filter) {
+    return data;
+  } else if (isNaN(filter)) {
+    return data.filter((item: any) => {
+      return item["name"].toLowerCase().includes(filter.toLowerCase());
+    });
+  } else {
+    return data.filter((item: any) => {
+      return parseFloat(item._id) == parseFloat(filter);
+    });
+  }
 }
 function sortData(data: any) {
   return data.sort((a: any, b: any) => {

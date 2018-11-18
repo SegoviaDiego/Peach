@@ -75,7 +75,8 @@ export default Vue.extend({
       "autoStart",
       "newP",
       "mutableP",
-      "deleteP"
+      "deleteP",
+      "recargoCreditoPorIndice"
     ] as any,
     pNames: [
       "Nombre del negocio",
@@ -83,7 +84,8 @@ export default Vue.extend({
       "Iniciar con windows",
       "Creacion de productos",
       "Modificacion de productos",
-      "Eliminacion de productos"
+      "Eliminacion de productos",
+      "Recargo por indice"
     ] as any
   }),
   computed: mapState({

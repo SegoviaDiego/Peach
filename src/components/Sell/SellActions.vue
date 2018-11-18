@@ -137,7 +137,7 @@ export default Vue.extend({
   name: "sell-actions",
   mounted() {
     Settings.getRecargoType().then((value: any) => {
-      this.recargoType = true;
+      this.recargoType = value;
     });
   },
   computed: mapState({

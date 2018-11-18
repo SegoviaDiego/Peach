@@ -95,6 +95,14 @@ export default class Settings {
     });
   }
 
+  public static isServer() {
+    return new Promise((resolve, reject) => {
+      Settings.getDatabase().then((database: any) => {
+        resolve(database["server"] || false);
+      });
+    });
+  }
+
   public static getRecargoType() {
     return new Promise((resolve, reject) => {
       Settings.getPreferences().then((preferences: any) => {

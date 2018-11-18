@@ -160,6 +160,7 @@ export default class Firebird {
         (err, db) => {
           if (err) {
             resolve(false);
+            console.error("getSystelSrc is not available");
             throw err;
           }
 
@@ -167,6 +168,7 @@ export default class Firebird {
             db.detach();
             if (err) {
               resolve(false);
+              console.error("Select * from Totales returned an error");
               console.error(err);
               return;
             }

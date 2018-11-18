@@ -16,8 +16,21 @@
     <div class="body">
       <div class="container">
         <div class="settings" v-loading="isLoading">
-          <!-- Path to Systel FDB -->
+          <!-- Is this instance a server -->
           <div class="preference">
+            <div class="label">
+              Servidor:
+            </div>
+            <div class="switch">
+              <el-switch
+                v-model="data['server']"
+                active-color="#13ce66"
+                inactive-color="#ff4949">
+              </el-switch>
+            </div>
+          </div>
+          <!-- Path to Systel FDB -->
+          <div v-if="data['server']" class="preference">
             <div class="label">
               Systel Path:
             </div>
@@ -28,7 +41,7 @@
             </div>
           </div>
           <!-- URL to MongoDB server -->
-          <div class="preference">
+          <div v-if="!data['server']" class="preference">
             <div class="label">
               MongoDB Server:
             </div>

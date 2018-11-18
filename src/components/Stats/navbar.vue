@@ -104,17 +104,18 @@ export default Vue.extend({
     equalDates: equalDates,
     makeCierre() {
       Total.makeCierre()
-        .then(created => {
-          if (created) {
-            this.$store.dispatch(totalTypes.load);
-            this.$notify({
-              title: "Cierre creado",
-              message: "",
-              type: "success",
-              duration: 3000,
-              offset: 170
-            });
-          }
+        .then(async created => {
+          const index = this.cierreIndex;
+          await this.$store.dispatch(totalTypes.load);
+          await this.setCierreIndex(index);
+
+          this.$notify({
+            title: "Cierre creado",
+            message: "",
+            type: "success",
+            duration: 3000,
+            offset: 170
+          });
         })
         .catch(systel => {
           if (systel) {

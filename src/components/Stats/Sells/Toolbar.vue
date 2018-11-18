@@ -12,9 +12,9 @@
     <button @click="selectingDate = true" class="rect">
       Fecha
     </button>
-    <button @click="selectingPrint = true" class="circle">
+    <!-- <button @click="selectingPrint = true" class="circle">
       <fontawesome icon="print" />
-    </button>
+    </button> -->
     
     <!-- Dialog -->
     <el-dialog

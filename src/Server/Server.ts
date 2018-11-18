@@ -1,12 +1,9 @@
-import { products as pTypes } from "@/vuexTypes";
+import electron from "electron";
 import { MongoClient, Db, Collection } from "mongodb";
 import Firebird from "./db/Firebird";
 import Settings from "@/Server/Settings";
 import Total from "@/Server/mongodb/Total";
-
-// import express from "express";
-// import io from "socket.io";
-// const server = express().listen(3031);
+import { products as pTypes } from "@/vuexTypes";
 
 export default class Server {
   private static db: Db;
@@ -18,26 +15,29 @@ export default class Server {
     poolSize: 5
   };
 
-  public static test() {
-    // io.listen(server).on("connection", client => {
-    //   Total.listenTo(client);
-    // });
-  }
-
   public static initServer(dispatch: any) {
     return new Promise(async resolve => {
-      Settings.isSystelReady().then(ready => {
-        if (ready) {
-          Firebird.createDatabaseCopy().then(() => {
-            dispatch(pTypes.syncToSystel).then(async () => {
-              Firebird.listenForChanges();
-              resolve();
+      Settings.isServer().then(isServer => {
+        if (isServer) {
+          electron.ipcRenderer.on("startServer", () => {
+            Settings.isSystelReady().then(ready => {
+              if (ready) {
+                Firebird.createDatabaseCopy().then(() => {
+                  dispatch(pTypes.syncToSystel).then(async () => {
+                    Firebird.listenForChanges();
+                    resolve();
+                  });
+                });
+              } else {
+                Total.getCurrent().then(() => {
+                  resolve();
+                });
+              }
             });
           });
+          electron.ipcRenderer.send("startServer");
         } else {
-          Total.getCurrent().then(() => {
-            resolve();
-          });
+          // Ping to the server
         }
       });
     });
