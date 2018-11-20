@@ -19,6 +19,7 @@ export default class Server {
     return new Promise(async resolve => {
       Settings.isServer().then(isServer => {
         if (isServer) {
+          // Evento emitido cuando el servidor es inicializado
           electron.ipcRenderer.on("startServer", () => {
             Settings.isSystelReady().then(ready => {
               if (ready) {
@@ -35,8 +36,11 @@ export default class Server {
               }
             });
           });
+          // Evento que comienza la inicializacion del servidor
           electron.ipcRenderer.send("startServer");
         } else {
+          console.log("No es servidor");
+          // resolve();
           // Ping to the server
         }
       });

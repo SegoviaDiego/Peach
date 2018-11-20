@@ -7,15 +7,17 @@
 <script lang="ts">
 import Vue from "vue";
 import Server from "@/Server/Server";
+import Client from "@/Server/Client";
 
 export default Vue.extend({
   name: "home",
   mounted() {
     Server.initServer(this.$store.dispatch).then(() => {
       console.log("Server initialized");
+      Client.connect("127.0.0.1");
     });
     if (process.env.NODE_ENV !== "production") {
-      this.$router.replace("/Updater");
+      this.$router.replace("/Stock");
     } else {
       this.$router.replace("/Updater");
     }

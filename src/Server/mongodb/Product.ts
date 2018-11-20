@@ -6,6 +6,10 @@ import { fromMagnitude } from "@/Server/mongodb/Utils";
 import Firebase from "../db/Firebase";
 
 export default class Product {
+  public static test() {
+    console.log(1);
+  }
+  
   private static db() {
     return Server.getCollection(types.collection);
   }

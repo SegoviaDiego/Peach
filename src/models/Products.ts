@@ -1,5 +1,7 @@
-import Product from "@/Server/mongodb/Product";
 import _ from "lodash";
+import Product from "@/Server/mongodb/Product";
+import Client from "@/Server/Client";
+import socketEvents from "@/socketEvents";
 import { products as types } from "@/vuexTypes";
 
 export default {
@@ -16,13 +18,14 @@ export default {
   actions: {
     async [types.load]({ commit }: any) {
       commit(types.startLoading);
-      commit(types.load, await Product.loadProducts());
+      commit(types.load, await Client.get(socketEvents.Product.loadProducts));
       commit(types.stopLoading);
     },
     async [types.syncToSystel]({ commit }: any) {
       commit(types.startLoading);
       await Product.syncToSystel();
       commit(types.load, await Product.loadProducts());
+      commit(types.stopLoading);
     },
     [types.handleChange]({ commit }: any, payload: any) {
       if (payload.input == 0) {
