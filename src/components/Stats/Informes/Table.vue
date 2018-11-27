@@ -1,7 +1,25 @@
 <template>
   <div class="grid">
     <Toolbar/>
-    <div class="head">
+    <div class="table">
+      <OxyTable v-model="filteredData">
+        <Row slot="row" slot-scope="total" :key="total._id">
+          <Cell label="Producto" sortBy="item.name" :colSpan="2" >
+            {{total.item.name}}
+          </Cell>
+          <Cell label="Precio" sortBy="item.price" :colSpan="1" >
+             $ {{total.item.price}}
+          </Cell>
+          <Cell label="Cantidad" sortBy="total.amount" :colSpan="1" >
+            {{composeMagnitude(total.amount, total.item.type)}}
+          </Cell>
+          <Cell label="Total" sortBy="money" :colSpan="1" >
+            $ {{(total.money).toFixed(2)}}
+          </Cell>
+        </Row>
+      </OxyTable>
+    </div>
+    <!-- <div class="head">
       <div class="column">
         Articulo
       </div>
@@ -38,19 +56,19 @@
           </div>
         </div>
       </template>
-    </div>
+    </div> -->
   </div>
 </template>
 
 <script>
 import Vue from "vue";
 import { mapState } from "vuex";
-
-import Log from "@/Server/mongodb/Log";
 import Toolbar from "./Toolbar.vue";
 import { totals as types } from "@/vuexTypes";
-
-import { composeMagnitude } from "@/Server/mongodb/Utils";
+import { composeMagnitude } from "@/api/Utils";
+import OxyTable from "@/components/Table/index.vue";
+import Row from "@/components/Table/Row.vue";
+import Cell from "@/components/Table/Cell.vue";
 
 // Agrupacion de las ventas de todos los cierres que se hicieron en el dia
 function getTotal(cierres) {
@@ -77,8 +95,8 @@ function filterData(data, filter) {
   if (!filter) {
     return data;
   } else if (isNaN(filter)) {
-    return data.filter(item => {
-      return item["name"].toLowerCase().includes(filter.toLowerCase());
+    return data.filter(total => {
+      return total.item["name"].toLowerCase().includes(filter.toLowerCase());
     });
   } else {
     return data.filter(item => {
@@ -96,7 +114,10 @@ function sortData(data) {
 export default Vue.extend({
   name: "informes-table",
   components: {
-    Toolbar
+    Toolbar,
+    OxyTable,
+    Row,
+    Cell
   },
   data: () => ({
     totalIndex: types.totalIndex,
@@ -142,12 +163,17 @@ $bFontColor: #a0a0a0;
   padding: 10px;
   grid-area: table;
   display: grid;
-  grid-template-rows: 70px 50px 1fr;
+  grid-template-rows: 70px 1fr;
   grid-template-columns: 1fr;
-  grid-template-areas: "toolbar" "head" "body";
+  grid-template-areas: "toolbar" "table";
   overflow: hidden;
   background-color: #eeeeee;
   border-radius: 7px;
+  .table {
+    grid-area: table;
+    width: 100%;
+    height: 100%;
+  }
   .head {
     margin-right: $sbSize;
     grid-area: head;

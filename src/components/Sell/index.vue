@@ -12,7 +12,7 @@ import Vue from "vue";
 import { mapState } from "vuex";
 import { products as types } from "@/vuexTypes";
 
-import Print from "@/Server/Src/Print";
+import Print from "@/api/Print";
 
 import HeaderBar from "./HeaderBar.vue";
 import Table from "./Table.vue";

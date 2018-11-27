@@ -1,5 +1,6 @@
-import Log from "@/Server/mongodb/Log";
+import Client from "@/api/Client/Client";
 import { log as types } from "@/vuexTypes";
+import socketEvents from "@/socketEvents";
 
 export default {
   state: {
@@ -8,7 +9,7 @@ export default {
     mov: [],
     loading: false,
     filter: "",
-    date: new Date(),
+    date: null,
     type: 4
   },
   actions: {
@@ -16,7 +17,11 @@ export default {
       commit(types.startLoading);
       commit(
         types.loadMov,
-        await Log.getLog(types.loadMov, state.date, state.type)
+        await Client.get(socketEvents.Log.getLog, {
+          db: types.loadMov,
+          date: state.date,
+          type: state.type
+        })
       );
       commit(types.stopLoading);
     },
@@ -24,7 +29,10 @@ export default {
       commit(types.startLoading);
       commit(
         types.loadIngreso,
-        await Log.getLog(types.loadIngreso, state.date)
+        await Client.get(socketEvents.Log.getLog, {
+          db: types.loadIngreso,
+          date: state.date
+        })
       );
       commit(types.stopLoading);
     },
@@ -32,17 +40,21 @@ export default {
       commit(types.startLoading);
       commit(
         types.loadEgreso,
-        await Log.getLog(types.loadEgreso, state.date, state.type)
+        await Client.get(socketEvents.Log.getLog, {
+          db: types.loadEgreso,
+          date: state.date,
+          type: state.type
+        })
       );
       commit(types.stopLoading);
     },
-    async [types.createMov]({ commit, state }: any, mov: any) {
+    async [types.createMov]({ dispatch, commit }: any, mov: any) {
       commit(types.startLoading);
-      await Log.save(types.createMov, mov);
-      commit(
-        types.loadMov,
-        await Log.getLog(types.loadMov, state.date, state.type)
-      );
+      await Client.set(socketEvents.Log.saveLog, {
+        type: types.createMov,
+        payload: mov
+      });
+      await dispatch(types.loadMov);
       commit(types.stopLoading);
     },
     [types.setDate]({ commit }: any, newDate: any) {

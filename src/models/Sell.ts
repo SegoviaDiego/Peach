@@ -1,23 +1,24 @@
 import _ from "lodash";
-import Sell from "@/Server/mongodb/Sell";
+import Client from "@/api/Client/Client";
 import { sell as types, products as pTypes } from "@/vuexTypes";
+import socketEvents from "@/socketEvents";
 
 export default {
   state: {
     sells: {},
     data: {},
-    loading: false,
-    date: new Date()
+    loading: false
   },
   actions: {
     async [types.load]({ commit }: any, date: Date) {
       commit(types.startLoading);
-      commit(types.load, await Sell.load(date));
+      // Sell.load(date)
+      commit(types.load, await Client.get(socketEvents.Sell.load, date));
       commit(types.stopLoading);
     },
     async [types.saveSell]({ dispatch, commit, state }: any, payload: any) {
       commit(types.startLoading);
-      await Sell.save(state.data, payload);
+      Client.set(socketEvents.Sell.saveSell, { sells: state.data, payload });
       await commit(types.clearSells);
       await dispatch(pTypes.load);
       commit(types.stopLoading);

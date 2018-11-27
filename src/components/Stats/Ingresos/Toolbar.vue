@@ -62,8 +62,8 @@
 import Vue from "vue";
 import { mapState } from "vuex";
 import { log as types } from "@/vuexTypes";
-import Print from "@/Server/Src/Print";
-import { composeMagnitude, toHour } from "@/Server/mongodb/Utils";
+import Print from "@/api/Print";
+import { composeMagnitude, toHour } from "@/api/Utils";
 
 export default Vue.extend({
   name: "informes-toolbar",
@@ -161,14 +161,14 @@ export default Vue.extend({
       ]);
 
       ingresos = ingresos.sort((a, b) => {
-        return b.time - a.time;
+        return new Date(b.time) - new Date(a.time);
       });
 
       for (let ingreso of ingresos) {
-        if (ingreso.time > from && ingreso.time < to)
+        if (new Date(ingreso.time) > from && new Date(ingreso.time) < to)
           printData.push([
             ingreso.item._id,
-            toHour(ingreso.time),
+            toHour(new Date(ingreso.time)),
             ingreso.item.name,
             composeMagnitude(ingreso.amount, ingreso.item.type)
           ]);

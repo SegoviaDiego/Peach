@@ -16,6 +16,7 @@
 
       </template>
       <template v-else>
+        <!-- Preferencias -->
         <div @click="goTo(1)" class="route">
           <div class="icon">
             <fontawesome icon="sliders-h" />
@@ -24,7 +25,8 @@
             Preferencias
           </div>
         </div>
-        <div @click="goTo(2)" class="route">
+        <!-- Users -->
+        <div @click="goTo(2)" class="route" v-if="false">
           <div class="icon">
             <fontawesome icon="users" />
           </div>
@@ -32,6 +34,7 @@
             Usuarios
           </div>
         </div>
+        <!-- Database -->
         <div @click="goTo(3)" class="route">
           <div class="icon">
             <fontawesome icon="database" />
@@ -40,7 +43,8 @@
             Base de datos
           </div>
         </div>
-        <div @click="goTo(4)" class="route">
+        <!-- Firebase cloud sync -->
+        <div @click="goTo(4)" class="route" v-if="false">
           <div class="icon">
             <fontawesome icon="server" />
           </div>

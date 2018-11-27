@@ -1,4 +1,3 @@
-import Product from "@/Server/mongodb/Product";
 import _ from "lodash";
 
 export function equalDates(a: Date, b: Date) {
@@ -64,10 +63,13 @@ export function toHour(time: Date) {
   return hour + ":" + minutes;
 }
 
-export function composeSystelToKg(systelTotals: [any]): Promise<any> {
+export function composeSystelToKg(
+  products: any,
+  systelTotals: [any]
+): Promise<any> {
   return new Promise(async resolve => {
     let totals: any = [];
-    let products: any = _.mapKeys(await Product.loadProducts(), (item: any) => {
+    products = _.mapKeys(products, (item: any) => {
       return item._id;
     });
 

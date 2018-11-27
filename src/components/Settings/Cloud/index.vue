@@ -66,8 +66,8 @@ import Vue from "vue";
 import { mapState } from "vuex";
 import { settings as types } from "@/vuexTypes";
 import * as path from "path";
-import Firebase from "@/Server/db/Firebase";
-import Settings from "@/Server/Settings";
+import Firebase from "@/api/Server/db/Firebase";
+import Settings from "@/api/Server/Settings";
 
 export default Vue.extend({
   name: "app-settings",

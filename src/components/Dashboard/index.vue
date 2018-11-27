@@ -1,49 +1,37 @@
 <template>
   <div class="dashboardGrid">
     <div class="header">
-      <div class="title">
-        ¡Bienvenido a la aplicación de Control de Negocio!
-      </div>
-      <div class="subTitle">
-        Haz click en una de las secciones para continuar.      
-      </div>
+      <div class="title">¡Bienvenido a la aplicación de Control de Negocio!</div>
+      <div class="subTitle">Haz click en una de las secciones para continuar.</div>
     </div>
     <div v-loading="isLoading" class="router">
-      <template v-if="isServerActive">
+      <template v-if="isConnected">
         <div @click="goTo(1)" class="route">
           <div class="icon">
-            <fontawesome icon="box-open" />
+            <fontawesome icon="box-open"/>
           </div>
-          <div class="title">
-            Stock
-          </div>
+          <div class="title">Stock</div>
         </div>
         <template v-if="!preferences['systel']">
           <div @click="goTo(2)" class="route">
             <div class="icon">
-              <fontawesome icon="dollar-sign" />
+              <fontawesome icon="dollar-sign"/>
             </div>
-            <div class="title">
-              Ventas
-            </div>
+            <div class="title">Ventas</div>
           </div>
         </template>
         <div @click="goTo(3)" class="route">
           <div class="icon">
-            <fontawesome icon="chart-line" />
+            <fontawesome icon="chart-line"/>
           </div>
-          <div class="title">
-            Informes
-          </div>
+          <div class="title">Informes</div>
         </div>
       </template>
       <div @click="goTo(4)" class="route">
         <div class="icon">
-          <fontawesome icon="cog" />
+          <fontawesome icon="cog"/>
         </div>
-        <div class="title">
-          Configuracion
-        </div>
+        <div class="title">Configuracion</div>
       </div>
     </div>
   </div>
@@ -53,22 +41,16 @@
 import Vue from "vue";
 import { mapState } from "vuex";
 import { settings as types } from "@/vuexTypes";
-import Settings from "@/Server/Settings";
 
 export default Vue.extend({
   name: "app-main",
   mounted() {
     this.$store.dispatch(types.loadPreferences);
-    Settings.getMongoURL().then(url => {
-      this.isServerActive = url;
-    });
   },
-  data: () => ({
-    isServerActive: false
-  }),
   computed: mapState({
     isLoading: (state: any) => state.Settings.loading,
-    preferences: (state: any) => state.Settings.preferences
+    preferences: (state: any) => state.Settings.preferences,
+    isConnected: (state: any) => state.Settings.connected
   }),
   methods: {
     goTo(route: any) {

@@ -1,7 +1,7 @@
 # Peach
 
 > Programa para la administración de negocios.
-> /- MongoDB (Optional, fallback on Nedb) - Firebird Server 2.1.7 (If you are using Systel) -/
+> /- MongoDB - Firebird Server 2.1.7 (If you are using Systel) -/
 
 ## MongoDB Installation
 
@@ -18,8 +18,11 @@ net start MongoDB
 
 ## Firebird setup
 
+--- IMPORTANT ---
+FIREBIRD VERSION: 2.5.1
+
 download Firebird Super Server from
-'https://firebirdsql.org/en/firebird-2-1-7/'
+'https://www.firebirdsql.org/en/firebird-2-5-1/?'
 
 Install and run it as a service
 

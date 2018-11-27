@@ -93,6 +93,7 @@ export const sell = {
 
 export const settings = {
   // actions
+  connect: 'CLIENT_CONNECT',
   // Preferences
   preferencesId: 1,
   loadPreferences: "LOAD_PREFERENCES",

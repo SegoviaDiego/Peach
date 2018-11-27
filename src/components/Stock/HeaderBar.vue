@@ -44,11 +44,6 @@
         </el-tooltip>
       </template>
       <template v-else-if="route === routes.more">
-        <el-tooltip content="Volver atras" placement="top">
-          <button @click="goTo(routes.default)" class="circle">
-            <fontawesome icon="chevron-left" />
-          </button>
-        </el-tooltip>
         <template v-if="isMoreActive(routes.createItem)">
           <el-tooltip content="Crear producto" placement="top">
             <button @click="goTo(routes.createItem)" class="circle">
@@ -70,6 +65,11 @@
             </button>
           </el-tooltip>
         </template>
+        <el-tooltip content="Volver atras" placement="top">
+          <button @click="goTo(routes.default)" class="circle">
+            <fontawesome icon="chevron-left" />
+          </button>
+        </el-tooltip>
       </template>
       <template v-else-if="route === routes.createItem">
         <el-tooltip content="Cancelar" placement="top">
@@ -146,7 +146,8 @@
 import Vue from "vue";
 import { mapState } from "vuex";
 import { products as types } from "@/vuexTypes";
-import Product from "@/Server/mongodb/Product";
+import socketEvents from "@/socketEvents";
+import Client from "@/api/Client/Client";
 import _ from "lodash";
 
 export default Vue.extend({
@@ -249,7 +250,12 @@ export default Vue.extend({
           offset: 170
         });
         return;
-      } else if (await Product.productExists(this.newItem["_id"])) {
+      } else if (
+        await Client.get(
+          socketEvents.Product.productExists,
+          this.newItem["_id"]
+        )
+      ) {
         this.$notify({
           title: "El codigo ingresado ya existe!",
           message: "El valor del codigo debe ser unico para cada producto.",

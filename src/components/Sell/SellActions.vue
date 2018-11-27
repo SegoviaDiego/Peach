@@ -128,10 +128,10 @@ import { mapState } from "vuex";
 import { sell as types } from "@/vuexTypes";
 import _ from "lodash";
 
-import Print from "@/Server/Src/Print";
-import Settings from "@/Server/Settings";
+import Print from "@/api/Print";
+import Settings from "@/api/Client/Settings";
 
-import { composeMagnitude } from "@/Server/mongodb/Utils";
+import { composeMagnitude } from "@/api/Utils";
 
 export default Vue.extend({
   name: "sell-actions",

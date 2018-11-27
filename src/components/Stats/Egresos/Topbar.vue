@@ -38,7 +38,6 @@
 <script lang="ts">
 import Vue from "vue";
 import { mapState } from "vuex";
-
 import { log as types } from "@/vuexTypes";
 
 export default Vue.extend({

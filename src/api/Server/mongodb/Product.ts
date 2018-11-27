@@ -1,17 +1,72 @@
-import Server from "@/Server/Server";
-import { products as types, log as logTypes } from "@/vuexTypes";
-import Firebird from "@/Server/db/Firebird";
-import Log from "@/Server/mongodb/Log";
-import { fromMagnitude } from "@/Server/mongodb/Utils";
-import Firebase from "../db/Firebase";
+import Log from "./Log";
+import Server from "../Server";
+import Firebird from "../db/Firebird";
+import { fromMagnitude } from "../../Utils";
+import socketEvents from "../../../socketEvents";
+import { products as types, log as logTypes } from "../../../vuexTypes";
+// import Firebase from "../db/Firebase";
 
 export default class Product {
-  public static test() {
-    console.log(1);
-  }
-  
   private static db() {
     return Server.getCollection(types.collection);
+  }
+
+  public static async get(
+    event: string,
+    data: any,
+    callback: (success: boolean, payload: any) => void
+  ) {
+    switch (event) {
+      case socketEvents.Product.loadProducts:
+        Product.loadProducts()
+          .then(res => callback(true, res))
+          .catch(res => callback(false, res));
+        break;
+      case socketEvents.Product.productExists:
+        Product.productExists(data)
+          .then(res => callback(true, res))
+          .catch(res => callback(false, res));
+        break;
+    }
+  }
+
+  public static async set(
+    event: string,
+    data: any,
+    callback: (success: boolean, payload: any) => void
+  ) {
+    switch (event) {
+      case socketEvents.Product.syncToSystel:
+        Product.syncToSystel()
+          .then(res => callback(true, res))
+          .catch(res => callback(false, res));
+        break;
+      case socketEvents.Product.createProduct:
+        Product.createProduct(data)
+          .then(res => callback(true, res))
+          .catch(res => callback(false, res));
+        break;
+      case socketEvents.Product.mutateProducts:
+        Product.mutateProducts(data)
+          .then(res => callback(true, res))
+          .catch(res => callback(false, res));
+        break;
+      case socketEvents.Product.deleteProducts:
+        Product.deleteProducts(data)
+          .then(res => callback(true, res))
+          .catch(res => callback(false, res));
+        break;
+      case socketEvents.Product.inStock:
+        Product.inStock(data)
+          .then(res => callback(true, res))
+          .catch(res => callback(false, res));
+        break;
+      case socketEvents.Product.outStock:
+        Product.outStock(data.outs, data.type)
+          .then(res => callback(true, res))
+          .catch(res => callback(false, res));
+        break;
+    }
   }
 
   public static getProduct(_id: any) {
@@ -32,17 +87,19 @@ export default class Product {
 
   public static loadProducts() {
     return new Promise((resolve, reject) => {
-      Product.db().then(db => {
-        db.find({})
-          .sort({ _id: 1 })
-          .toArray((err, docs) => {
-            if (err) {
-              reject([]);
-              throw err;
-            }
-            resolve(docs);
-          });
-      });
+      Product.db()
+        .then(db => {
+          db.find({})
+            .sort({ _id: 1 })
+            .toArray((err, docs) => {
+              if (err) {
+                reject();
+                throw err;
+              }
+              resolve(docs);
+            });
+        })
+        .catch(reject);
     });
   }
 
@@ -84,30 +141,32 @@ export default class Product {
 
   public static createProduct(product: any): Promise<any> {
     return new Promise((resolve, reject) => {
-      Product.db().then(db => {
-        db.insertOne(
-          {
-            ...product,
-            price: parseFloat(parseFloat(product.price).toFixed(2))
-          },
-          err => {
-            if (err) {
-              reject({
-                error: err,
-                code: 2,
-                message: "Ha ocurrido un error inesperado."
-              });
-              throw err;
-            } else {
-              Firebase.saveProduct({
-                ...product,
-                price: parseFloat(parseFloat(product.price).toFixed(2))
-              });
-              resolve(true);
+      Product.db()
+        .then(db => {
+          db.insertOne(
+            {
+              ...product,
+              price: parseFloat(parseFloat(product.price).toFixed(2))
+            },
+            err => {
+              if (err) {
+                reject({
+                  error: err,
+                  code: 2,
+                  message: "Ha ocurrido un error inesperado."
+                });
+                throw err;
+              } else {
+                // Firebase.saveProduct({
+                //   ...product,
+                //   price: parseFloat(parseFloat(product.price).toFixed(2))
+                // });
+                resolve(true);
+              }
             }
-          }
-        );
-      });
+          );
+        })
+        .catch(reject);
     });
   }
 
@@ -126,19 +185,28 @@ export default class Product {
       Product.db().then(db => {
         db.findOne({ _id }, (err, doc) => {
           if (err) throw err;
-          db.replaceOne({ _id }, { ...doc, ...modifiedProduct }, {}, err => {
-            if (err) throw err;
-            else {
-              Firebase.saveProduct({ ...doc, ...modifiedProduct });
-              resolve();
+          db.replaceOne(
+            { _id },
+            {
+              ...doc,
+              ...modifiedProduct,
+              price: parseFloat(modifiedProduct.price)
+            },
+            {},
+            err => {
+              if (err) throw err;
+              else {
+                // Firebase.saveProduct({ ...doc, ...modifiedProduct });
+                resolve();
+              }
             }
-          });
+          );
         });
       });
     });
   }
 
-  public static deleteItems(selected: any): Promise<any> {
+  public static deleteProducts(selected: any): Promise<any> {
     return new Promise(async resolve => {
       let keys = Object.keys(selected);
       for (let id of keys) {
@@ -160,7 +228,7 @@ export default class Product {
             });
             throw err;
           } else {
-            Firebase.deleteProduct({ _id });
+            // Firebase.deleteProduct({ _id });
             resolve();
           }
         });
@@ -178,7 +246,7 @@ export default class Product {
               fromMagnitude(inputs[i].input, inputs[i].item.type)
             );
       }
-      Log.save(logTypes.inStock, inputs).then(() => {
+      Log.saveLog(logTypes.inStock, inputs).then(() => {
         resolve();
       });
     });
@@ -209,7 +277,7 @@ export default class Product {
               fromMagnitude(inputs[i].input, inputs[i].item.type)
             );
       }
-      Log.save(logTypes.outStock, { inputs, type }).then(() => {
+      Log.saveLog(logTypes.outStock, { inputs, type }).then(() => {
         resolve();
       });
     });

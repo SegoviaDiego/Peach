@@ -73,10 +73,10 @@
 <script>
 import Vue from "vue";
 import { mapState } from "vuex";
-import Total from "@/Server/mongodb/Total";
-import { equalDates, toHour, toHumanDate } from "@/Server/mongodb/Utils";
-
+import Client from "@/api/Client/Client";
+import { equalDates, toHour, toHumanDate } from "@/api/Utils";
 import { totals as totalTypes } from "@/vuexTypes";
+import socketEvents from "@/socketEvents";
 
 export default Vue.extend({
   name: "stats-navbar",
@@ -103,7 +103,7 @@ export default Vue.extend({
   methods: {
     equalDates: equalDates,
     makeCierre() {
-      Total.makeCierre()
+      Client.set(socketEvents.Total.makeCierre)
         .then(async created => {
           const index = this.cierreIndex;
           await this.$store.dispatch(totalTypes.load);
@@ -181,10 +181,12 @@ export default Vue.extend({
     },
     getHourRange(i) {
       if (this.cierres.length == i && equalDates(new Date(), this.date)) {
-        return `${toHour(this.cierres[i - 1].start)} - ${toHour(new Date())}`;
+        return `${toHour(new Date(this.cierres[i - 1].start))} - ${toHour(
+          new Date()
+        )}`;
       }
-      return `${toHour(this.cierres[i - 1].start)} - ${toHour(
-        this.cierres[i - 1].end
+      return `${toHour(new Date(this.cierres[i - 1].start))} - ${toHour(
+        new Date(this.cierres[i - 1].end)
       )}`;
     }
   }

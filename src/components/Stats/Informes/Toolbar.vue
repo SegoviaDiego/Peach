@@ -67,13 +67,9 @@
 import Vue from "vue";
 import { mapState } from "vuex";
 import { log as types, totals as totalTypes } from "@/vuexTypes";
-import Print from "@/Server/Src/Print";
-import {
-  composeMagnitude,
-  toHour,
-  equalDates,
-  toHumanDate
-} from "@/Server/mongodb/Utils";
+import Print from "@/api/Print";
+
+import { composeMagnitude, toHour, equalDates, toHumanDate } from "@/api/Utils";
 
 export default Vue.extend({
   name: "informes-toolbar",
@@ -131,10 +127,12 @@ export default Vue.extend({
   methods: {
     getHourRange(i) {
       if (this.cierres.length == i && equalDates(new Date(), this.date)) {
-        return `${toHour(this.cierres[i - 1].start)} - ${toHour(new Date())}`;
+        return `${toHour(new Date(this.cierres[i - 1].start))} - ${toHour(
+          new Date()
+        )}`;
       }
-      return `${toHour(this.cierres[i - 1].start)} - ${toHour(
-        this.cierres[i - 1].end
+      return `${toHour(new Date(this.cierres[i - 1].start))} - ${toHour(
+        new Date(this.cierres[i - 1].end)
       )}`;
     },
     getLabel(i) {
@@ -215,14 +213,22 @@ export default Vue.extend({
     getIngresos(start, end) {
       return _.toArray(
         _.pickBy(this.movements, item => {
-          return item.type == 1 && item.time >= start && item.time <= end;
+          return (
+            item.type == 1 &&
+            new Date(item.time) >= start &&
+            new Date(item.time) <= end
+          );
         })
       );
     },
     getEgresos(start, end) {
       return _.toArray(
         _.pickBy(this.movements, item => {
-          return item.type == 2 && item.time >= start && item.time <= end;
+          return (
+            item.type == 2 &&
+            new Date(item.time) >= start &&
+            new Date(item.time) <= end
+          );
         })
       );
     },
@@ -304,18 +310,18 @@ export default Vue.extend({
 
         totalCierres += parseFloat(cierres[i].total);
 
-        if (_.includes(cierres[i].payDivision, "recargo")) {
+        if (cierres[i].payDivision["recargo"]) {
           totalRecargo += parseFloat(cierres[i].payDivision["recargo"]);
         }
 
         cierresTotales.push([
           { text: `Cierre ${parseInt(i) + 1}` },
-          { text: toHour(cierres[i].start) },
+          { text: toHour(new Date(cierres[i].start)) },
           {
             text:
               i + 1 == cierres.length
                 ? toHour(new Date())
-                : toHour(cierres[i].end)
+                : toHour(new Date(cierres[i].end))
           },
           { text: parseFloat(cierres[i].total).toFixed(2) }
         ]);
@@ -323,14 +329,14 @@ export default Vue.extend({
         // Ingresos
 
         for (let item of this.getIngresos(
-          cierres[i].start,
-          cierres[i]._current ? new Date() : cierres[i].end
+          new Date(cierres[i].start),
+          cierres[i]._current ? new Date() : new Date(cierres[i].end)
         )) {
           totalIngresos += parseFloat(item.money);
 
           ingresos.push([
             { text: item.desc },
-            { text: toHour(item.time) },
+            { text: toHour(new Date(item.time)) },
             { text: parseFloat(item.money).toFixed(2) }
           ]);
         }
@@ -338,14 +344,14 @@ export default Vue.extend({
         // Egresos
 
         for (let item of this.getEgresos(
-          cierres[i].start,
-          cierres[i]._current ? new Date() : cierres[i].end
+          new Date(cierres[i].start),
+          cierres[i]._current ? new Date() : new Date(cierres[i].end)
         )) {
           totalEgresos += parseFloat(item.money);
 
           egresos.push([
             { text: item.desc },
-            { text: toHour(item.time) },
+            { text: toHour(new Date(item.time)) },
             { text: parseFloat(item.money).toFixed(2) }
           ]);
         }
@@ -395,11 +401,11 @@ export default Vue.extend({
         { text: `$ ${parseFloat(totalCierres).toFixed(2)}`, style: "title2" }
       ]);
       resumen.push([
-        { text: "TOTAL INGRESOS", style: "title2" },
+        { text: "TOTAL INGRESOS (MOVIMIENTOS)", style: "title2" },
         { text: `$ ${parseFloat(totalIngresos).toFixed(2)}`, style: "title2" }
       ]);
       resumen.push([
-        { text: "TOTAL EGRESOS", style: "title2" },
+        { text: "TOTAL EGRESOS (MOVIMIENTOS)", style: "title2" },
         { text: `$ ${parseFloat(totalEgresos).toFixed(2)}`, style: "title2" }
       ]);
       resumen.push([

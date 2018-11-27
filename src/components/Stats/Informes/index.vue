@@ -59,11 +59,9 @@
 <script>
 import Vue from "vue";
 import { mapState } from "vuex";
-
 import Toolbar from "./Toolbar.vue";
 import Table from "./Table.vue";
 import Sidebar from "./Sidebar.vue";
-
 import { totals as types, log as logTypes } from "@/vuexTypes";
 
 export default Vue.extend({

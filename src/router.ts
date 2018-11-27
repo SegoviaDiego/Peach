@@ -71,6 +71,11 @@ export default new Router({
             import(/* webpackChunkName: "Stats" */ "@/components/Stats/index.vue"),
           children: [
             {
+              path: "/",
+              component: () =>
+                import(/* webpackChunkName: "StatsDashboard" */ "@/components/Stats/Dashboard/index.vue")
+            },
+            {
               path: "/informes",
               component: () =>
                 import(/* webpackChunkName: "Informes" */ "@/components/Stats/Informes/index.vue")
@@ -95,7 +100,7 @@ export default new Router({
               name: "Sells",
               component: () =>
                 import(/* webpackChunkName: "Sells" */ "@/components/Stats/Sells/index.vue")
-            },
+            }
           ]
         },
         {

@@ -1,5 +1,6 @@
-import Total from "@/Server/mongodb/Total";
+import Client from "@/api/Client/Client";
 import { totals as types } from "@/vuexTypes";
+import socketEvents from "@/socketEvents";
 
 export default {
   state: {
@@ -13,7 +14,8 @@ export default {
   actions: {
     async [types.load]({ commit, dispatch, state }: any) {
       commit(types.startLoading);
-      commit(types.load, await Total.load(state.date));
+      // await Total.load(state.date)
+      commit(types.load, await Client.get(socketEvents.Total.load, state.date));
       dispatch(types.setCierreIndex, types.totalIndex);
       commit(types.stopLoading);
     },

@@ -1,9 +1,10 @@
 import _ from "lodash";
-import Settings from "@/Server/Settings";
+import Settings from "@/api/Client/Settings";
 import { settings as types } from "@/vuexTypes";
 
 export default {
   state: {
+    connected: false,
     preferences: {},
     database: {},
     users: {},
@@ -16,6 +17,9 @@ export default {
     },
     [types.stopLoading]({ commit }: any) {
       commit(types.stopLoading);
+    },
+    [types.connect]({ commit }: any) {
+      commit(types.connect);
     },
     async [types.loadPreferences]({ commit }: any) {
       await commit(types.startLoading);
@@ -80,6 +84,9 @@ export default {
     },
     [types.stopLoading](state: any) {
       state.loading = false;
+    },
+    [types.connect](state: any) {
+      state.connected = true;
     }
   }
 };

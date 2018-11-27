@@ -1,49 +1,44 @@
 <template>
   <div class="ticketGrid">
-    <div class="container">
-      <div class="item">
-        <div class="amount">
-          Cantidad
-        </div>
-        <div class="name">
-          Producto
-        </div>
-        <div class="amount">
-          Dinero
-        </div>
-      </div>
-      <template v-for="sell in sells">
-        <div :key="sell.item._id" class="item">
-          <div class="amount">
-            {{getSellAmount(sell.item._id)}}
-          </div>
-          <div class="name">
-            {{sell.item.name}}
-          </div>
-          <div class="amount">
-            $ {{(sell.money).toFixed(2)}}
-          </div>
-          <div class="action">
-            <button @click="removeFromSell(sell.item._id)">
-              <fontawesome icon="times" />
-            </button>
-          </div>
-        </div>
-      </template>
-    </div>
+    <OxyTable v-model="sells" class="table">
+      <Row slot="row" slot-scope="sell">
+        <Cell label="Producto" :colSpan="1" >
+          {{sell.item.name}}
+        </Cell>
+        <Cell label="Cantidad" :colSpan="1" >
+          {{getSellAmount(sell.item._id)}}
+        </Cell>
+        <Cell label="Total"  :colSpan="1" >
+          ${{(sell.money).toFixed(2)}}
+        </Cell>
+        <!-- :colSpan="0.5" -->
+        <Cell label="" colSpan="27px" class="buttonCell" >
+          <button @click="removeFromSell(sell.item._id)">
+            <fontawesome icon="times" />
+          </button>
+        </Cell>
+      </Row>
+    </OxyTable>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import { mapState } from "vuex";
-import { sell as types } from "@/vuexTypes";
 import _ from "lodash";
-
-import { composeMagnitude } from "@/Server/mongodb/Utils";
+import { sell as types } from "@/vuexTypes";
+import { composeMagnitude } from "@/api/Utils";
+import OxyTable from "@/components/Table/index.vue";
+import Row from "@/components/Table/Row.vue";
+import Cell from "@/components/Table/Cell.vue";
 
 export default Vue.extend({
   name: "sell-ticket",
+  components: {
+    OxyTable,
+    Row,
+    Cell
+  },
   computed: mapState({
     sells: (state: any) => state.Sell.data,
     isLoading: (state: any) => state.Product.loading
@@ -61,62 +56,72 @@ export default Vue.extend({
 });
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss" >
 .ticketGrid {
   grid-area: ticket;
   display: flex;
   padding: 10px;
   background-color: #eeeeee;
-  .container {
+  .table {
     flex: 1;
-    padding: 0 10px;
-    overflow-x: hidden;
-    overflow-y: scroll;
-    // Scrollbar
-    $sbSize: 10px;
-    $bFontColor: #a0a0a0;
-    &::-webkit-scrollbar {
-      width: $sbSize;
+    .headerCell {
+      @media screen and (max-width: 899px) {
+        font-size: 20px;
+        padding-left: 0;
+      }
+      @media screen and (min-width: 900px) and (max-width: 999px) {
+        font-size: 20px;
+        padding-left: 1px;
+      }
+      @media screen and (min-width: 1000px) and (max-width: 1299px) {
+        font-size: 20px;
+        padding-left: 1px;
+      }
+      @media screen and (min-width: 1300px) {
+        font-size: 20px;
+        padding-left: 3px;
+      }
     }
-    &::-webkit-scrollbar-track {
-      background-color: #e1e2e1;
-      border-radius: 10px;
+    .cell {
+      @media screen and (max-width: 899px) {
+        font-size: 18px;
+        margin: 0;
+      }
+      @media screen and (min-width: 900px) and (max-width: 999px) {
+        font-size: 18px;
+        margin: 0 2px;
+      }
+      @media screen and (min-width: 1000px) and (max-width: 1299px) {
+        font-size: 18px;
+        margin: 0 2px;
+      }
+      @media screen and (min-width: 1300px) {
+        font-size: 20px;
+        margin: 0 5px;
+      }
     }
-    &::-webkit-scrollbar-thumb {
-      background: $bFontColor;
-      border-radius: 10px;
-    }
-    .item {
-      margin-bottom: 5px;
+    .buttonCell {
       display: flex;
-      flex-direction: row;
+      justify-content: center;
       align-items: center;
-      font-family: Lato;
-      font-weight: bold;
-      font-size: 20px;
-      color: black;
-      .name {
-        flex: 2;
-      }
-      .amount {
-        flex: 1;
-        padding-right: 20px;
-        // text-align: end;
-      }
-      .action {
-        button {
-          cursor: pointer;
-          $bSize: 25px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          background-color: #c4c4c4;
-          border: none;
-          font-size: 20px;
-          border-radius: 50%;
-          width: $bSize;
-          height: $bSize;
-        }
+      margin: 0;
+      button {
+        $bSize: 25px;
+        width: $bSize;
+        height: $bSize;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        font-size: 20px;
+
+        background-color: #c4c4c4;
+
+        border-radius: 50%;
+        border: none;
+
+        cursor: pointer;
       }
     }
   }

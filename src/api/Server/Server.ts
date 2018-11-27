@@ -1,9 +1,10 @@
 import electron from "electron";
 import { MongoClient, Db, Collection } from "mongodb";
 import Firebird from "./db/Firebird";
-import Settings from "@/Server/Settings";
-import Total from "@/Server/mongodb/Total";
-import { products as pTypes } from "@/vuexTypes";
+import Settings from "./Settings";
+import Total from "./mongodb/Total";
+import { products as pTypes } from "../../vuexTypes";
+import Product from "./mongodb/Product";
 
 export default class Server {
   private static db: Db;
@@ -15,33 +16,25 @@ export default class Server {
     poolSize: 5
   };
 
-  public static initServer(dispatch: any) {
+  public static initServer() {
     return new Promise(async resolve => {
-      Settings.isServer().then(isServer => {
-        if (isServer) {
-          // Evento emitido cuando el servidor es inicializado
-          electron.ipcRenderer.on("startServer", () => {
-            Settings.isSystelReady().then(ready => {
-              if (ready) {
-                Firebird.createDatabaseCopy().then(() => {
-                  dispatch(pTypes.syncToSystel).then(async () => {
-                    Firebird.listenForChanges();
-                    resolve();
-                  });
-                });
-              } else {
-                Total.getCurrent().then(() => {
-                  resolve();
-                });
-              }
+      // Test utf8:
+      // console.log("TEST UTF8 ----");
+      // await Firebird.testUTF8Seq();
+      // await Firebird.testUTF8Query();
+
+      Settings.isSystelReady().then(ready => {
+        if (ready) {
+          Firebird.createDatabaseCopy().then(() => {
+            Product.syncToSystel().then(() => {
+              Firebird.listenForChanges();
+              resolve();
             });
           });
-          // Evento que comienza la inicializacion del servidor
-          electron.ipcRenderer.send("startServer");
         } else {
-          console.log("No es servidor");
-          // resolve();
-          // Ping to the server
+          Total.getCurrent().then(() => {
+            resolve();
+          });
         }
       });
     });
@@ -76,13 +69,8 @@ export default class Server {
       if (Server.mongoData.mongodb) {
         resolve(Server.db.collection(name));
       } else {
-        Settings.getMongoURL().then((url: any) => {
-          if (url) {
-            Server.mongoData.url = url;
-            Server.initMongo().then(() => {
-              resolve(Server.db.collection(name));
-            });
-          }
+        Server.initMongo().then(() => {
+          resolve(Server.db.collection(name));
         });
       }
     });

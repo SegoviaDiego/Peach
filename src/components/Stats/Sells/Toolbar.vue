@@ -67,9 +67,9 @@
 <script>
 import Vue from "vue";
 import { mapState } from "vuex";
-import { log as types } from "@/vuexTypes";
-import Print from "@/Server/Src/Print";
-import { composeMagnitude, toHour } from "@/Server/mongodb/Utils";
+import { sell as types } from "@/vuexTypes";
+import Print from "@/api/Print";
+import { composeMagnitude, toHour } from "@/api/Utils";
 
 function getType(type) {
   switch (type) {
@@ -150,7 +150,7 @@ export default Vue.extend({
     },
     setDate() {
       this.$store.dispatch(types.setDate, this.selectedDate).then(() => {
-        this.$store.dispatch(types.loadEgreso);
+        this.$store.dispatch(types.load, this.selectedDate);
         this.selectingDate = false;
       });
     },
@@ -196,11 +196,11 @@ export default Vue.extend({
       }
 
       egresos = egresos.sort((a, b) => {
-        return b.time - a.time;
+        return new Date(b.time) - new Date(a.time);
       });
 
       for (let egreso of egresos) {
-        if (egreso.time > from && egreso.time < to)
+        if (new Date(egreso.time) > from && new Date(egreso.time) < to)
           printData.push([
             egreso.item._id,
             toHour(egreso.time),

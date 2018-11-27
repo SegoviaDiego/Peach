@@ -1,5 +1,5 @@
 import firebase from "firebase";
-import Settings from "@/Server/Settings";
+import Settings from "../Settings";
 
 export default class Firebase {
   private static initializeApp() {

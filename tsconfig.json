@@ -10,7 +10,7 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "baseUrl": ".",
-    "types": ["mongodb", "nedb"],
+    "types": ["mongodb", "lowdb"],
     "paths": {
       "@/*": ["src/*"]
     },

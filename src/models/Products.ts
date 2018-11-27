@@ -1,6 +1,5 @@
 import _ from "lodash";
-import Product from "@/Server/mongodb/Product";
-import Client from "@/Server/Client";
+import Client from "@/api/Client/Client";
 import socketEvents from "@/socketEvents";
 import { products as types } from "@/vuexTypes";
 
@@ -23,8 +22,8 @@ export default {
     },
     async [types.syncToSystel]({ commit }: any) {
       commit(types.startLoading);
-      await Product.syncToSystel();
-      commit(types.load, await Product.loadProducts());
+      await Client.set(socketEvents.Product.syncToSystel);
+      commit(types.load, await Client.get(socketEvents.Product.loadProducts));
       commit(types.stopLoading);
     },
     [types.handleChange]({ commit }: any, payload: any) {
@@ -40,34 +39,40 @@ export default {
     [types.clearInputs]({ commit }: any) {
       commit(types.clearInputs);
     },
-    async [types.create]({ commit }: any, product: any) {
+    async [types.create]({ dispatch, commit }: any, product: any) {
       commit(types.startLoading);
-      await Product.createProduct(product);
-      commit(types.load, await Product.loadProducts());
+      await Client.set(socketEvents.Product.createProduct, product);
+      dispatch(types.load);
       commit(types.stopLoading);
     },
     async [types.modify]({ commit }: any, mutated: any) {
       await commit(types.startLoading);
-      await Product.mutateProducts(mutated);
-      await commit(types.load, await Product.loadProducts());
+      await Client.set(socketEvents.Product.mutateProducts, mutated);
+      await commit(
+        types.load,
+        await Client.get(socketEvents.Product.loadProducts)
+      );
       await commit(types.stopLoading);
     },
-    async [types.delete]({ commit }: any, selected: any) {
+    async [types.delete]({ commit }: any, selection: any) {
       commit(types.startLoading);
-      await Product.deleteItems(selected);
-      commit(types.load, await Product.loadProducts());
+      await Client.set(socketEvents.Product.deleteProducts, selection);
+      commit(types.load, await Client.get(socketEvents.Product.loadProducts));
       commit(types.stopLoading);
     },
     async [types.inStock]({ commit, state }: any) {
       commit(types.startLoading);
-      await Product.inStock(state.inputs);
-      commit(types.load, await Product.loadProducts());
+      await Client.set(socketEvents.Product.inStock, state.inputs);
+      commit(types.load, await Client.get(socketEvents.Product.loadProducts));
       commit(types.stopLoading);
     },
     async [types.outStock]({ commit, state }: any, type: any) {
       commit(types.startLoading);
-      await Product.outStock(state.inputs, type);
-      commit(types.load, await Product.loadProducts());
+      await Client.set(socketEvents.Product.outStock, {
+        outs: state.inputs,
+        type
+      });
+      commit(types.load, await Client.get(socketEvents.Product.loadProducts));
       commit(types.stopLoading);
     },
     [types.filter]({ commit }: any, value: any) {

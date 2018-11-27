@@ -1,19 +1,47 @@
 import _ from "lodash";
 import Server from "../Server";
-import { equalDates, equalSells, validateInt } from "./Utils";
-import { totals as types } from "@/vuexTypes";
+import { equalDates, equalSells, validateInt } from "../../Utils";
+import { totals as types } from "../../../vuexTypes";
 import CierreClass from "../typings/Cierre";
 import TotalClass from "../typings/Total";
 import Product from "./Product";
-import Settings from "@/Server/Settings";
+import Settings from "../Settings";
 import Sell from "./Sell";
 import { Collection } from "mongodb";
 import Firebird from "../db/Firebird";
-import { rejects } from "assert";
+import socketEvents from "../../../socketEvents";
 
 export default class Total {
   private static db() {
     return Server.getCollection(types.collection);
+  }
+
+  public static async get(
+    event: string,
+    data: any,
+    callback: (success: boolean, payload: any) => void
+  ) {
+    switch (event) {
+      case socketEvents.Total.load:
+        Total.load(new Date(data))
+          .then(res => callback(true, res))
+          .catch(res => callback(false, res));
+        break;
+    }
+  }
+
+  public static async set(
+    event: string,
+    data: any,
+    callback: (success: boolean, payload: any) => void
+  ) {
+    switch (event) {
+      case socketEvents.Total.makeCierre:
+        Total.makeCierre()
+          .then(res => callback(true, res))
+          .catch(res => callback(false, res));
+        break;
+    }
   }
 
   public static listenTo(client: any): void {
@@ -30,6 +58,19 @@ export default class Total {
     });
   }
 
+  public static analizeTotal(systelTotal: any) {
+    return new Promise(async (resolve, reject) => {
+      Total.getCurrentCierre().then(async (current: any) => {
+        // Compruebo si se debe realizar un cierre
+        if (Total.checkCierre(systelTotal, current)) {
+          this.makeCierre();
+        }
+        // Guardo los datos del total si systelTotal no esta vacio
+        if (systelTotal.length) Total.identifySells(systelTotal);
+      });
+    });
+  }
+
   public static identifySells(systelTotal: [any]) {
     Total.getCurrentCierre().then(async (current: any) => {
       let sells: any = [];
@@ -38,11 +79,6 @@ export default class Total {
       let currentCierre = _.mapKeys(current.data, total => {
         return total.item._id;
       });
-
-      // Compruebo si se realizo un cierre o no
-      // if (Total.checkCierre(systelTotal, currentCierre)) {
-      //   await Total.saveCierre();
-      // }
 
       for (const newTotal of systelTotal) {
         let oldTotal = currentCierre[newTotal.item._id];
@@ -76,21 +112,26 @@ export default class Total {
   }
 
   public static checkCierre(systelTotal: any, mongoTotal: any): Boolean {
-    if (systelTotal.length == 0 && mongoTotal.length != 0) {
-      return true;
-    } else {
-      systelTotal = _.mapKeys(systelTotal, total => {
-        return total.item._id;
-      });
+    // Si systelTotal esta vacio, significa que se hizo un cierre
+    // en la balanza
+    if (systelTotal.length === 0) return true;
 
-      mongoTotal = _.toArray(mongoTotal);
+    // Mapeo los arrays por id
+    mongoTotal = _.toArray(mongoTotal);
+    systelTotal = _.mapKeys(systelTotal, total => {
+      return total.item._id;
+    });
 
-      for (const total of mongoTotal) {
-        if (!systelTotal[total.item._id]) {
-          return true;
-        }
+    // Compruebo que sean el mismo cierre. Esto lo se sabiando que
+    // mongoTotal esta incluido estrictamente en systelTotal
+    for (const total of mongoTotal) {
+      // Si un elemento de mongoTotal no existe en systelTotal,
+      // no existe inclusion de conjuntos.
+      if (!systelTotal[total.item._id]) {
+        return true;
       }
     }
+
     return false;
   }
 
@@ -224,25 +265,32 @@ export default class Total {
 
   public static makeCierre() {
     return new Promise(async (resolve, reject) => {
-      const isSystelActive: Boolean = await Settings.isSystelReady();
+      // Si la sync con Systel esta activada
+      const isSystelReady: Boolean = await Settings.isSystelReady();
+      // Si QENDRA esta cerrado
+      const isFirebirdAvailable: Boolean = await Firebird.isFirebirdAvailable();
 
-      if (isSystelActive) {
-        if (!(await Firebird.isFirebirdAvailable())) {
-          reject(true);
-          return;
-        } else {
-          Firebird.stopSystelSyncProcess();
-        }
+      if (isSystelReady && isFirebirdAvailable) {
+        // Detengo el loop de sincronizacion
+        Firebird.stopSystelSyncProcess();
+      } else if (isSystelReady) {
+        // Devuelvo un error diciendo que QENDRA esta abierto
+        reject(true);
+        return;
       }
 
       const current: any = await Total.getCurrentCierre();
+      // Si el cierre actual tiene data, realizo un cierre.
+      // Si esta vacio significa que el cierre ya fue realizado.
       if (current.data && current.data.length > 0) {
+        // Guardo el cierre en la base de datos
         Total.saveCierre().then(async () => {
-          if (isSystelActive) {
+          if (isSystelReady) {
+            // Si sync con Systel esta activado, reanudo el loop sync
+            // y borro los datos en los totales
             await Firebird.clearTotales();
             Firebird.startSystelSyncProcess();
           }
-
           resolve(true);
         });
       } else {

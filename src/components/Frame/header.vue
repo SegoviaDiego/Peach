@@ -37,7 +37,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import Firebird from "@/Server/db/Firebird";
+// import Firebird from "@/api/Server/db/Firebird";
 const electron = require("electron");
 
 export default Vue.extend({
@@ -46,16 +46,16 @@ export default Vue.extend({
     test(type: any) {
       switch (type) {
         case 1:
-          Firebird.createSell();
+          // Firebird.createSell();
           break;
         case 2:
-          Firebird.clearSales();
+          // Firebird.clearSales();
           break;
         case 3:
-          Firebird.getTotals();
+          // Firebird.getTotals();
           break;
         case 4:
-          Firebird.stopSystelSyncProcess();
+          // Firebird.stopSystelSyncProcess();
           break;
       }
     },

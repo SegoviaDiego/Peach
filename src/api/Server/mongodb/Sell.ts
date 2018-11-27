@@ -1,22 +1,46 @@
 import _ from "lodash";
-import Server from "../Server";
-import { equalDates } from "./Utils";
-import { sell as types } from "@/vuexTypes";
-import CierreClass from "../typings/Cierre";
-import TotalClass from "../typings/Total";
-import Product from "./Product";
-import { toMagnitude } from "./Utils";
 import { Collection } from "mongodb";
-import Total from "@/Server/mongodb/Total";
-import { resolve } from "dns";
+import Total from "./Total";
+import Server from "../Server";
+import Product from "./Product";
+import socketEvents from "../../../socketEvents";
+import { sell as types } from "../../../vuexTypes";
 
 export default class Sell {
   private static db() {
     return Server.getCollection(types.collection);
   }
 
+  public static async get(
+    event: string,
+    data: any,
+    callback: (success: boolean, payload: any) => void
+  ) {
+    switch (event) {
+      case socketEvents.Sell.load:
+        Sell.load(new Date(data))
+        .then(res => callback(true, res))
+        .catch(res => callback(false, res));
+        break;
+    }
+  }
+
+  public static async set(
+    event: string,
+    data: any,
+    callback: (success: boolean, payload: any) => void
+  ) {
+    switch (event) {
+      case socketEvents.Sell.saveSell:
+        Sell.saveSell(data.sells, data.payload)
+        .then(res => callback(true, res))
+        .catch(res => callback(false, res));
+        break;
+    }
+  }
+
   public static load(date: Date) {
-    return new Promise(async resolve => {
+    return new Promise(async (resolve, reject) => {
       date.setHours(0, 0, 0, 0);
 
       Sell.db().then(db => {
@@ -45,10 +69,10 @@ export default class Sell {
   public static saveSystelSells(sells: [any]) {
     let total = 0;
     for (let i in sells) total += sells[i].money;
-    Sell.save(sells, { total, systel: true });
+    Sell.saveSell(sells, { total, systel: true });
   }
 
-  public static save(
+  public static saveSell(
     sells: any,
     { total, payDivision, systel }: any
   ): Promise<Boolean> {

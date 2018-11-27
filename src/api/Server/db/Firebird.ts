@@ -1,17 +1,18 @@
-import path from "path";
-import { remote } from "electron";
-import Total from "../mongodb/Total";
-import Settings from "@/Server/Settings";
-import { composeSystelToKg } from "@/Server/mongodb/Utils";
-import fb from "node-firebird";
 import fs from "fs";
+import path from "path";
+import fb from "node-firebird";
+import { app } from "electron";
+import Settings from "../Settings";
+import Total from "../mongodb/Total";
+import Product from "../mongodb/Product";
+import { composeSystelToKg } from "../../Utils";
 
 export default class Firebird {
   private static systelSyncProcess: any;
   private static data = {
     host: "127.0.0.1",
     port: 3050,
-    database: path.join(remote.app.getPath("userData"), "systel.fdb"),
+    database: path.join(app.getPath("userData"), "systel.fdb"),
     user: "SYSDBA",
     password: "masterkey"
   };
@@ -57,11 +58,9 @@ export default class Firebird {
           db.detach();
           if (err) throw err;
 
-          if (res.length > 0) {
-            Total.identifySells(await composeSystelToKg(res));
-          } else {
-            Total.saveCierre();
-          }
+          Total.analizeTotal(
+            await composeSystelToKg(await Product.loadProducts(), res)
+          );
         }
       );
     });
@@ -70,17 +69,14 @@ export default class Firebird {
   public static backupDatabaseFile() {
     return new Promise(resolve => {
       fs.exists(
-        path.join(remote.app.getPath("userData"), `/systelBackup`),
+        path.join(app.getPath("userData"), `/systelBackup`),
         async (exists: Boolean) => {
           if (exists) {
             const date = new Date();
             const dbName = `${date.getDate()}-${date.getMonth() +
               1}-${date.getFullYear()} ${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}hs`;
             await fs.writeFileSync(
-              path.join(
-                remote.app.getPath("userData"),
-                `/systelBackup/${dbName}.fdb`
-              ),
+              path.join(app.getPath("userData"), `/systelBackup/${dbName}.fdb`),
               fs.readFileSync(Firebird.data.database)
             );
           }
@@ -96,10 +92,12 @@ export default class Firebird {
         if (err) throw err;
 
         const p: any = [];
+        console.log(1);
         db.query(
           "SELECT ID, DESCRIPCION, TIPO_VENTA, PRECIO FROM PLU",
           [],
           (err: any, res: any) => {
+            console.log(2);
             db.detach();
             if (err) throw err;
             res.forEach((item: any) => {
@@ -111,25 +109,6 @@ export default class Firebird {
               });
             });
             resolve(p);
-          }
-        );
-      });
-    });
-  }
-
-  public static test(url: string) {
-    return new Promise(async resolve => {
-      await Firebird.createDatabaseCopy();
-      fb.attach(Firebird.data, (err: any, db: any) => {
-        if (err) throw err;
-
-        db.query(
-          "SELECT ID, DESCRIPCION, TIPO_VENTA, PRECIO FROM PLU",
-          [],
-          (err: any, res: any) => {
-            db.detach();
-            console.log(res, err);
-            resolve();
           }
         );
       });
@@ -240,6 +219,63 @@ export default class Firebird {
           );
         }
       );
+    });
+  }
+
+  public static testUTF8Query() {
+    return new Promise(async resolve => {
+      await Firebird.createDatabaseCopy();
+
+      console.log("Init testUTF8");
+
+      fb.attach(Firebird.data, (err: any, db: any) => {
+        if (err) throw err;
+
+        console.log("Init Query");
+
+        db.query(
+          "SELECT ID, DESCRIPCION, TIPO_VENTA, PRECIO FROM PLU",
+          [],
+          (err: any, res: any) => {
+            db.detach();
+            console.log("asdasd ------");
+            console.log(res, err);
+            resolve();
+          }
+        );
+      });
+    });
+  }
+
+  public static testUTF8Seq() {
+    return new Promise(async resolve => {
+      
+      await Firebird.createDatabaseCopy();
+
+      console.log("Init testUTF8");
+      fb.attach(Firebird.data, (err: any, db: any) => {
+        if (err) throw err;
+
+        console.log("Init seq");
+
+        const p: any = [];
+        db.sequentially(
+          "SELECT ID, DESCRIPCION FROM PLU",
+          [],
+          (row: any, index: any) => {
+            console.log(row.ID, row.DESCRIPCION);
+          },
+          (err: any) => {
+            if (err) {
+              console.log("err ----");
+              console.log(err);
+            } else {
+              console.log("end ----");
+            }
+            db.detach();
+          }
+        );
+      });
     });
   }
 }

@@ -33,7 +33,12 @@ import {
   faChartLine,
   faUsers,
   faDatabase,
-  faServer
+  faServer,
+  faSortUp,
+  faSortDown,
+  faCartPlus,
+  faCartArrowDown,
+  faExchangeAlt
 } from "@fortawesome/free-solid-svg-icons";
 
 //Font awesome
@@ -57,7 +62,12 @@ library.add(
   faChartLine,
   faUsers,
   faDatabase,
-  faServer
+  faServer,
+  faSortUp,
+  faSortDown,
+  faCartPlus,
+  faCartArrowDown,
+  faExchangeAlt
 );
 
 // dependencies

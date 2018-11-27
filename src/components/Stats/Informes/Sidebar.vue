@@ -44,11 +44,11 @@
 </template>
 
 <script>
-import { equalDates, toHour } from "@/Server/mongodb/Utils";
-import { totals as types } from "@/vuexTypes";
-
 import Vue from "vue";
 import { mapState } from "vuex";
+import { equalDates, toHour } from "@/api/Utils";
+import { totals as types } from "@/vuexTypes";
+
 export default Vue.extend({
   name: "informes-sidebar",
   data: () => ({
@@ -97,8 +97,10 @@ export default Vue.extend({
           return time;
         } else {
           time = `
-          ${toHour(this.current.cierres[this.cierreIndex - 1].start)} - 
-          ${toHour(this.current.cierres[this.cierreIndex - 1].end)} `;
+          ${toHour(
+            new Date(this.current.cierres[this.cierreIndex - 1].start)
+          )} - 
+          ${toHour(new Date(this.current.cierres[this.cierreIndex - 1].end))} `;
         }
         return date + " | " + time;
       }

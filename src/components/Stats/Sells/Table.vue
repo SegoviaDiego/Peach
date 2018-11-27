@@ -1,7 +1,33 @@
 <template>
   <div class="grid">
     <Toolbar/>
-    <div class="head">
+
+    <div class="table">
+      <OxyTable v-model="filteredData">
+        <Row slot="row" slot-scope="sell" :key="sell._id">
+          <Cell label="Hora" sortBy="_id" :colSpan="1" >
+            {{toHour(new Date(sell.time))}}
+          </Cell>
+          <Cell label="Efectivo" sortBy="_id" :colSpan="2" >
+            {{getPayDivision(sell, 'efectivo')}}
+          </Cell>
+          <Cell label="Credito" sortBy="_id" :colSpan="2" >
+            {{getPayDivision(sell, 'credito')}}
+          </Cell>
+          <Cell label="Recargo" sortBy="_id" :colSpan="2" >
+            {{getPayDivision(sell, 'recargo')}}
+          </Cell>
+          <Cell label="Debito" sortBy="_id" :colSpan="2" >
+            {{getPayDivision(sell, 'debito')}}
+          </Cell>
+          <Cell label="Total" sortBy="_id" :colSpan="2" >
+            $ {{sell.total.toFixed(2)}}
+          </Cell>
+        </Row>
+      </OxyTable>
+    </div>
+    
+    <!-- <div class="head">
       <div class="column">
         Hora
       </div>
@@ -25,7 +51,7 @@
       <template v-for="sell in filteredData">
         <div :key="sell._id.toString()" class="row">
           <div class="column">
-            {{toHour(sell.time)}}
+            {{toHour(new Date(sell.time))}}
           </div>
           <div class="column">
             {{getPayDivision(sell, 'efectivo')}}
@@ -44,19 +70,19 @@
           </div>
         </div>
       </template>
-    </div>
+    </div> -->
   </div>
 </template>
 
 <script>
 import Vue from "vue";
 import { mapState } from "vuex";
-
-import Log from "@/Server/mongodb/Log";
 import Toolbar from "./Toolbar.vue";
 import { sell as types } from "@/vuexTypes";
-
-import { composeMagnitude, toMagnitude, toHour } from "@/Server/mongodb/Utils";
+import { composeMagnitude, toMagnitude, toHour } from "@/api/Utils";
+import OxyTable from "@/components/Table/index.vue";
+import Row from "@/components/Table/Row.vue";
+import Cell from "@/components/Table/Cell.vue";
 
 function filterData(data, filter) {
   if (!filter) {
@@ -73,14 +99,17 @@ function filterData(data, filter) {
 }
 function sortData(data) {
   return data.sort((a, b) => {
-    return b.time - a.time;
+    return new Date(b.time) - new Date(a.time);
   });
 }
 
 export default Vue.extend({
   name: "informes-table",
   components: {
-    Toolbar
+    Toolbar,
+    OxyTable,
+    Row,
+    Cell
   },
   mounted() {
     this.$store.dispatch(types.load, this.date);
@@ -148,12 +177,17 @@ $bFontColor: #a0a0a0;
   padding: 10px;
   grid-area: table;
   display: grid;
-  grid-template-rows: 70px 50px 1fr;
+  grid-template-rows: 70px 1fr;
   grid-template-columns: 1fr;
-  grid-template-areas: "toolbar" "head" "body";
+  grid-template-areas: "toolbar" "table";
   overflow: hidden;
   background-color: #eeeeee;
   border-radius: 7px;
+  .table {
+    grid-area: table;
+    width: 100%;
+    height: 100%;
+  }
   .head {
     margin-right: $sbSize;
     grid-area: head;

@@ -1,6 +1,6 @@
 "use strict";
 
-import SocketServer from "./Server/SocketServer";
+import SocketServer from "./api/Server/SocketServer";
 
 import {
   app,

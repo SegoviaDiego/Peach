@@ -6,18 +6,17 @@
 
 <script lang="ts">
 import Vue from "vue";
-import Server from "@/Server/Server";
-import Client from "@/Server/Client";
+import Client from "@/api/Client/Client";
+import { settings as types } from "@/vuexTypes";
 
 export default Vue.extend({
   name: "home",
   mounted() {
-    Server.initServer(this.$store.dispatch).then(() => {
-      console.log("Server initialized");
-      Client.connect("127.0.0.1");
+    Client.connect().then(() => {
+      this.$store.dispatch(types.connect);
     });
     if (process.env.NODE_ENV !== "production") {
-      this.$router.replace("/Stock");
+      this.$router.replace("/Dashboard");
     } else {
       this.$router.replace("/Updater");
     }

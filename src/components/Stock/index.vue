@@ -13,16 +13,14 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { mapState } from "vuex";
-import { products as types } from "@/vuexTypes";
 import _ from "lodash";
+import { mapState } from "vuex";
+import Print from "@/api/Print";
+import { composeMagnitude } from "@/api/Utils";
+import { products as types } from "@/vuexTypes";
 
-import Print from "@/Server/Src/Print";
-
-import { composeMagnitude } from "@/Server/mongodb/Utils";
-
-import HeaderBar from "./HeaderBar.vue";
 import Table from "./Table.vue";
+import HeaderBar from "./HeaderBar.vue";
 
 function filterData(data: any, filter: any) {
   if (!filter) {

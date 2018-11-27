@@ -1,7 +1,8 @@
 import electron from "electron";
-let { Menu, MenuItem, BrowserWindow, dialog } = electron.remote;
 import path from "path";
 import fs from "fs";
+
+let { Menu, MenuItem, BrowserWindow, dialog } = electron.remote;
 
 export default class Print {
   private static route: any;

@@ -1,13 +1,42 @@
-import { log as types } from "@/vuexTypes";
-import Server from "@/Server/Server";
-import { fromMagnitude } from "@/Server/mongodb/Utils";
+import { log as types } from "../../../vuexTypes";
+import Server from "../Server";
+import { fromMagnitude } from "../../Utils";
+import socketEvents from "../../../socketEvents";
 
 export default class Log {
   private static db(name: string) {
     return Server.getCollection(name);
   }
 
-  public static save(type: any, payload: any) {
+  public static async get(
+    event: string,
+    data: any,
+    callback: (success: boolean, payload: any) => void
+  ) {
+    switch (event) {
+      case socketEvents.Log.getLog:
+        Log.getLog(data.db, new Date(data.date), data.type || null)
+          .then(res => callback(true, res))
+          .catch(res => callback(false, res));
+        break;
+    }
+  }
+
+  public static async set(
+    event: string,
+    data: any,
+    callback: (success: boolean, payload: any) => void
+  ) {
+    switch (event) {
+      case socketEvents.Log.saveLog:
+        Log.saveLog(data.type, data.payload)
+          .then(res => callback(true, res))
+          .catch(res => callback(false, res));
+        break;
+    }
+  }
+
+  public static saveLog(type: any, payload: any) {
     return new Promise(async resolve => {
       switch (type) {
         case types.inStock:

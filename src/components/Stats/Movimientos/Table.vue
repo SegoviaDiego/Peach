@@ -1,37 +1,23 @@
 <template>
   <div class="grid">
     <Toolbar/>
-    <div class="head">
-      <div class="column">
-        Hora
-      </div>
-      <div class="column">
-        Descripcion
-      </div>
-      <div class="column">
-        Tipo
-      </div>
-      <div class="column">
-        Monto
-      </div>
-    </div>
-    <div class="body">
-      <template v-for="log in filteredData">
-        <div :key="'row-' + log._id" class="row">
-          <div class="column">
-            {{toHour(log.time)}}
-          </div>
-          <div class="column">
+    <div class="table">
+      <OxyTable v-model="filteredData">
+        <Row slot="row" slot-scope="log" :key="log._id">
+          <Cell label="Hora" sortBy="_id" :colSpan="1" >
+            {{toHour(new Date(log.time))}}
+          </Cell>
+          <Cell label="Descripcion" sortBy="_id" :colSpan="3" >
             {{log.desc}}
-          </div>
-          <div class="column">
+          </Cell>
+          <Cell label="Tipo" sortBy="_id" :colSpan="2" >
             {{getType(log.type)}}
-          </div>
-          <div class="column">
+          </Cell>
+          <Cell label="Valor" sortBy="_id" :colSpan="2" >
             ${{log.money}}
-          </div>
-        </div>
-      </template>
+          </Cell>
+        </Row>
+      </OxyTable>
     </div>
   </div>
 </template>
@@ -39,12 +25,12 @@
 <script>
 import Vue from "vue";
 import { mapState } from "vuex";
-
-import Log from "@/Server/mongodb/Log";
 import Toolbar from "./Toolbar.vue";
 import { log as types } from "@/vuexTypes";
-
-import { toHour } from "@/Server/mongodb/Utils";
+import { toHour } from "@/api/Utils";
+import OxyTable from "@/components/Table/index.vue";
+import Row from "@/components/Table/Row.vue";
+import Cell from "@/components/Table/Cell.vue";
 
 function filterData(data, filter) {
   if (!filter) {
@@ -61,14 +47,17 @@ function filterData(data, filter) {
 }
 function sortData(data) {
   return data.sort((a, b) => {
-    return b.time - a.time;
+    return new Date(b.time) - new Date(a.time);
   });
 }
 
 export default Vue.extend({
   name: "informes-table",
   components: {
-    Toolbar
+    Toolbar,
+    OxyTable,
+    Row,
+    Cell
   },
   mounted() {
     this.$store.dispatch(types.loadMov);
@@ -122,12 +111,17 @@ $bFontColor: #a0a0a0;
   padding: 10px;
   grid-area: table;
   display: grid;
-  grid-template-rows: 70px 50px 1fr;
+  grid-template-rows: 70px 1fr;
   grid-template-columns: 1fr;
-  grid-template-areas: "toolbar" "head" "body";
+  grid-template-areas: "toolbar" "table";
   overflow: hidden;
   background-color: #eeeeee;
   border-radius: 7px;
+  .table {
+    grid-area: table;
+    width: 100%;
+    height: 100%;
+  }
   .head {
     margin-right: $sbSize;
     grid-area: head;

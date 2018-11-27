@@ -19,18 +19,18 @@
           <!-- Is this instance a server -->
           <div class="preference">
             <div class="label">
-              Servidor:
+              Es servidor:
             </div>
             <div class="switch">
               <el-switch
-                v-model="data['server']"
+                v-model="data['isServer']"
                 active-color="#13ce66"
                 inactive-color="#ff4949">
               </el-switch>
             </div>
           </div>
           <!-- Path to Systel FDB -->
-          <div v-if="data['server']" class="preference">
+          <div v-if="data['isServer']" class="preference">
             <div class="label">
               Systel Path:
             </div>
@@ -40,15 +40,15 @@
                 placeholder="Ingresar path" />
             </div>
           </div>
-          <!-- URL to MongoDB server -->
-          <div v-if="!data['server']" class="preference">
+          <!-- Server IP -->
+          <div v-if="!data['isServer']" class="preference">
             <div class="label">
-              MongoDB Server:
+              Server IP:
             </div>
             <div class="switch">
               <el-input
-                v-model="data['mongoUrl']"
-                placeholder="Ingresar url" />
+                v-model="data['host']"
+                placeholder="Ingresar IP" />
             </div>
           </div>
         </div>

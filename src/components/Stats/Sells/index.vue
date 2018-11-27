@@ -6,13 +6,17 @@
 
 <script>
 import Table from "./Table.vue";
-
+import { sell as types } from "@/vuexTypes";
 export default {
   name: "informes",
   components: {
     Table
   },
-  mounted() {}
+  mounted() {
+    this.$store.dispatch(types.setDate, new Date()).then(() => {
+      this.$store.dispatch(types.loadEgreso);
+    });
+  }
 };
 </script>
 
