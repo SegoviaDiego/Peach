@@ -63,51 +63,56 @@ export default class Total {
       Total.getCurrentCierre().then(async (current: any) => {
         // Compruebo si se debe realizar un cierre
         if (Total.checkCierre(systelTotal, current)) {
-          this.makeCierre();
+          await this.makeCierre();
         }
         // Guardo los datos del total si systelTotal no esta vacio
-        if (systelTotal.length) Total.identifySells(systelTotal);
+        if (systelTotal.length) await Total.identifySells(systelTotal);
+        resolve();
       });
     });
   }
 
   public static identifySells(systelTotal: [any]) {
-    Total.getCurrentCierre().then(async (current: any) => {
-      let sells: any = [];
-      let mutated: boolean = false;
+    return new Promise(resolve => {
+      Total.getCurrentCierre().then(async (current: any) => {
+        let sells: any = [];
+        let mutated: boolean = false;
 
-      let currentCierre = _.mapKeys(current.data, total => {
-        return total.item._id;
-      });
+        let currentCierre = _.mapKeys(current.data, total => {
+          return total.item._id;
+        });
 
-      for (const newTotal of systelTotal) {
-        let oldTotal = currentCierre[newTotal.item._id];
+        for (const newTotal of systelTotal) {
+          let oldTotal = currentCierre[newTotal.item._id];
 
-        currentCierre[newTotal.item._id] = newTotal;
+          currentCierre[newTotal.item._id] = newTotal;
 
-        if (!oldTotal) {
-          mutated = true;
-          sells.push(
-            await Sell.createSellFromTotal(
-              {
-                amount: 0,
-                money: 0
-              },
-              newTotal
-            )
-          );
-        } else if (!equalSells(oldTotal, newTotal)) {
-          mutated = true;
-          sells.push(await Sell.createSellFromTotal(oldTotal, newTotal));
+          if (!oldTotal) {
+            mutated = true;
+            sells.push(
+              await Sell.createSellFromTotal(
+                {
+                  amount: 0,
+                  money: 0
+                },
+                newTotal
+              )
+            );
+          } else if (!equalSells(oldTotal, newTotal)) {
+            mutated = true;
+            sells.push(await Sell.createSellFromTotal(oldTotal, newTotal));
+          }
         }
-      }
 
-      if (mutated) {
-        // Firebird.backupDatabaseFile();
-        current.data = _.toArray(currentCierre);
-        await Sell.saveSystelSells(sells);
-        await Total.updateCurrentCierre(current);
-      }
+        if (mutated) {
+          // Firebird.backupDatabaseFile();
+          current.data = _.toArray(currentCierre);
+          await Sell.saveSystelSells(sells);
+          resolve(await Total.updateCurrentCierre(current));
+        } else {
+          resolve();
+        }
+      });
     });
   }
 
@@ -117,7 +122,7 @@ export default class Total {
     if (systelTotal.length === 0) return true;
 
     // Mapeo los arrays por id
-    mongoTotal = _.toArray(mongoTotal);
+    mongoTotal = _.toArray(mongoTotal.data);
     systelTotal = _.mapKeys(systelTotal, total => {
       return total.item._id;
     });
@@ -265,30 +270,31 @@ export default class Total {
 
   public static makeCierre() {
     return new Promise(async (resolve, reject) => {
-      // Si la sync con Systel esta activada
-      const isSystelReady: Boolean = await Settings.isSystelReady();
-      // Si QENDRA esta cerrado
-      const isFirebirdAvailable: Boolean = await Firebird.isFirebirdAvailable();
-
-      if (isSystelReady && isFirebirdAvailable) {
-        // Detengo el loop de sincronizacion
-        Firebird.stopSystelSyncProcess();
-      } else if (isSystelReady) {
-        // Devuelvo un error diciendo que QENDRA esta abierto
-        reject(true);
-        return;
-      }
-
       const current: any = await Total.getCurrentCierre();
       // Si el cierre actual tiene data, realizo un cierre.
       // Si esta vacio significa que el cierre ya fue realizado.
       if (current.data && current.data.length > 0) {
+        // Si la sync con Systel esta activada
+        const isSystelReady: Boolean = await Settings.isSystelReady();
+        // Si QENDRA esta cerrado
+        const isFirebirdAvailable: Boolean = await Firebird.isFirebirdAvailable();
+
+        if (isSystelReady && isFirebirdAvailable) {
+          // Detengo el loop de sincronizacion
+          Firebird.stopSystelSyncProcess();
+        } else if (isSystelReady) {
+          // Devuelvo un error diciendo que QENDRA esta abierto
+          reject(true);
+          return;
+        }
+
         // Guardo el cierre en la base de datos
         Total.saveCierre().then(async () => {
-          if (isSystelReady) {
+          if (isSystelReady && isFirebirdAvailable) {
             // Si sync con Systel esta activado, reanudo el loop sync
             // y borro los datos en los totales
             await Firebird.clearTotales();
+            // Inicio el loop de sincronizacion.
             Firebird.startSystelSyncProcess();
           }
           resolve(true);

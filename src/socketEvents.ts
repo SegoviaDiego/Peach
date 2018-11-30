@@ -19,6 +19,8 @@ export default {
   },
   Log: {
     getLog: "LOG_getLog",
-    saveLog: "LOG_saveLog"
+    saveLog: "LOG_saveLog",
+    mutateMov: "LOG_mutateMov",
+    deleteMov: "LOG_deleteMov"
   }
 };

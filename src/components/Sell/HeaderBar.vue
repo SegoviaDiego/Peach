@@ -95,11 +95,9 @@ export default Vue.extend({
     },
     validateItem() {
       if (!this.newItem) {
-        console.log(1);
         return;
       }
       if (!this.newItem) {
-        console.log(2);
         return;
       }
       this.$store.dispatch(types.create, this.newItem);

@@ -6,6 +6,7 @@ import Product from "./mongodb/Product";
 import Total from "./mongodb/Total";
 import Sell from "./mongodb/Sell";
 import Log from "./mongodb/Log";
+import Firebird from "./db/Firebird";
 
 export default class SocketServer {
   private static server: io.Server;
@@ -66,5 +67,12 @@ export default class SocketServer {
         callback(false);
       }
     });
+
+    // Test functions
+    // socket.on("testSell", async callback => {
+    //   // await Firebird.clearTotales();
+    //   await Firebird.createSell();
+    //   callback("Completed");
+    // });
   }
 }

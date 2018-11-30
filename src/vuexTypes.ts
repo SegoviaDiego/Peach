@@ -45,10 +45,12 @@ export const log = {
   loadEgreso: "Log_Egreso",
   loadMov: "Log_Mov",
   loadMovByRange: "Load_Mov_By_range",
-  createMov: "create_Mov",
   filter: "FILTER_CHANGE",
   setDate: "SET_LOGS_DATE",
   setType: "SET_LOGS_TYPE",
+  createMov: "create_Mov",
+  mutateMov: "mutate_Mov",
+  deleteMov: "delete_Mov",
   // mutations
   startLoading: "START_LOADING",
   stopLoading: "STOP_LOADING",
@@ -94,6 +96,7 @@ export const sell = {
 export const settings = {
   // actions
   connect: 'CLIENT_CONNECT',
+  setStatsRoute: 'SETTINGS_SET_STATS_ROUTE',
   // Preferences
   preferencesId: 1,
   loadPreferences: "LOAD_PREFERENCES",

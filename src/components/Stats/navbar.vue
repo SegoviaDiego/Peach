@@ -1,19 +1,19 @@
 <template>
   <div class="statsNavbarFlex">
-    <div class="container" :style="{width: selectedRoute == routes.informes ? '75%' : '100%'}">
+    <div class="container" :class="{informe: selectedRoute == routes.informes ? true : false}">
       <div class="selectors">
         <el-dropdown trigger="click" @command="setRoute">
           <span class="selector">
-            {{getPositionLabel(selectedRoute)}} <fontawesome icon="chevron-circle-down" />
+            {{getPositionLabel(selectedRoute)}}
+            <fontawesome icon="chevron-circle-down"/>
           </span>
           <el-dropdown-menu slot="dropdown" class="select">
             <template v-for="route of routes">
               <el-dropdown-item
                 :key="route"
                 :command="route"
-                :class="{'active': selectedRoute == route}" >
-                {{getPositionLabel(route)}}
-              </el-dropdown-item>
+                :class="{'active': selectedRoute == route}"
+              >{{getPositionLabel(route)}}</el-dropdown-item>
             </template>
           </el-dropdown-menu>
         </el-dropdown>
@@ -22,49 +22,44 @@
           <!-- Cierre selection -->
           <el-dropdown trigger="click" @command="setCierreIndex">
             <span class="selector">
-              {{getCierreLabel(cierreIndex)}} <fontawesome icon="chevron-circle-down" />
+              {{getCierreLabel(cierreIndex)}}
+              <fontawesome icon="chevron-circle-down"/>
             </span>
             <el-dropdown-menu slot="dropdown" class="select">
               <template v-for="i of cierres.length">
                 <el-dropdown-item
                   :key="'cierre-'+i"
                   :command="i"
-                  :class="{'active': i == cierreIndex }">
-                    <span style="float: left">
-                      {{getCierreLabel(i)}}
-                    </span>
-                    <span style="float: right; color: #8492a6; font-size: 13px">
-                      {{ getHourRange(i) }}
-                    </span>
+                  :class="{'active': i == cierreIndex }"
+                >
+                  <span style="float: left">{{getCierreLabel(i)}}</span>
+                  <span style="float: right; color: #8492a6; font-size: 13px">{{ getHourRange(i) }}</span>
                 </el-dropdown-item>
               </template>
               <!-- Total -->
               <el-dropdown-item
                 :key="'cierre-'+totalIndex"
                 :command="totalIndex"
-                :class="{ 'active': cierreIndex == totalIndex }">
-                <span style="float: left">
-                  Total
-                </span>
+                :class="{ 'active': cierreIndex == totalIndex }"
+              >
+                <span style="float: left">Total</span>
               </el-dropdown-item>
-
             </el-dropdown-menu>
           </el-dropdown>
 
           <!-- Crear un cierre manualmente -->
           <template v-if="equalDates(new Date(), date)">
-            <button @click="makeCierre">
-              Crear cierre
-            </button>
+            <button
+              v-loading="cierreLoading"
+              :disabled="cierreLoading"
+              @click="makeCierre"
+            >Crear cierre</button>
           </template>
-
         </template>
       </div>
       <div class="buttons">
         <!-- Go back button -->
-        <button @click="goBack">
-          Volver atras
-        </button>
+        <button @click="goBack">Volver atras</button>
       </div>
     </div>
   </div>
@@ -75,7 +70,7 @@ import Vue from "vue";
 import { mapState } from "vuex";
 import Client from "@/api/Client/Client";
 import { equalDates, toHour, toHumanDate } from "@/api/Utils";
-import { totals as totalTypes } from "@/vuexTypes";
+import { totals as totalTypes, settings as types } from "@/vuexTypes";
 import socketEvents from "@/socketEvents";
 
 export default Vue.extend({
@@ -84,6 +79,7 @@ export default Vue.extend({
     isLoading: state => state.Total.loading,
     date: state => state.Total.date,
     cierreIndex: state => state.Total.cierreIndex,
+    selectedRoute: state => state.Settings.statsSelectedRoute,
     cierres(state) {
       if (state.Total.data) return state.Total.data.cierres;
       return [];
@@ -91,23 +87,26 @@ export default Vue.extend({
   }),
   data: () => ({
     routes: {
-      informes: "INFORMES_ROUTE",
-      movs: "MOVEMENTS_ROUTE",
-      ingreso: "INGRESO_ROUTE",
-      egreso: "EGRESO_ROUTE",
-      sells: "VENTAS_ROUTE"
+      informes: "/informes",
+      movs: "/movimientos",
+      ingreso: "/ingresos",
+      egreso: "/egresos",
+      sells: "/Sells"
     },
-    selectedRoute: null,
-    totalIndex: totalTypes.totalIndex
+    totalIndex: totalTypes.totalIndex,
+    cierreLoading: false
   }),
   methods: {
     equalDates: equalDates,
     makeCierre() {
+      this.cierreLoading = true;
       Client.set(socketEvents.Total.makeCierre)
         .then(async created => {
           const index = this.cierreIndex;
           await this.$store.dispatch(totalTypes.load);
           await this.setCierreIndex(index);
+
+          this.cierreLoading = false;
 
           this.$notify({
             title: "Cierre creado",
@@ -132,26 +131,11 @@ export default Vue.extend({
     },
     goBack() {
       this.$router.replace({ path: "/dashboard" });
+      this.$store.dispatch(types.setStatsRoute, null);
     },
     setRoute(route) {
-      this.selectedRoute = route;
-      switch (this.selectedRoute) {
-        case this.routes.informes:
-          this.$router.replace({ path: "/informes" });
-          break;
-        case this.routes.movs:
-          this.$router.replace({ path: "/movimientos" });
-          break;
-        case this.routes.ingreso:
-          this.$router.replace({ path: "/ingresos" });
-          break;
-        case this.routes.egreso:
-          this.$router.replace({ path: "/egresos" });
-          break;
-        case this.routes.sells:
-          this.$router.replace({ path: "/Sells" });
-          break;
-      }
+      this.$router.replace({ path: route });
+      this.$store.dispatch(types.setStatsRoute, route);
     },
     getPositionLabel(route) {
       switch (route) {
@@ -213,10 +197,26 @@ export default Vue.extend({
   height: 100px;
   padding: 0 40px;
   .container {
+    width: 100%;
     height: 100%;
     display: flex;
     flex-direction: row;
     align-items: center;
+    &.informe {
+      @media screen and (max-width: 899px) {
+        * {
+          font-size: 18px !important;
+        }
+      }
+      @media screen and (min-width: 1000px) and (max-width: 1299px) {
+        * {
+          font-size: 17px !important;
+        }
+      }
+      @media screen and (min-width: 1000px) {
+        width: 75% !important;
+      }
+    }
     .selectors {
       flex: 3;
       height: 100%;
@@ -251,11 +251,18 @@ export default Vue.extend({
     }
     .buttons {
       flex: 1;
+      min-width: 130px;
       height: 100%;
       display: flex;
       flex-direction: row;
       align-items: center;
       justify-content: flex-end;
+      font-size: 28px;
+      @media screen and (max-width: 899px) {
+        * {
+          font-size: 18px;
+        }
+      }
     }
   }
 }

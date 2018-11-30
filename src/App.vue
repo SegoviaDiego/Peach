@@ -14,6 +14,7 @@ export default Vue.extend({
   mounted() {
     Client.connect().then(() => {
       this.$store.dispatch(types.connect);
+      // Client.get(socketEvents.Sell.load, date)
     });
     if (process.env.NODE_ENV !== "production") {
       this.$router.replace("/Dashboard");

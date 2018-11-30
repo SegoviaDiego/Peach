@@ -1,15 +1,13 @@
 <template>
   <OxyTable v-model="products">
     <Row slot="row" slot-scope="item" :key="item._id">
-      <Cell label="Codigo" sortBy="_id" :colSpan="1" >{{item._id}}</Cell>
-      <Cell label="Producto" sortBy="name" :colSpan="2" >{{item.name}}</Cell>
-      <Cell label="Precio" sortBy="price" :colSpan="1" >{{item.price}}</Cell>
-      
-      <Cell label="Stock" sortBy="stock" :colSpan="1" >
-        {{composeMagnitude(item.stock, item.type)}}
-      </Cell>
+      <Cell label="Codigo" sortBy="_id" :colSpan="1">{{item._id}}</Cell>
+      <Cell label="Producto" sortBy="name" :colSpan="2">{{item.name}}</Cell>
+      <Cell label="Precio" sortBy="price" :colSpan="1">{{item.price}}</Cell>
 
-      <Cell label="Venta" :colSpan="1" >
+      <Cell label="Stock" sortBy="stock" :colSpan="1">{{composeMagnitude(item.stock, item.type)}}</Cell>
+
+      <Cell label="Venta" :colSpan="1">
         <el-input
           :max="getProductMaxInputVal(item.stock)"
           :min="0"
@@ -17,7 +15,8 @@
           type="number"
           :value="getSellAmount(item._id)"
           @input="handleChange(item, $event)"
-          placeholder="Cantidad vendida"/>
+          placeholder="Cantidad vendida"
+        />
       </Cell>
     </Row>
   </OxyTable>
@@ -92,4 +91,15 @@ export default Vue.extend({
 </script>
 
 <style lang="scss" scoped>
+.table {
+  flex: 1;
+  // display: grid;
+  // grid-row-gap: 20px;
+  // grid-template-rows: 55px 1fr;
+  // grid-template-columns: 1fr;
+  // grid-template-areas:
+  //   "header"
+  //   "table";
+  // overflow: hidden;
+}
 </style>

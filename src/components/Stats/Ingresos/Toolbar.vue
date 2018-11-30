@@ -154,7 +154,7 @@ export default Vue.extend({
       let to = this.selectedTime[1];
 
       printData.push([
-        { text: "PLU", style: "tableHeader" },
+        { text: "CODIGO", style: "tableHeader" },
         { text: "HORA", style: "tableHeader" },
         { text: "NOMBRE", style: "tableHeader" },
         { text: "INGRESADO", style: "tableHeader" }
@@ -196,7 +196,7 @@ export default Vue.extend({
               headerRows: 1,
               dontBreakRows: true,
               keepWithHeaderRows: 1,
-              widths: [50, 50, "*", "20%"],
+              widths: [100, 50, "*", "20%"],
               body: printData
             }
           }

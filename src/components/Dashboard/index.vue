@@ -100,8 +100,19 @@ export default Vue.extend({
       justify-content: center;
       align-items: center;
       overflow: hidden;
-      font-size: 3em;
       text-align: center;
+      @media screen and (max-width: 899px) {
+        font-size: 30px;
+      }
+      @media screen and (min-width: 900px) and (max-width: 999px) {
+        font-size: 30px;
+      }
+      @media screen and (min-width: 1000px) and (max-width: 1299px) {
+        font-size: 30px;
+      }
+      @media screen and (min-width: 1300px) {
+        font-size: 40px;
+      }
     }
     .subTitle {
       display: flex;
@@ -110,7 +121,18 @@ export default Vue.extend({
       justify-content: center;
       align-items: center;
       overflow: hidden;
-      font-size: 2em;
+      @media screen and (max-width: 899px) {
+        font-size: 20px;
+      }
+      @media screen and (min-width: 900px) and (max-width: 999px) {
+        font-size: 20px;
+      }
+      @media screen and (min-width: 1000px) and (max-width: 1299px) {
+        font-size: 20px;
+      }
+      @media screen and (min-width: 1300px) {
+        font-size: 30px;
+      }
     }
   }
   .router {
@@ -155,7 +177,7 @@ export default Vue.extend({
         justify-content: center;
         align-items: center;
         overflow: hidden;
-        font-size: 10em;
+        font-size: 20vh;
       }
       .title {
         flex: 1;
@@ -164,7 +186,18 @@ export default Vue.extend({
         justify-content: center;
         align-items: center;
         overflow: hidden;
-        font-size: 4em;
+        @media screen and (max-width: 899px) {
+          font-size: 40px;
+        }
+        @media screen and (min-width: 900px) and (max-width: 999px) {
+          font-size: 50px;
+        }
+        @media screen and (min-width: 1000px) and (max-width: 1299px) {
+          font-size: 60px;
+        }
+        @media screen and (min-width: 1300px) {
+          font-size: 70px;
+        }
       }
     }
   }

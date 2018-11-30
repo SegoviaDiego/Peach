@@ -2,54 +2,30 @@
   <div class="actionsGrid">
     <div class="container">
       <div class="total">
-        <div class="title">
-          TOTAL:
-        </div>
-        <div class="value">
-          $ {{total}}
-        </div>
+        <div class="title">TOTAL:</div>
+        <div class="value">$ {{total}}</div>
       </div>
       <div class="method">
         <el-select v-model="payMethods" multiple placeholder="Seleccionar metodo de pago">
-          <el-option
-            label="Efectivo"
-            value="efectivo">
-          </el-option>
-          <el-option
-            label="Tarjeta de credito"
-            value="credito">
-          </el-option>
-          <el-option
-            label="Tarjeta de debito"
-            value="debito">
-          </el-option>
+          <el-option label="Efectivo" value="efectivo"></el-option>
+          <el-option label="Tarjeta de credito" value="credito"></el-option>
+          <el-option label="Tarjeta de debito" value="debito"></el-option>
         </el-select>
       </div>
       <div class="actions">
-        <button @click="handleAction(1)">
-          Cancelar
-        </button>
-        <button @click="handleAction(2)">
-          Simular
-        </button>
-        <button @click="handleAction(3)">
-          Vender
-        </button>
+        <button @click="handleAction(1)">Cancelar</button>
+        <button @click="handleAction(2)">Simular</button>
+        <button @click="handleAction(3)" v-loading="sellLoading" :disabled="sellLoading">Vender</button>
       </div>
     </div>
     <!-- Dialog -->
-    <el-dialog
-      title="Dividir monto a pagar"
-      :visible.sync="payDivisionDialog"
-      width="30%">
+    <el-dialog title="Dividir monto a pagar" :visible.sync="payDivisionDialog" width="30%">
       <!-- Dialog's body -->
       <div class="dialogBody">
         <template v-for="i of payMethods">
           <template v-if="i == 'credito'">
             <div :key="i" class="method">
-              <div class="label">
-                {{getMethodLabel(i)}}
-              </div>
+              <div class="label">{{getMethodLabel(i)}}</div>
               <div class="input">
                 <el-input
                   :key="i + 'division'"
@@ -57,37 +33,38 @@
                   type="number"
                   :value="payDivision[i]"
                   @input="handleDivisionChange(i, $event)"
-                  :placeholder="getMethodLabel(i)"/>
+                  :placeholder="getMethodLabel(i)"
+                />
                 <template v-if="recargoType">
                   <el-input
-                  :key="i + 'recargo'"
-                  :min="1"
-                  :max="2"
-                  :step="0.1"
-                  type="number"
-                  :value="recargoCredito"
-                  @input="handleRecargoChange($event)"
-                  placeholder="Recargo"/>
+                    :key="i + 'recargo'"
+                    :min="1"
+                    :max="2"
+                    :step="0.1"
+                    type="number"
+                    :value="recargoCredito"
+                    @input="handleRecargoChange($event)"
+                    placeholder="Recargo"
+                  />
                 </template>
                 <template v-else>
                   <el-input
-                  :key="i + 'recargo'"
-                  :min="0"
-                  :max="100"
-                  :step="1"
-                  type="number"
-                  :value="recargoCredito"
-                  @input="handleRecargoChange($event)"
-                  placeholder="Recargo"/>
+                    :key="i + 'recargo'"
+                    :min="0"
+                    :max="100"
+                    :step="1"
+                    type="number"
+                    :value="recargoCredito"
+                    @input="handleRecargoChange($event)"
+                    placeholder="Recargo"
+                  />
                 </template>
               </div>
             </div>
           </template>
           <template v-else>
             <div :key="i" class="method">
-              <div class="label">
-                {{getMethodLabel(i)}}
-              </div>
+              <div class="label">{{getMethodLabel(i)}}</div>
               <div class="input">
                 <el-input
                   :key="i"
@@ -95,28 +72,26 @@
                   type="number"
                   :value="payDivision[i]"
                   @input="handleDivisionChange(i, $event)"
-                  :placeholder="getMethodLabel(i)"/>
+                  :placeholder="getMethodLabel(i)"
+                />
               </div>
             </div>
           </template>
-
         </template>
         <!-- information -->
-        <div class="restante">
-          {{payDivisionMessage}}
-        </div>
-        <div class="recargo">
-          Regargo: ${{getRecargo().toFixed(2)}}
-        </div>
-        <div class="total">
-          Total: ${{getTotal().toFixed(2)}}
-        </div>
+        <div class="restante">{{payDivisionMessage}}</div>
+        <div class="recargo">Regargo: ${{getRecargo().toFixed(2)}}</div>
+        <div class="total">Total: ${{getTotal().toFixed(2)}}</div>
         <!-- information -->
       </div>
       <!-- Dialog's body -->
       <span slot="footer" class="dialog-footer">
         <el-button class="cancel" @click="payDivisionDialog = false">Cancelar</el-button>
-        <el-button class="success" :disabled="this.total - this.getSubTotal() != 0" @click="handleAction(3)">Vender</el-button>
+        <el-button
+          class="success"
+          :disabled="this.total - this.getSubTotal() != 0"
+          @click="handleAction(3)"
+        >Vender</el-button>
       </span>
     </el-dialog>
   </div>
@@ -158,7 +133,8 @@ export default Vue.extend({
     payDivisionDialog: false,
     payMethods: [],
     payDivision: {} as any,
-    recargoCredito: null as any
+    recargoCredito: null as any,
+    sellLoading: false
   }),
   methods: {
     handleRecargoChange(value: any) {
@@ -246,7 +222,7 @@ export default Vue.extend({
       let sell;
 
       printData.push([
-        { text: "PLU", style: "tableHeader" },
+        { text: "CODIGO", style: "tableHeader" },
         { text: "NOMBRE", style: "tableHeader" },
         { text: "CANTIDAD", style: "tableHeader" },
         { text: "IMPORTE", style: "tableHeader" }
@@ -277,7 +253,7 @@ export default Vue.extend({
               headerRows: 2,
               dontBreakRows: true,
               keepWithHeaderRows: 1,
-              widths: [50, "*", "20%", "20%"],
+              widths: [100, "*", "20%", "20%"],
               body: printData
             }
           }
@@ -312,13 +288,17 @@ export default Vue.extend({
           this.print();
           break;
         case 3: // Vender
+          if (this.sellLoading) return;
+
           if (!this.isReadyToSell()) return;
+          // Si es pago multiple o con credito
           if (
             this.payMethods.length > 1 ||
             _.includes(this.payMethods, "credito")
           ) {
             if (this.payDivisionDialog) {
               if (!this.validateSell()) return;
+              this.sellLoading = true;
 
               for (const i in this.payDivision) {
                 this.payDivision[i] = parseFloat(this.payDivision[i]);
@@ -335,6 +315,7 @@ export default Vue.extend({
                   payDivision: this.payDivision
                 })
                 .then(() => {
+                  this.sellLoading = false;
                   this.$notify({
                     title: "Se ha realizado la venta con éxito",
                     message: "",
@@ -350,8 +331,10 @@ export default Vue.extend({
               this.payDivisionDialog = true;
             }
           } else {
+            // Si es un solo metodo de pago
             if (!this.isReadyToSell()) return;
             if (!this.validateSell()) return;
+            this.sellLoading = true;
 
             this.payDivision = {
               [this.payMethods[0]]: parseFloat(this.total)
@@ -363,6 +346,7 @@ export default Vue.extend({
                 payDivision: this.payDivision
               })
               .then(() => {
+                this.sellLoading = false;
                 this.$notify({
                   title: "Se ha realizado la venta con éxito",
                   message: "",

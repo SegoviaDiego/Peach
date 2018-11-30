@@ -2,6 +2,7 @@ import { log as types } from "../../../vuexTypes";
 import Server from "../Server";
 import { fromMagnitude } from "../../Utils";
 import socketEvents from "../../../socketEvents";
+import { ObjectId } from "mongodb";
 
 export default class Log {
   private static db(name: string) {
@@ -30,6 +31,16 @@ export default class Log {
     switch (event) {
       case socketEvents.Log.saveLog:
         Log.saveLog(data.type, data.payload)
+          .then(res => callback(true, res))
+          .catch(res => callback(false, res));
+        break;
+      case socketEvents.Log.mutateMov:
+        Log.mutateMov(data.payload)
+          .then(res => callback(true, res))
+          .catch(res => callback(false, res));
+        break;
+      case socketEvents.Log.deleteMov:
+        Log.deleteMov(data.payload)
           .then(res => callback(true, res))
           .catch(res => callback(false, res));
         break;
@@ -107,12 +118,57 @@ export default class Log {
 
       Log.db(types.movLog).then(db => {
         db.insertOne({
-          date,
-          time,
+          date: new Date(date),
+          time: new Date(time),
           desc,
           type,
-          money
+          money: parseFloat(money)
         }).then(() => {
+          resolve();
+        });
+      });
+    });
+  }
+
+  private static mutateMov(mov: any) {
+    return new Promise(async (resolve, reject) => {
+      Log.db(types.movLog).then(db => {
+        db.replaceOne(
+          { _id: new ObjectId(mov._id) },
+          {
+            ...mov,
+            date: new Date(mov.date),
+            time: new Date(mov.time),
+            money: parseFloat(mov.money),
+            _id: new ObjectId(mov._id)
+          },
+          (err, res) => {
+            if (err) {
+              reject({ code: 1, err });
+              return;
+            }
+            if (!res || !res.modifiedCount) {
+              reject({ code: 2, err });
+              return;
+            }
+            resolve(mov);
+          }
+        );
+      });
+    });
+  }
+
+  private static deleteMov(id: any) {
+    return new Promise(async (resolve, reject) => {
+      Log.db(types.movLog).then(db => {
+        db.deleteOne({ _id: new ObjectId(id) }, (err, res) => {
+          if (err) {
+            reject({ code: 1, err });
+            return;
+          } else if (!res || !res.deletedCount) {
+            reject({ code: 2, err });
+            return;
+          }
           resolve();
         });
       });

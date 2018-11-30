@@ -64,12 +64,15 @@ export default Vue.extend({
 
   @media screen and (max-width: 899px) {
     font-size: 16px;
+    margin: 0 3px;
   }
   @media screen and (min-width: 900px) and (max-width: 999px) {
     font-size: 20px;
+    margin: 0 3px;
   }
   @media screen and (min-width: 1000px) and (max-width: 1299px) {
-    font-size: 25px;
+    font-size: 22px;
+    margin: 0 8px;
   }
   @media screen and (min-width: 1300px) {
     font-size: 28px;

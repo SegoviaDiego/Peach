@@ -1,59 +1,18 @@
 <template>
   <div class="grid">
     <Toolbar/>
-
-    <div class="table">
-      <OxyTable v-model="filteredData">
-        <Row slot="row" slot-scope="log" :key="log._id">
-          <Cell label="Hora" sortBy="_id" :colSpan="1" >
-            {{toHour(new Date(log.time))}}
-          </Cell>
-          <Cell label="Producto" sortBy="_id" :colSpan="3" >
-            {{log.item.name}}
-          </Cell>
-          <Cell label="Cantidad" sortBy="_id" :colSpan="2" >
-            {{composeMagnitude(log.amount, log.item.type)}}
-          </Cell>
-          <Cell label="Valor" sortBy="_id" :colSpan="2" >
-            ${{(log.item.price * toMagnitude(log.amount, log.item.type)).toFixed(2)}}
-          </Cell>
-        </Row>
-      </OxyTable>
-    </div>
-
-    <!-- <div class="head">
-      <div class="column">
-        Hora
-      </div>
-      <div class="column">
-        Articulo
-      </div>
-      <div class="column">
-        Cantidad
-      </div>
-      <div class="column">
-        Valor
-      </div>
-    </div>
-    <div class="body">
-      <template v-for="log in filteredData">
-        <div :key="'row-' + log._id" class="row">
-          <div class="column">
-            {{toHour(new Date(log.time))}}
-          </div>
-          <div class="column">
-            {{log.item.name}}
-          </div>
-          <div class="column">
-            {{composeMagnitude(log.amount, log.item.type)}}
-          </div>
-          <div class="column">
-            ${{(log.item.price * toMagnitude(log.amount, log.item.type)).toFixed(2)}}
-          </div>
-        </div>
-      </template>
-    </div> -->
-  </div> 
+    <OxyTable v-model="filteredData">
+      <Row slot="row" slot-scope="log" :key="log._id">
+        <Cell label="Hora" sortBy="time" :colSpan="1">{{toHour(new Date(log.time))}}</Cell>
+        <Cell label="Producto" sortBy="item.name" :colSpan="3">{{log.item.name}}</Cell>
+        <Cell label="Cantidad" :colSpan="2">{{composeMagnitude(log.amount, log.item.type)}}</Cell>
+        <Cell
+          label="Valor"
+          :colSpan="2"
+        >${{(log.item.price * toMagnitude(log.amount, log.item.type)).toFixed(2)}}</Cell>
+      </Row>
+    </OxyTable>
+  </div>
 </template>
 
 <script>

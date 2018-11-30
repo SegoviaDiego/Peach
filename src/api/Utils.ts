@@ -83,7 +83,6 @@ export function composeSystelToKg(
             : parseFloat(item.CA)
       });
     }
-
     resolve(totals);
   });
 }

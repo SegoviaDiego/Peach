@@ -1,34 +1,29 @@
 <template>
   <div class="toolbarFlex">
-    <div class="date">
-      {{getDate()}}
-    </div>
+    <div class="date">{{getDate()}}</div>
     <div class="searchbar">
       <input
         :value="filter"
         @input="filterChanged($event.target.value)"
-        placeholder="Buscar" type="text">
+        placeholder="Buscar"
+        type="text"
+      >
     </div>
-    <button @click="selectingDate = true" class="rect">
-      Fecha
-    </button>
+    <button @click="selectingDate = true" class="rect">Fecha</button>
     <button @click="selectingPrint = true" class="circle">
-      <fontawesome icon="print" />
+      <fontawesome icon="print"/>
     </button>
-    
+
     <!-- Dialog -->
-    <el-dialog
-      title="Seleccionar fecha"
-      :visible.sync="selectingDate"
-      width="30%">
+    <el-dialog title="Seleccionar fecha" :visible.sync="selectingDate" width="30%">
       <div>
         <el-date-picker
           v-model="selectedDate"
           format="dd/MM/yyyy"
           type="date"
           placeholder="Seleccionar dia"
-          :picker-options="datePickOptions">
-        </el-date-picker>
+          :picker-options="datePickOptions"
+        ></el-date-picker>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="selectingDate = false">Cancelar</el-button>
@@ -39,19 +34,17 @@
     <el-dialog
       title="Seleccionar rango horario para la impresion"
       :visible.sync="selectingPrint"
-      width="30%">
+      width="30%"
+    >
       <div>
-        <el-select multiple v-model="selectedCierre"  placeholder="Seleccionar cierre">
-           <template v-for="i of cierres.length">
-            <el-option
-              :key="'cierre-'+i"
-              :label="getLabel(i)"
-              :value="i">
+        <el-select multiple v-model="selectedCierre" placeholder="Seleccionar cierre">
+          <template v-for="i of cierres.length">
+            <el-option :key="'cierre-'+i" :label="getLabel(i)" :value="i">
               <span style="float: left">{{ getLabel(i) }}</span>
               <span style="float: right; color: #8492a6; font-size: 13px">{{ getHourRange(i) }}</span>
             </el-option>
           </template>
-          <el-option :value="0" label="Todos" />
+          <el-option :value="0" label="Todos"/>
         </el-select>
       </div>
       <span slot="footer" class="dialog-footer">
@@ -59,7 +52,6 @@
         <el-button type="primary" @click="validatePrint()">Imprimir</el-button>
       </span>
     </el-dialog>
-
   </div>
 </template>
 
@@ -310,7 +302,7 @@ export default Vue.extend({
 
         totalCierres += parseFloat(cierres[i].total);
 
-        if (cierres[i].payDivision["recargo"]) {
+        if (cierres[i].payDivision && cierres[i].payDivision["recargo"]) {
           totalRecargo += parseFloat(cierres[i].payDivision["recargo"]);
         }
 

@@ -15,29 +15,6 @@ export default Vue.extend({
   name: "stats-page",
   components: {
     Navbar
-  },
-  data: () => ({
-    activeIndex: "1"
-  }),
-  methods: {
-    handleSelect(index) {
-      switch (index) {
-        case "1":
-          this.$router.replace({ path: "informes" });
-          break;
-        case "2":
-          this.$router.replace({ path: "movimientos" });
-          break;
-        case "3":
-          this.$router.replace({ path: "ingresos" });
-          break;
-        case "4":
-          this.$router.replace({ path: "egresos" });
-          break;
-        default:
-          this.$router.replace({ path: "informes" });
-      }
-    }
   }
 });
 </script>

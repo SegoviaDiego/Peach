@@ -7,8 +7,12 @@ import socketEvents from "../../../socketEvents";
 import { sell as types } from "../../../vuexTypes";
 
 export default class Sell {
-  private static db() {
-    return Server.getCollection(types.collection);
+  private static db(): Promise<Collection<any>> {
+    return new Promise(async resolve => {
+      const db = await Server.getCollection(types.collection);
+      resolve(db);
+      // db.createIndexes
+    });
   }
 
   public static async get(
@@ -19,8 +23,8 @@ export default class Sell {
     switch (event) {
       case socketEvents.Sell.load:
         Sell.load(new Date(data))
-        .then(res => callback(true, res))
-        .catch(res => callback(false, res));
+          .then(res => callback(true, res))
+          .catch(res => callback(false, res));
         break;
     }
   }
@@ -33,8 +37,8 @@ export default class Sell {
     switch (event) {
       case socketEvents.Sell.saveSell:
         Sell.saveSell(data.sells, data.payload)
-        .then(res => callback(true, res))
-        .catch(res => callback(false, res));
+          .then(res => callback(true, res))
+          .catch(res => callback(false, res));
         break;
     }
   }

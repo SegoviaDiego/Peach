@@ -1,13 +1,20 @@
 <template>
   <div class="mainGrid">
     <HeaderBar
-      v-on:go-to="goTo" v-on:print="print"
-      :amount="amount" :deleteSelection="deleteSelection" :mutatedProducts="mutatedProducts"
-      :newItem="newItem" />
+      v-on:go-to="goTo"
+      v-on:print="print"
+      :amount="amount"
+      :deleteSelection="deleteSelection"
+      :mutatedProducts="mutatedProducts"
+      :newItem="newItem"
+    />
     <Table
       :products="filteredData"
-      :amount="amount" :deleteSelection="deleteSelection" :mutatedProducts="mutatedProducts"
-      :newItem="newItem" />
+      :amount="amount"
+      :deleteSelection="deleteSelection"
+      :mutatedProducts="mutatedProducts"
+      :newItem="newItem"
+    />
   </div>
 </template>
 
@@ -23,7 +30,9 @@ import Table from "./Table.vue";
 import HeaderBar from "./HeaderBar.vue";
 
 function filterData(data: any, filter: any) {
-  if (!filter) {
+  if (!data || !data.length) {
+    return [];
+  } else if (!filter) {
     return data;
   } else if (isNaN(filter)) {
     return data.filter((item: any) => {
@@ -34,11 +43,6 @@ function filterData(data: any, filter: any) {
       return parseFloat(item._id) == parseFloat(filter);
     });
   }
-}
-function sortData(data: any) {
-  return data.sort((a: any, b: any) => {
-    return a._id - b._id;
-  });
 }
 
 export default Vue.extend({
@@ -82,14 +86,12 @@ export default Vue.extend({
       return id;
     },
     filteredData(state: any) {
-      return sortData(filterData([...state.Product.data], this.filter));
+      return filterData([...state.Product.data], this.filter);
     },
     mutatedProducts(state: any) {
       let list = {} as any;
 
-      for (let item of sortData(
-        filterData([...state.Product.data], this.filter)
-      )) {
+      for (let item of filterData([...state.Product.data], this.filter)) {
         list[item._id] = {
           ...item
         };
@@ -107,7 +109,7 @@ export default Vue.extend({
     print() {
       let printData = [];
       printData.push([
-        { text: "PLU", style: "tableHeader" },
+        { text: "CODIGO", style: "tableHeader" },
         { text: "NOMBRE", style: "tableHeader" },
         { text: "EN STOCK", style: "tableHeader" }
       ]);
@@ -129,7 +131,7 @@ export default Vue.extend({
               headerRows: 1,
               dontBreakRows: true,
               keepWithHeaderRows: 1,
-              widths: [50, "*", "20%"],
+              widths: [100, "*", "20%"],
               body: printData
             }
           }

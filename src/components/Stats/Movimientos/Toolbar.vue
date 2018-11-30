@@ -1,56 +1,64 @@
 <template>
   <div class="toolbarFlex">
-    <div class="date">
-      {{getDate()}}
-    </div>
+    <div class="date">{{getDate()}}</div>
     <div class="searchbar">
       <input
         :value="filter"
         @input="filterChanged($event.target.value)"
-        placeholder="Buscar" type="text">
+        placeholder="Buscar"
+        type="text"
+      >
     </div>
-    <button @click="creatingMov = true" class="rect">
-      Crear movimiento
-    </button>
-    <button @click="selectingDate = true" class="rect">
-      Fecha
-    </button>
+    <button @click="creatingMov = true" class="rect">Crear movimiento</button>
+    <button @click="selectingDate = true" class="rect">Fecha</button>
     <!-- <button @click="selectingPrint = true" class="circle">
       <fontawesome icon="print" />
-    </button> -->
-    
+    </button>-->
     <!-- Dialog -->
-    <el-dialog
-      title="Crear movimiento"
-      :visible.sync="creatingMov"
-      width="50%">
-      <div>
-        <el-select v-model="movType" placeholder="Seleccionar tipo de movimiento">
-          <el-option label="Ingreso" :value="1"/>
-          <el-option label="Egreso" :value="2"/>
-        </el-select>
-        <el-input placeholder="Descripcion" v-model="movDesc" />
-        <el-input placeholder="Dinero" type="number" v-model="movMoney" />
-        
+    <el-dialog title="Crear movimiento" :visible.sync="creatingMov" width="50%">
+      <div class="dialogBody">
+        <div class="field">
+          <div class="label">Tipo</div>
+          <div class="input">
+            <el-select v-model="movType" placeholder="Seleccionar tipo de movimiento">
+              <el-option label="Ingreso" :value="1"/>
+              <el-option label="Egreso" :value="2"/>
+            </el-select>
+          </div>
+        </div>
+        <div class="field">
+          <div class="label">Descripcion</div>
+          <div class="input">
+            <el-input v-model="movDesc" placeholder="Descripcion"/>
+          </div>
+        </div>
+        <div class="field">
+          <div class="label">Dinero</div>
+          <div class="input">
+            <el-input v-model="movMoney" placeholder="Dinero" type="number"/>
+          </div>
+        </div>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="creatingMov = false">Cancelar</el-button>
-        <el-button type="primary" @click="validateMov()">Guardar</el-button>
+        <el-button
+          v-loading="movLoading"
+          :disabled="movLoading"
+          type="primary"
+          @click="validateMov()"
+        >Guardar</el-button>
       </span>
     </el-dialog>
 
-    <el-dialog
-      title="Seleccionar fecha"
-      :visible.sync="selectingDate"
-      width="30%">
+    <el-dialog title="Seleccionar fecha" :visible.sync="selectingDate" width="30%">
       <div>
         <el-date-picker
           v-model="selectedDate"
           format="dd/MM/yyyy"
           type="date"
           placeholder="Seleccionar dia"
-          :picker-options="datePickOptions">
-        </el-date-picker>
+          :picker-options="datePickOptions"
+        ></el-date-picker>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="selectingDate = false">Cancelar</el-button>
@@ -61,22 +69,22 @@
     <el-dialog
       title="Seleccionar rango horario para la impresion"
       :visible.sync="selectingPrint"
-      width="30%">
+      width="30%"
+    >
       <div>
         <el-time-picker
           is-range
           v-model="selectedTime"
           start-placeholder="Desde"
           range-separator="|"
-          end-placeholder="Hasta">
-        </el-time-picker>
+          end-placeholder="Hasta"
+        ></el-time-picker>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="selectingPrint = false">Cancelar</el-button>
         <el-button type="primary" @click="validatePrint()">Imprimir</el-button>
       </span>
     </el-dialog>
-
   </div>
 </template>
 
@@ -99,6 +107,7 @@ export default Vue.extend({
     data: state => state.Log.mov
   }),
   data: () => ({
+    movLoading: false,
     selectingDate: false,
     selectingPrint: false,
     creatingMov: false,
@@ -140,7 +149,11 @@ export default Vue.extend({
   }),
   methods: {
     validateMov() {
+      if (this.movLoading) return;
+      this.movLoading = true;
+
       if (!this.movType) {
+        this.movLoading = false;
         this.$notify({
           title: "No has seleccionado el tipo de movimiento!",
           message: "",
@@ -149,6 +162,7 @@ export default Vue.extend({
           offset: 170
         });
       } else if (!this.movDesc) {
+        this.movLoading = false;
         this.$notify({
           title: "No has ingresado una descripcion!",
           message: "",
@@ -157,6 +171,7 @@ export default Vue.extend({
           offset: 170
         });
       } else if (!this.movMoney) {
+        this.movLoading = false;
         this.$notify({
           title: "No has ingresado un valor monetario!",
           message: "",
@@ -176,6 +191,7 @@ export default Vue.extend({
           money: this.movMoney
         })
         .then(() => {
+          this.movLoading = false;
           this.$store.dispatch(types.loadMov);
           this.creatingMov = false;
           this.movType = null;
@@ -295,6 +311,30 @@ export default Vue.extend({
     justify-content: center;
     align-items: center;
     overflow: visible;
+  }
+}
+.field {
+  margin-bottom: 5px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  .label {
+    flex: 1;
+    font-family: Lato;
+    font-weight: bold;
+    font-size: 20px;
+    color: black;
+  }
+  .input {
+    flex: 3;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    .el-input {
+      margin-left: 10px;
+    }
   }
 }
 .toolbarFlex {

@@ -3,17 +3,15 @@
     <template v-if="cierreIndex">
       <template v-if="exists">
         <div class="info">
-          <div class="date">
-            {{getDate()}}
-          </div>
+          <div class="date">{{getDate()}}</div>
           <div class="total">
             <template v-if="cierreIndex && current">
-              <template v-if="cierreIndex == totalIndex">
-                Total: ${{parseFloat(current.total).toFixed(2)}}
-              </template>
-              <template v-else>
-                Total en {{getName()}}: ${{parseFloat(current.cierres[cierreIndex - 1].total).toFixed(2)}}
-              </template>
+              <template
+                v-if="cierreIndex == totalIndex"
+              >Total: ${{parseFloat(current.total).toFixed(2)}}</template>
+              <template
+                v-else
+              >Total en {{getName()}}: ${{parseFloat(current.cierres[cierreIndex - 1].total).toFixed(2)}}</template>
             </template>
           </div>
           <div class="comparison">
@@ -23,19 +21,15 @@
         <div v-if="false" class="buttons">
           <div class="circle">
             <div class="icon">
-              <fontawesome icon="search" />
+              <fontawesome icon="search"/>
             </div>
-            <div class="title">
-              Detalle
-            </div>
+            <div class="title">Detalle</div>
           </div>
           <div class="circle">
             <div class="icon">
-              <fontawesome icon="search" />
+              <fontawesome icon="search"/>
             </div>
-            <div class="title">
-              Grafico
-            </div>
+            <div class="title">Grafico</div>
           </div>
         </div>
       </template>
@@ -126,10 +120,22 @@ export default Vue.extend({
     overflow: hidden;
     * {
       color: #000;
-      font-size: 24px;
       font-weight: bold;
       font-family: Lato;
       margin-bottom: 10px;
+      font-size: 24px;
+      @media screen and (max-width: 899px) {
+        font-size: 20px;
+      }
+      @media screen and (min-width: 900px) and (max-width: 999px) {
+        font-size: 20px;
+      }
+      @media screen and (min-width: 1000px) and (max-width: 1299px) {
+        font-size: 25px;
+      }
+      @media screen and (min-width: 1300px) {
+        font-size: 28px;
+      }
     }
     .date {
     }

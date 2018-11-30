@@ -9,9 +9,8 @@
 
       <!-- Value vacio -->
       <template v-if="!sortedData.length"></template>
-
       <!-- Value con informacion -->
-      <template v-else v-for="(item, index) in sortedData">
+      <template v-else-if="!isLoading" v-for="(item, index) in sortedData">
         <RowContainer :key="index" :isHeader="index === 0">
           <slot name="row" v-bind="item"/>
         </RowContainer>
@@ -42,7 +41,6 @@ function sortData(data: any, sortBy: any, sortOrder: any, isNumber: any) {
   const isAsc = sortOrder === "asc";
   const isIntType = typeof getObjectAttribute(data[0], sortBy) === "number";
   if (isNumber || isIntType) {
-    console.log("is Number");
     return [...data].sort((a: any, b: any) => {
       a = getObjectAttribute(a, sortBy);
       b = getObjectAttribute(b, sortBy);
@@ -51,13 +49,15 @@ function sortData(data: any, sortBy: any, sortOrder: any, isNumber: any) {
       return isAsc ? a - b : b - a;
     });
   } else {
-    console.log("is not Number");
     return [...data].sort((a: any, b: any) => {
       a = getObjectAttribute(a, sortBy);
       b = getObjectAttribute(b, sortBy);
       a = ("" + a).toLowerCase();
       b = ("" + b).toLowerCase();
-      return isAsc ? a.localeCompare(b) : b.localeCompare(a);
+
+      return isAsc
+        ? a.localeCompare(b, "kn", { sensitivity: "base" })
+        : b.localeCompare(a, "kn", { sensitivity: "base" });
     });
   }
 }
@@ -76,8 +76,13 @@ export default Vue.extend({
   provide() {
     return { OxyTable: this.OxyTable };
   },
-  mounted() {},
+  async mounted() {
+    setTimeout(() => {
+      this.isLoading = false;
+    }, 0);
+  },
   data: () => ({
+    isLoading: true,
     OxyTable: {
       cols: {},
       sortBy: null as any,

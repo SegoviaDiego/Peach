@@ -1,76 +1,16 @@
 <template>
   <div class="grid">
     <Toolbar/>
-
-    <div class="table">
-      <OxyTable v-model="filteredData">
-        <Row slot="row" slot-scope="sell" :key="sell._id">
-          <Cell label="Hora" sortBy="_id" :colSpan="1" >
-            {{toHour(new Date(sell.time))}}
-          </Cell>
-          <Cell label="Efectivo" sortBy="_id" :colSpan="2" >
-            {{getPayDivision(sell, 'efectivo')}}
-          </Cell>
-          <Cell label="Credito" sortBy="_id" :colSpan="2" >
-            {{getPayDivision(sell, 'credito')}}
-          </Cell>
-          <Cell label="Recargo" sortBy="_id" :colSpan="2" >
-            {{getPayDivision(sell, 'recargo')}}
-          </Cell>
-          <Cell label="Debito" sortBy="_id" :colSpan="2" >
-            {{getPayDivision(sell, 'debito')}}
-          </Cell>
-          <Cell label="Total" sortBy="_id" :colSpan="2" >
-            $ {{sell.total.toFixed(2)}}
-          </Cell>
-        </Row>
-      </OxyTable>
-    </div>
-    
-    <!-- <div class="head">
-      <div class="column">
-        Hora
-      </div>
-      <div class="column">
-        Efectivo
-      </div>
-      <div class="column">
-        Credito
-      </div>
-      <div class="column">
-        Recargo
-      </div>
-      <div class="column">
-        Debito
-      </div>
-      <div class="column">
-        Total
-      </div>
-    </div>
-    <div class="body">
-      <template v-for="sell in filteredData">
-        <div :key="sell._id.toString()" class="row">
-          <div class="column">
-            {{toHour(new Date(sell.time))}}
-          </div>
-          <div class="column">
-            {{getPayDivision(sell, 'efectivo')}}
-          </div>
-          <div class="column">
-            {{getPayDivision(sell, 'credito')}}
-          </div>
-          <div class="column">
-            {{getPayDivision(sell, 'recargo')}}
-          </div>
-          <div class="column">
-            {{getPayDivision(sell, 'debito')}}
-          </div>
-          <div class="column">
-            $ {{sell.total.toFixed(2)}}
-          </div>
-        </div>
-      </template>
-    </div> -->
+    <OxyTable v-model="filteredData">
+      <Row slot="row" slot-scope="sell" :key="sell._id">
+        <Cell label="Hora" sortBy="time" :colSpan="1">{{toHour(new Date(sell.time))}}</Cell>
+        <Cell label="Efectivo" :colSpan="2">{{getPayDivision(sell, 'efectivo')}}</Cell>
+        <Cell label="Credito" :colSpan="2">{{getPayDivision(sell, 'credito')}}</Cell>
+        <Cell label="Recargo" :colSpan="2">{{getPayDivision(sell, 'recargo')}}</Cell>
+        <Cell label="Debito" :colSpan="2">{{getPayDivision(sell, 'debito')}}</Cell>
+        <Cell label="Total" sortBy="total" :colSpan="2">$ {{sell.total.toFixed(2)}}</Cell>
+      </Row>
+    </OxyTable>
   </div>
 </template>
 
@@ -183,59 +123,5 @@ $bFontColor: #a0a0a0;
   overflow: hidden;
   background-color: #eeeeee;
   border-radius: 7px;
-  .table {
-    grid-area: table;
-    width: 100%;
-    height: 100%;
-  }
-  .head {
-    margin-right: $sbSize;
-    grid-area: head;
-    display: grid;
-    grid-template-rows: 1fr;
-    grid-template-columns: $tableColumnTemplate;
-    .column {
-      display: flex;
-      padding-left: 10px;
-      align-items: center;
-      color: $hFontColor;
-      font-size: $hFontSize;
-      font-family: Lato;
-      font-weight: bold;
-      overflow: hidden;
-    }
-  }
-  .body {
-    grid-area: body;
-    overflow-x: hidden;
-    overflow-y: scroll;
-    margin-bottom: 10px;
-    &::-webkit-scrollbar {
-      width: $sbSize;
-    }
-    &::-webkit-scrollbar-track {
-      background-color: #e1e2e1;
-      border-radius: 10px;
-    }
-    &::-webkit-scrollbar-thumb {
-      background: $bFontColor;
-      border-radius: 10px;
-    }
-    .row {
-      margin: 7px 0px;
-      display: grid;
-      grid-template-rows: 1fr;
-      grid-template-columns: $tableColumnTemplate;
-      .column {
-        overflow: hidden;
-        display: flex;
-        padding: 0 $sbSize;
-        color: $bFontColor;
-        font-size: $bFontSize;
-        font-family: Lato;
-        font-weight: bold;
-      }
-    }
-  }
 }
 </style>

@@ -27,16 +27,18 @@ export default class Firebird {
     });
   }
 
-  public static listenForChanges() {
+  public static async listenForChanges() {
     console.log("Listening for Firebird changes");
-    Firebird.identifyChange();
+    // await Firebird.createSell();
+    // console.log("SSP ---- 1");
+    await Firebird.identifyChange();
     Firebird.startSystelSyncProcess();
   }
 
   public static startSystelSyncProcess() {
     Firebird.systelSyncProcess = setInterval(async () => {
       await Firebird.createDatabaseCopy();
-      Firebird.identifyChange();
+      await Firebird.identifyChange();
     }, 5000);
   }
 
@@ -48,21 +50,28 @@ export default class Firebird {
   }
 
   private static identifyChange() {
-    fb.attach(Firebird.data, (err: any, db: any) => {
-      if (err) throw err;
-
-      db.query(
-        "SELECT ID_PLU, PE, CA FROM TOTALES WHERE (CA>0 OR PE>0)",
-        [],
-        async (err: any, res: any) => {
+    return new Promise(resolve => {
+      fb.attach(Firebird.data, (err: any, db: any) => {
+        if (err) {
           db.detach();
-          if (err) throw err;
-
-          Total.analizeTotal(
-            await composeSystelToKg(await Product.loadProducts(), res)
-          );
+          throw err;
         }
-      );
+
+        db.query(
+          "SELECT ID_PLU, PE, CA FROM TOTALES WHERE (CA>0 OR PE>0)",
+          [],
+          async (err: any, res: any) => {
+            db.detach();
+            if (err) throw err;
+
+            resolve(
+              await Total.analizeTotal(
+                await composeSystelToKg(await Product.loadProducts(), res)
+              )
+            );
+          }
+        );
+      });
     });
   }
 
@@ -89,15 +98,16 @@ export default class Firebird {
   public static getProductList() {
     return new Promise(resolve => {
       fb.attach(Firebird.data, (err: any, db: any) => {
-        if (err) throw err;
+        if (err) {
+          db.detach();
+          throw err;
+        }
 
         const p: any = [];
-        console.log(1);
         db.query(
           "SELECT ID, DESCRIPCION, TIPO_VENTA, PRECIO FROM PLU",
           [],
           (err: any, res: any) => {
-            console.log(2);
             db.detach();
             if (err) throw err;
             res.forEach((item: any) => {
@@ -120,7 +130,10 @@ export default class Firebird {
       fb.attach(
         { ...Firebird.data, database: await Settings.getSystelSRC() },
         (err, db) => {
-          if (err) throw err;
+          if (err) {
+            db.detach();
+            throw err;
+          }
 
           db.query("DELETE FROM TOTALES", [], err => {
             db.detach();
@@ -138,6 +151,7 @@ export default class Firebird {
         { ...Firebird.data, database: await Settings.getSystelSRC() },
         (err, db) => {
           if (err) {
+            db.detach();
             resolve(false);
             console.error("getSystelSrc is not available");
             throw err;
@@ -183,18 +197,52 @@ export default class Firebird {
       fb.attach(
         { ...Firebird.data, database: await Settings.getSystelSRC() },
         (err, db) => {
-          if (err) throw err;
+          if (err) {
+            console.log("CREATESELL ---- err 1");
+            console.log(err);
+            return;
+          }
 
-          db.query(
-            "INSERT INTO TOTALES (IP, NUMERO, V1, V2, V3, V4, ID_PLU, ID_SECCION, PE, CA) VALUES (1,1,1,1,1,1,3, 1, 100, 100)",
-            [],
-            err => {
-              db.detach();
-              if (err) throw err;
-              console.log("created");
-              resolve();
+          db.query("SELECT * FROM TOTALES WHERE ID_PLU=3", [], (err, doc) => {
+            if (err) {
+              console.log("CREATESELL ---- err 2");
+              console.log(err);
+              return;
             }
-          );
+
+            if (doc.length) {
+              db.query(
+                "UPDATE TOTALES SET PE=PE + 100 WHERE ID_PLU=3",
+                [],
+                err => {
+                  db.detach();
+                  if (err) {
+                    console.log("CREATESELL ---- err 3");
+                    console.log(err);
+                    return;
+                  }
+                  console.log("updated");
+                  resolve();
+                }
+              );
+            } else {
+              console.log("2----");
+              db.query(
+                "INSERT INTO TOTALES (IP, NUMERO, V1, V2, V3, V4, ID_PLU, ID_SECCION, PE, CA) VALUES (1,1,1,1,1,1,3, 1, 100, 100)",
+                [],
+                err => {
+                  db.detach();
+                  if (err) {
+                    console.log("CREATESELL ---- err 4");
+                    console.log(err);
+                    return;
+                  }
+                  console.log("created");
+                  resolve();
+                }
+              );
+            }
+          });
         }
       );
     });
@@ -249,7 +297,6 @@ export default class Firebird {
 
   public static testUTF8Seq() {
     return new Promise(async resolve => {
-      
       await Firebird.createDatabaseCopy();
 
       console.log("Init testUTF8");

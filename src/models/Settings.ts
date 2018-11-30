@@ -9,9 +9,13 @@ export default {
     database: {},
     users: {},
     cloud: {},
-    loading: false
+    loading: false,
+    statsSelectedRoute: null
   },
   actions: {
+    [types.setStatsRoute]({ commit }: any, route: any) {
+      commit(types.setStatsRoute, route);
+    },
     [types.startLoading]({ commit }: any) {
       commit(types.startLoading);
     },
@@ -67,6 +71,9 @@ export default {
     }
   },
   mutations: {
+    [types.setStatsRoute](state: any, route: any) {
+      state.statsSelectedRoute = route;
+    },
     [types.loadPreferences](state: any, preferences: any) {
       if (!preferences) state.preferences = {};
       else state.preferences = preferences;

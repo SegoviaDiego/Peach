@@ -1,80 +1,64 @@
 <template>
   <div class="dashgrid">
     <!-- Informes -->
-    <div @click="goTo(1)" class="route">
+    <div @click="goTo('/informes')" class="route">
       <div class="icon">
-        <fontawesome icon="chart-line" />
+        <fontawesome icon="chart-line"/>
       </div>
-      <div class="label">
-        Informes
-      </div>
+      <div class="label">Informes</div>
     </div>
     <!-- Movimientos -->
-    <div @click="goTo(2)" class="route">
+    <div @click="goTo('/movimientos')" class="route">
       <div class="icon">
-        <fontawesome icon="exchange-alt" />
+        <fontawesome icon="exchange-alt"/>
       </div>
-      <div class="label">
-        Movimientos
-      </div>
+      <div class="label">Movimientos</div>
     </div>
     <!-- Ingresos -->
-    <div @click="goTo(3)" class="route">
+    <div @click="goTo('/ingresos')" class="route">
       <div class="icon">
-        <fontawesome icon="cart-plus" />
+        <fontawesome icon="cart-plus"/>
       </div>
-      <div class="label">
-        Ingresos
-      </div>
+      <div class="label">Ingresos</div>
     </div>
     <!-- Egresos -->
-    <div @click="goTo(4)" class="route">
+    <div @click="goTo('/egresos')" class="route">
       <div class="icon">
-        <fontawesome icon="cart-arrow-down" />
+        <fontawesome icon="cart-arrow-down"/>
       </div>
-      <div class="label">
-        Egresos
-      </div>
+      <div class="label">Egresos</div>
     </div>
     <!-- Ventas -->
-    <div @click="goTo(5)" class="route">
+    <div @click="goTo('/Sells')" class="route" v-if="!preferences['systel']">
       <div class="icon">
-        <fontawesome icon="dollar-sign" />
+        <fontawesome icon="dollar-sign"/>
       </div>
-      <div class="label">
-        Ventas
-      </div>
+      <div class="label">Ventas</div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
+import { mapState } from "vuex";
+import { settings as types } from "@/vuexTypes";
 
 export default Vue.extend({
   name: "statsDashboard",
+  mounted() {
+    this.$store.dispatch(types.loadPreferences);
+  },
+  computed: mapState({
+    preferences: (state: any) => state.Settings.preferences,
+    selectedRoute: (state: any) => state.Settings.statsSelectedRoute
+  }),
   methods: {
     goBack() {
       this.$router.replace({ path: "/dashboard" });
     },
-    goTo(id: number) {
-      switch (id) {
-        case 1:
-          this.$router.replace({ path: "/informes" });
-          break;
-        case 2:
-          this.$router.replace({ path: "/movimientos" });
-          break;
-        case 3:
-          this.$router.replace({ path: "/ingresos" });
-          break;
-        case 4:
-          this.$router.replace({ path: "/egresos" });
-          break;
-        case 5:
-          this.$router.replace({ path: "/Sells" });
-          break;
-      }
+    goTo(route: any) {
+      this.$router.replace({ path: route });
+      this.$store.dispatch(types.setStatsRoute, route);
     }
   }
 });
@@ -101,7 +85,18 @@ export default Vue.extend({
     background-color: #e1e2e1;
     border-radius: 5px;
     .icon {
-      font-size: 14em;
+      @media screen and (max-width: 899px) {
+        font-size: 5em;
+      }
+      @media screen and (min-width: 900px) and (max-width: 999px) {
+        font-size: 7em;
+      }
+      @media screen and (min-width: 1000px) and (max-width: 1299px) {
+        font-size: 8em;
+      }
+      @media screen and (min-width: 1300px) {
+        font-size: 10em;
+      }
     }
     .label {
       font-family: Lato;

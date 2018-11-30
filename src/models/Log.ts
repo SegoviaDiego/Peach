@@ -57,6 +57,22 @@ export default {
       await dispatch(types.loadMov);
       commit(types.stopLoading);
     },
+    async [types.mutateMov]({ dispatch, commit }: any, mov: any) {
+      commit(types.startLoading);
+      await Client.set(socketEvents.Log.mutateMov, {
+        payload: mov
+      });
+      await dispatch(types.loadMov);
+      commit(types.stopLoading);
+    },
+    async [types.deleteMov]({ dispatch, commit }: any, id: any) {
+      commit(types.startLoading);
+      await Client.set(socketEvents.Log.deleteMov, {
+        payload: id
+      });
+      await dispatch(types.loadMov);
+      commit(types.stopLoading);
+    },
     [types.setDate]({ commit }: any, newDate: any) {
       commit(types.setDate, newDate);
     },
