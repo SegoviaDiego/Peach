@@ -32,7 +32,7 @@ function getTotal(cierres) {
   let total;
 
   for (let cierre of cierres) {
-    for (let i of cierre.data) {
+    for (let i of cierre.sells) {
       total = { ...i };
 
       if (!res[total.item._id]) {
@@ -81,15 +81,15 @@ export default Vue.extend({
   }),
   computed: mapState({
     isLoading: state => state.Total.loading,
-    current: state => state.Total.data,
+    total: state => state.Total.data,
     cierreIndex: state => state.Total.cierreIndex,
     cierre() {
-      if (this.cierreIndex == this.totalIndex && this.current)
-        return getTotal(this.current.cierres);
-      if (this.current)
-        if (this.current.cierres)
-          if (this.current.cierres.length >= this.cierreIndex)
-            return this.current.cierres[this.cierreIndex - 1].data;
+      if (this.cierreIndex == this.totalIndex && this.total)
+        return getTotal(this.total.cierresData);
+      if (this.total)
+        if (this.total.cierresData)
+          if (this.total.cierresData.length >= this.cierreIndex)
+            return this.total.cierresData[this.cierreIndex - 1].sells;
       return [];
     },
     filteredData(state) {

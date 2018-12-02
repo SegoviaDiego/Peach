@@ -1,19 +1,21 @@
 import _ from "lodash";
 import Server from "../Server";
-import { equalDates, equalSells, validateInt } from "../../Utils";
-import { totals as types } from "../../../vuexTypes";
-import CierreClass from "../typings/Cierre";
-import TotalClass from "../typings/Total";
-import Product from "./Product";
-import Settings from "../Settings";
+import { Collection, ObjectId } from "mongodb";
 import Sell from "./Sell";
-import { Collection } from "mongodb";
+import Cierre from "./Cierre";
+import Settings from "../Settings";
 import Firebird from "../db/Firebird";
+import { equalDates, equalSells, validateInt } from "../../Utils";
 import socketEvents from "../../../socketEvents";
+import { totals as types } from "../../../vuexTypes";
 
 export default class Total {
-  private static db() {
-    return Server.getCollection(types.collection);
+  private static db(): Promise<Collection<any>> {
+    return new Promise(async resolve => {
+      const db = await Server.getCollection(types.collection);
+      await db.createIndex({ day: 1 }, { unique: true });
+      resolve(db);
+    });
   }
 
   public static async get(
@@ -37,243 +39,147 @@ export default class Total {
   ) {
     switch (event) {
       case socketEvents.Total.makeCierre:
-        Total.makeCierre()
+        Total.crearCierreDeTurno()
           .then(res => callback(true, res))
           .catch(res => callback(false, res));
         break;
     }
   }
 
-  public static listenTo(client: any): void {
-    // client.on("load", (data, response) => {});
+  public static getDefault(day: Date) {
+    return {
+      day,
+      total: 0,
+      cierres: [],
+      cierresData: [],
+      payDivision: {}
+    };
   }
 
   public static load(date: Date) {
     return new Promise(async resolve => {
-      if (equalDates(new Date(), date)) {
-        resolve(await Total.getCurrent());
-      } else {
-        resolve(await Total.getTotal(date));
-      }
-    });
-  }
+      const total = await Total.getTotal(date);
 
-  public static analizeTotal(systelTotal: any) {
-    return new Promise(async (resolve, reject) => {
-      Total.getCurrentCierre().then(async (current: any) => {
-        // Compruebo si se debe realizar un cierre
-        if (Total.checkCierre(systelTotal, current)) {
-          await this.makeCierre();
-        }
-        // Guardo los datos del total si systelTotal no esta vacio
-        if (systelTotal.length) await Total.identifySells(systelTotal);
-        resolve();
+      resolve({
+        ...total,
+        ...(await Total.getCierres(total))
       });
     });
   }
 
-  public static identifySells(systelTotal: [any]) {
-    return new Promise(resolve => {
-      Total.getCurrentCierre().then(async (current: any) => {
-        let sells: any = [];
-        let mutated: boolean = false;
+  public static getTotal(day: Date) {
+    return new Promise(async resolve => {
+      Total.db().then(db => {
+        day.setHours(0, 0, 0, 0);
 
-        let currentCierre = _.mapKeys(current.data, total => {
-          return total.item._id;
-        });
-
-        for (const newTotal of systelTotal) {
-          let oldTotal = currentCierre[newTotal.item._id];
-
-          currentCierre[newTotal.item._id] = newTotal;
-
-          if (!oldTotal) {
-            mutated = true;
-            sells.push(
-              await Sell.createSellFromTotal(
-                {
-                  amount: 0,
-                  money: 0
-                },
-                newTotal
-              )
-            );
-          } else if (!equalSells(oldTotal, newTotal)) {
-            mutated = true;
-            sells.push(await Sell.createSellFromTotal(oldTotal, newTotal));
+        db.findOne({ day }, async (err, total) => {
+          if (err) throw err;
+          if (equalDates(new Date(), day)) {
+            resolve(await Total.checkTodaysTotal(total));
+          } else {
+            if (!total) {
+              resolve(Total.getDefault(day));
+            }
+            resolve(total);
           }
-        }
-
-        if (mutated) {
-          // Firebird.backupDatabaseFile();
-          current.data = _.toArray(currentCierre);
-          await Sell.saveSystelSells(sells);
-          resolve(await Total.updateCurrentCierre(current));
-        } else {
-          resolve();
-        }
+        });
       });
     });
   }
 
-  public static checkCierre(systelTotal: any, mongoTotal: any): Boolean {
-    // Si systelTotal esta vacio, significa que se hizo un cierre
-    // en la balanza
-    if (systelTotal.length === 0) return true;
-
-    // Mapeo los arrays por id
-    mongoTotal = _.toArray(mongoTotal.data);
-    systelTotal = _.mapKeys(systelTotal, total => {
-      return total.item._id;
-    });
-
-    // Compruebo que sean el mismo cierre. Esto lo se sabiando que
-    // mongoTotal esta incluido estrictamente en systelTotal
-    for (const total of mongoTotal) {
-      // Si un elemento de mongoTotal no existe en systelTotal,
-      // no existe inclusion de conjuntos.
-      if (!systelTotal[total.item._id]) {
-        return true;
+  public static checkTodaysTotal(total: any) {
+    return new Promise(async resolve => {
+      if (total) {
+        resolve(total);
+      } else {
+        resolve(await Total.createTodaysTotal());
       }
-    }
-
-    return false;
+    });
   }
 
-  public static addPayDivisionToCierre(payDivision: any) {
-    return new Promise(resolve => {
-      Total.getCurrentCierre().then(async (current: any) => {
-        const oldPayDivision = current.payDivision || [];
+  public static createTodaysTotal() {
+    return new Promise(async resolve => {
+      Total.db().then(async db => {
+        const day = new Date();
+        day.setHours(0, 0, 0, 0);
+        const _turnoActual = await Cierre.crearNuevoCierre();
 
-        let newPayDivision = {
-          efectivo:
-            validateInt(payDivision["efectivo"]) +
-            validateInt(oldPayDivision["efectivo"]),
-          credito:
-            validateInt(payDivision["credito"]) +
-            validateInt(oldPayDivision["credito"]),
-          debito:
-            validateInt(payDivision["debito"]) +
-            validateInt(oldPayDivision["debito"]),
-          recargo:
-            validateInt(payDivision["recargo"]) +
-            validateInt(oldPayDivision["recargo"])
+        // Cerrar el ultimo turno del dia anterior
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdaysTotal: any = await Total.getTotal(yesterday);
+        await Cierre.terminarTurno(yesterdaysTotal._turnoActual, day);
+
+        const todaysTotal = {
+          day,
+          _turnoActual,
+          cierres: [_turnoActual]
         };
 
-        // Guardo el nuevo total de payDivision
-        current.payDivision = newPayDivision;
-
-        // Actualizo la base de datos con la nueva data
-        resolve(await Total.updateCurrentCierre(current));
-      });
-    });
-  }
-
-  public static addSellsToCierre(sells: any) {
-    return new Promise(resolve => {
-      Total.getCurrentCierre().then(async (current: any) => {
-        let oldTotal;
-
-        // Indexo los totales del cierre actual mediante las _id de sus prodctos
-        let currentTotals = _.mapKeys(current.data, total => {
-          return total.item._id;
-        });
-
-        // Creo un total base con money y amount = 0 y sobreescribo lo que se tenga
-        // que sobre escribir.
-        _.forEach(sells, (sell: any) => {
-          oldTotal = {
-            amount: 0,
-            money: 0,
-            ...currentTotals[sell.item._id]
-          };
-
-          // Reemplazo el total actual con la suma del viejo mas el nuevo.
-          currentTotals[sell.item._id] = {
-            item: sell.item,
-            amount: oldTotal.amount + sell.amount,
-            money: oldTotal.money + sell.money
-          };
-        });
-
-        // El current indexado lo vuelvo a hacer array para poder
-        // Guardarlo en la base de datos.
-        current.data = _.toArray(currentTotals);
-
-        // Actualizo la base de datos con la nueva data
-        resolve(await Total.updateCurrentCierre(current));
-      });
-    });
-  }
-
-  public static isEqual(a: any, b: any) {
-    if (
-      a._id == b._id &&
-      parseFloat(a.amount) == parseFloat(b.amount) &&
-      parseFloat(a.money) == parseFloat(b.money)
-    ) {
-      return true;
-    }
-    return false;
-  }
-
-  public static updateTotal(fbTotal: any) {
-    return new Promise(async resolve => {
-      Total.db().then((db: Collection) => {
-        db.replaceOne({ _id: fbTotal._id }, fbTotal, (err: any) => {
+        db.insertOne(todaysTotal, (err: any) => {
           if (err) throw err;
-          resolve();
-        });
-      });
-
-      // .update(
-      //   { _id: fbTotal._id },
-      //   fbTotal,
-      //   (err: any) => {
-      //     if (err) throw err;
-      //     resolve();
-      //   }
-      // );
-    });
-  }
-
-  public static toMap(data: any) {
-    const res = new Map();
-    for (let index in data) {
-      res.set(data[index]._id, data[index]);
-    }
-    return res;
-  }
-
-  public static addTotal(total: any) {
-    return new Promise(resolve => {
-      Total.getCurrent();
-      Total.db().then(db => {
-        db.insertOne(total, (err: any, docs: any) => {
-          if (err) throw err;
-          resolve(docs);
+          resolve(todaysTotal);
         });
       });
     });
   }
 
-  public static clearTotals() {
-    return new Promise(resolve => {
-      Total.db().then(db => {
-        db.deleteOne({}, err => {
-          if (err) throw err;
-          resolve();
-        });
-      });
-    });
-  }
-
-  public static makeCierre() {
+  public static getCierres(totalDelDia: any) {
     return new Promise(async (resolve, reject) => {
-      const current: any = await Total.getCurrentCierre();
-      // Si el cierre actual tiene data, realizo un cierre.
+      if (totalDelDia && totalDelDia.cierres) {
+        const cierresData = [];
+        let cierre: any;
+        let total = 0;
+        let subTotal = 0;
+        let payDivision = {
+          efectivo: 0,
+          credito: 0,
+          debito: 0,
+          recargo: 0
+        };
+
+        for (const _id of totalDelDia.cierres) {
+          cierre = await Cierre.load(_id);
+
+          total += cierre.total;
+          subTotal += cierre.subTotal || cierre.total;
+          payDivision["efectivo"] += cierre.payDivision["efectivo"] || 0;
+          payDivision["credito"] += cierre.payDivision["credito"] || 0;
+          payDivision["recargo"] += cierre.payDivision["recargo"] || 0;
+          payDivision["debito"] += cierre.payDivision["debito"] || 0;
+
+          cierresData.push(cierre);
+        }
+
+        let response: any = {
+          total,
+          cierresData,
+          payDivision
+        };
+
+        if (subTotal != total) response["subTotal"] = subTotal;
+
+        resolve(response);
+      } else {
+        resolve([]);
+      }
+    });
+  }
+
+  public static getCierreDeTurnoActual() {
+    return new Promise(async (resolve, reject) => {
+      const total: any = await Total.getTotal(new Date());
+      resolve(await Cierre.load(total._turnoActual));
+    });
+  }
+
+  public static crearCierreDeTurno() {
+    return new Promise(async (resolve, reject) => {
+      const cierreDeTurnoActual: any = await Total.getCierreDeTurnoActual();
+      // Si el cierre actual tiene ventas, realizo un cierre.
       // Si esta vacio significa que el cierre ya fue realizado.
-      if (current.data && current.data.length > 0) {
+
+      if (cierreDeTurnoActual.sells && cierreDeTurnoActual.sells.length > 0) {
         // Si la sync con Systel esta activada
         const isSystelReady: Boolean = await Settings.isSystelReady();
         // Si QENDRA esta cerrado
@@ -289,206 +195,121 @@ export default class Total {
         }
 
         // Guardo el cierre en la base de datos
-        Total.saveCierre().then(async () => {
-          if (isSystelReady && isFirebirdAvailable) {
-            // Si sync con Systel esta activado, reanudo el loop sync
-            // y borro los datos en los totales
-            await Firebird.clearTotales();
-            // Inicio el loop de sincronizacion.
-            Firebird.startSystelSyncProcess();
-          }
-          resolve(true);
-        });
+        // O sea, cambio la _CurrenId del todaysTotal a una nueva
+        // O sea, creo un nuevo cierre y lo sustituyo.
+        await Total.crearCierreDeTurnoActual();
+
+        if (isSystelReady && isFirebirdAvailable) {
+          // Si sync con Systel esta activado, reanudo el loop sync
+          // y borro los datos en los totales
+          await Firebird.clearTotales();
+          // Inicio el loop de sincronizacion.
+          Firebird.startSystelSyncProcess();
+        }
+        resolve(true);
       } else {
         resolve(false);
       }
     });
   }
 
-  public static saveCierre() {
-    return new Promise(async resolve => {
-      let currentCierre: any = await Total.getCurrentCierre();
+  public static crearCierreDeTurnoActual() {
+    return new Promise((resolve, reject) => {
+      Total.db().then(async db => {
+        const total: any = await Total.getTotal(new Date());
+        const _turnoActual = await Cierre.crearNuevoCierre();
 
-      if (currentCierre.data.length > 0) {
-        let current = await Total.getCurrent();
+        await Cierre.terminarTurno(total._turnoActual);
 
-        currentCierre._current = false;
-        currentCierre.end = new Date();
+        total.cierres.push(_turnoActual);
+        total._turnoActual = _turnoActual;
 
-        current.cierres[
-          _.findIndex(current.cierres, (cierre: any) => {
-            return cierre._current;
-          })
-        ] = currentCierre;
-
-        Total.db().then(db => {
-          db.replaceOne({ _current: true }, { ...current }, async () => {
-            resolve(await Total.createCurrentCierre());
-          });
+        db.replaceOne({ _id: new ObjectId(total._id) }, total, (err, res) => {
+          if (err) throw err;
+          resolve();
         });
-      } else resolve();
+      });
     });
   }
 
-  public static removeCierreStock(data: any) {
-    return new Promise(async resolve => {
-      for (let item of data) {
-        await Product.remove(item._id, item.amount);
+  // Systel
+
+  public static analyzeSystelUpdate(systelTotal: any) {
+    return new Promise(async (resolve, reject) => {
+      Total.getCierreDeTurnoActual().then(async (cierre: any) => {
+        // Compruebo si son el mismo turno,
+        // si no lo son se debe realizar un cierre
+        if (!Total.sonElMismoTurno(systelTotal, cierre)) {
+          await this.crearCierreDeTurno();
+        }
+        // Guardo los datos del total si systelTotal no esta vacio
+        if (systelTotal.length) await Total.identifySells(systelTotal);
+        resolve();
+      });
+    });
+  }
+
+  public static sonElMismoTurno(systelSells: any, cierre: any): Boolean {
+    // Si systelTotal esta vacio, significa que se hizo un cierre
+    // en la balanza y no son los mismos Turnos
+    if (systelSells.length == 0) {
+      return false;
+    } else {
+      const sells = _.toArray(cierre.sells);
+      systelSells = _.mapKeys(systelSells, total => {
+        return total.item._id;
+      });
+
+      // Compruebo que sean el mismo Turno. Esto lo se sabiendo que
+      // el turno actual esta incluido estrictamente en systelTotal
+      for (const sell of sells) {
+        // Si un elemento de el Turno actual no existe en systelTotal,
+        // no existe inclusion de conjuntos y por lo tanto son distintos Turnos.
+        if (!systelSells[sell.item._id]) {
+          return false;
+        }
       }
-      resolve();
-    });
+    }
+    return true;
   }
 
-  public static getCurrent(): Promise<TotalClass> {
+  public static identifySells(systelTotal: [any]) {
     return new Promise(resolve => {
-      Total.db().then(db => {
-        db.findOne(
-          {
-            _current: true
-          },
-          async (err: any, doc: any) => {
-            if (err) throw err;
-            resolve(await Total.checkCurrent(doc));
+      Total.getCierreDeTurnoActual().then(async (turnoActual: any) => {
+        let turnoSell;
+        let systelSells: any = [];
+        let mutated: boolean = false;
+        const turnoSells = _.mapKeys(turnoActual.sells, sell => {
+          return sell.item._id;
+        });
+
+        for (const systelSell of systelTotal) {
+          turnoSell = turnoSells[systelSell.item._id];
+
+          if (!turnoSell) {
+            mutated = true;
+            systelSells.push(
+              await Sell.createSellFromTotal(
+                {
+                  amount: 0,
+                  money: 0
+                },
+                systelSell
+              )
+            );
+          } else if (!equalSells(turnoSell, systelSell)) {
+            mutated = true;
+            systelSells.push(
+              await Sell.createSellFromTotal(turnoSell, systelSell)
+            );
           }
-        );
-      });
-    });
-  }
-
-  public static getTotal(date: Date) {
-    return new Promise(async resolve => {
-      Total.db().then(db => {
-        date.setHours(0, 0, 0, 0);
-
-        db.findOne(
-          {
-            day: date
-          },
-          async (err, doc) => {
-            if (err) throw err;
-            resolve(doc);
-          }
-        );
-      });
-    });
-  }
-
-  public static getCurrentCierre() {
-    return new Promise(async resolve => {
-      let current = _.find((await Total.getCurrent()).cierres, cierre => {
-        return cierre._current;
-      });
-
-      resolve(current);
-    });
-  }
-
-  public static updateCurrent(current: any): Promise<any> {
-    return new Promise(async resolve => {
-      Total.db().then(db => {
-        db.replaceOne({ _current: true }, current, (err: any) => {
-          if (err) throw err;
-          resolve(true);
-        });
-      });
-    });
-  }
-
-  public static updateCurrentCierre(newCierre: any): Promise<any> {
-    return new Promise(async resolve => {
-      let current = await Total.getCurrent();
-      let total = 0;
-
-      for (let i in current.cierres) {
-        if (!current.cierres[i]._current) {
-          total += current.cierres[i].total;
         }
-      }
 
-      newCierre.total = await Total.getCierreTotal(newCierre);
-      total += newCierre.total;
-
-      let currentCierre = _.findKey(current.cierres, cierre => {
-        return cierre._current;
-      });
-
-      if (currentCierre) current.cierres[currentCierre] = newCierre;
-      current.total = total;
-
-      resolve(await Total.updateCurrent(current));
-    });
-  }
-
-  public static getCierreTotal(cierre: any) {
-    return new Promise(async resolve => {
-      let total = 0;
-      for (let item of cierre.data) {
-        total += parseFloat(item.money);
-      }
-      resolve(total);
-    });
-  }
-
-  public static checkCurrent(current: any): Promise<TotalClass> {
-    return new Promise(async resolve => {
-      if (current) {
-        if (equalDates(new Date(), current.day)) {
-          resolve(current);
-        } else {
-          await Total.saveCurrent(current);
-          resolve(await Total.createCurrent());
+        if (mutated) {
+          // Firebird.backupDatabaseFile();
+          await Sell.saveSystelSells(systelSells);
         }
-      } else {
-        resolve(await Total.createCurrent());
-      }
-    });
-  }
-
-  public static createCurrent(): Promise<TotalClass> {
-    return new Promise(async resolve => {
-      Total.db().then(db => {
-        const current = new TotalClass(true, 0, [new CierreClass(true, 0, [])]);
-        db.insertOne(current, (err: any) => {
-          if (err) throw err;
-          resolve(current);
-        });
-      });
-    });
-  }
-
-  public static createCurrentCierre() {
-    return new Promise(async resolve => {
-      let current = await Total.getCurrent();
-      let newCierre = new CierreClass(true, 0, []);
-
-      current.cierres.push(newCierre);
-
-      Total.db().then(db => {
-        db.replaceOne({ _current: true }, current, err => {
-          if (err) throw err;
-          resolve(newCierre);
-        });
-      });
-    });
-  }
-
-  public static saveCurrent(current: any): Promise<any> {
-    return new Promise(async resolve => {
-      const currentIndex = _.findIndex(current.cierres, (cierre: any) => {
-        return cierre._current;
-      });
-      current._current = false;
-      current.cierres[currentIndex]._current = false;
-      current.cierres[currentIndex].end = new Date();
-
-      Total.db().then(db => {
-        db.replaceOne({ _id: current._id }, current, (err: any) => {
-          if (err) throw err;
-          db.deleteOne({ _current: true }, (err: any) => {
-            if (err) throw err;
-            resolve(true);
-          });
-        });
+        resolve();
       });
     });
   }

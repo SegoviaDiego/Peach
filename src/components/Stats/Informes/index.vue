@@ -4,48 +4,39 @@
       <div class="dateOptionsBox">
         <div @click="selectDate(1)" class="circleBtn">
           <div class="btnIcon">
-            <fontawesome icon="calendar-check" />
+            <fontawesome icon="calendar-check"/>
           </div>
-          <div class="label">
-            Hoy
-          </div>
+          <div class="label">Hoy</div>
         </div>
         <div @click="selectDate(2)" class="circleBtn">
           <div class="btnIcon">
-            <fontawesome icon="calendar-check" />
+            <fontawesome icon="calendar-check"/>
           </div>
-          <div class="label">
-            Ayer
-          </div>
+          <div class="label">Ayer</div>
         </div>
         <div @click="selectDate(3)" class="circleBtn">
           <div class="btnIcon">
-            <fontawesome icon="calendar-check" />
+            <fontawesome icon="calendar-check"/>
           </div>
-          <div class="label">
-            Seleccionar
-          </div>
+          <div class="label">Seleccionar</div>
         </div>
       </div>
       <!-- Dialog -->
-      <el-dialog
-      title="Seleccionar fecha"
-      :visible.sync="selectingDate"
-      width="30%">
-      <div>
-        <el-date-picker
-          v-model="selectedDate"
-          format="dd/MM/yyyy"
-          type="date"
-          placeholder="Seleccionar dia"
-          :picker-options="datePickOptions">
-        </el-date-picker>
-      </div>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="selectingDate = false">Cancelar</el-button>
-        <el-button type="primary" @click="setDate()">Aceptar</el-button>
-      </span>
-    </el-dialog>
+      <el-dialog title="Seleccionar fecha" :visible.sync="selectingDate" width="30%">
+        <div>
+          <el-date-picker
+            v-model="selectedDate"
+            format="dd/MM/yyyy"
+            type="date"
+            placeholder="Seleccionar dia"
+            :picker-options="datePickOptions"
+          ></el-date-picker>
+        </div>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="selectingDate = false">Cancelar</el-button>
+          <el-button type="primary" @click="setDate()">Aceptar</el-button>
+        </span>
+      </el-dialog>
     </template>
     <template v-else>
       <div class="indexGrid">
@@ -118,21 +109,15 @@ export default Vue.extend({
     selectDate(i) {
       switch (i) {
         case 1:
-          this.$store.dispatch(types.setDate, new Date()).then(() => {
-            this.$store.dispatch(types.load);
-            this.selectingDate = false;
-            this.dateSelected = true;
-          });
+          this.selectedDate = new Date();
+          this.setDate();
           break;
         case 2:
           let date = new Date();
           date.setDate(date.getDate() - 1);
 
-          this.$store.dispatch(types.setDate, date).then(() => {
-            this.$store.dispatch(types.load);
-            this.selectingDate = false;
-            this.dateSelected = true;
-          });
+          this.selectedDate = date;
+          this.setDate();
           break;
         case 3:
           this.selectingDate = true;
@@ -143,12 +128,15 @@ export default Vue.extend({
     setIndex(index) {
       this.$store.dispatch(types.setCierreIndex, index);
     },
-    setDate() {
-      this.$store.dispatch(types.setDate, this.selectedDate).then(() => {
-        this.$store.dispatch(types.load);
-        this.selectingDate = false;
-        this.dateSelected = true;
-      });
+    async setDate() {
+      await this.$store.dispatch(types.setDate, this.selectedDate);
+      await this.$store.dispatch(logTypes.setDate, this.selectedDate);
+      await this.$store.dispatch(types.load);
+      await this.$store.dispatch(logTypes.loadIngreso);
+      await this.$store.dispatch(logTypes.loadEgreso);
+      await this.$store.dispatch(logTypes.loadMov);
+      this.selectingDate = false;
+      this.dateSelected = true;
     }
   }
 });
@@ -217,6 +205,7 @@ export default Vue.extend({
     grid-template-rows: 1fr;
     grid-template-columns: 3fr 1fr;
     grid-template-areas: "table sidebar";
+    grid-gap: 10px;
     overflow: hidden;
     padding: 20px 40px;
   }

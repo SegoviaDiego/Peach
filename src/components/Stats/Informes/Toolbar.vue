@@ -76,7 +76,7 @@ export default Vue.extend({
     cierreIndex: state => state.Total.cierreIndex,
     date: state => state.Total.date,
     cierres(state) {
-      if (state.Total.data) return state.Total.data.cierres;
+      if (state.Total.data) return state.Total.data.cierresData;
       return [];
     }
   }),
@@ -118,14 +118,11 @@ export default Vue.extend({
   }),
   methods: {
     getHourRange(i) {
-      if (this.cierres.length == i && equalDates(new Date(), this.date)) {
-        return `${toHour(new Date(this.cierres[i - 1].start))} - ${toHour(
-          new Date()
-        )}`;
-      }
-      return `${toHour(new Date(this.cierres[i - 1].start))} - ${toHour(
-        new Date(this.cierres[i - 1].end)
-      )}`;
+      return (
+        toHour(new Date(this.cierres[i - 1].start)) +
+        " - " +
+        toHour(new Date(this.cierres[i - 1].end || new Date()))
+      );
     },
     getLabel(i) {
       if (this.cierres.length == i && equalDates(new Date(), this.date))
@@ -150,21 +147,21 @@ export default Vue.extend({
 
       return `${this.date.getDate()}/${this.date.getMonth()}/${this.date.getFullYear()}`;
     },
-    setDate() {
-      this.$store.dispatch(totalTypes.setDate, this.selectedDate).then(() => {
-        this.$store.dispatch(totalTypes.load);
-        this.$store.dispatch(types.loadIngreso);
-        this.$store.dispatch(types.loadEgreso);
-        this.$store.dispatch(types.loadMov);
-        this.selectingDate = false;
-      });
+    async setDate() {
+      await this.$store.dispatch(totalTypes.setDate, this.selectedDate);
+      await this.$store.dispatch(types.setDate, this.selectedDate);
+      await this.$store.dispatch(totalTypes.load);
+      await this.$store.dispatch(types.loadIngreso);
+      await this.$store.dispatch(types.loadEgreso);
+      await this.$store.dispatch(types.loadMov);
+      this.selectingDate = false;
     },
     getTotal(cierres) {
       let res = {};
       let total;
 
       for (let cierre of cierres) {
-        for (let i of cierre.data) {
+        for (let i of cierre.sells) {
           total = { ...i };
 
           if (!res[total.item._id]) {
@@ -299,8 +296,7 @@ export default Vue.extend({
 
       for (let i in cierres) {
         // Cierres
-
-        totalCierres += parseFloat(cierres[i].total);
+        totalCierres += parseFloat(cierres[i].subTotal || cierres[i].total);
 
         if (cierres[i].payDivision && cierres[i].payDivision["recargo"]) {
           totalRecargo += parseFloat(cierres[i].payDivision["recargo"]);
@@ -310,19 +306,18 @@ export default Vue.extend({
           { text: `Cierre ${parseInt(i) + 1}` },
           { text: toHour(new Date(cierres[i].start)) },
           {
-            text:
-              i + 1 == cierres.length
-                ? toHour(new Date())
-                : toHour(new Date(cierres[i].end))
+            text: toHour(new Date(cierres[i].end || new Date()))
           },
-          { text: parseFloat(cierres[i].total).toFixed(2) }
+          {
+            text: parseFloat(cierres[i].subTotal || cierres[i].total).toFixed(2)
+          }
         ]);
 
         // Ingresos
 
         for (let item of this.getIngresos(
           new Date(cierres[i].start),
-          cierres[i]._current ? new Date() : new Date(cierres[i].end)
+          new Date(cierres[i].end || new Date())
         )) {
           totalIngresos += parseFloat(item.money);
 
@@ -337,7 +332,7 @@ export default Vue.extend({
 
         for (let item of this.getEgresos(
           new Date(cierres[i].start),
-          cierres[i]._current ? new Date() : new Date(cierres[i].end)
+          new Date(cierres[i].end || new Date())
         )) {
           totalEgresos += parseFloat(item.money);
 

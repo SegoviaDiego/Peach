@@ -312,6 +312,7 @@ export default Vue.extend({
               this.$store
                 .dispatch(types.saveSell, {
                   total: this.getTotal(),
+                  subTotal: this.getTotal() - this.getRecargo(),
                   payDivision: this.payDivision
                 })
                 .then(() => {
@@ -388,7 +389,7 @@ export default Vue.extend({
       if (_.includes(this.payMethods, "credito")) {
         if (this.recargoType) {
           if (
-            !this.recargoCredito ||
+            isNaN(this.recargoCredito) ||
             this.recargoCredito < 1 ||
             this.recargoCredito > 2
           ) {
@@ -403,7 +404,7 @@ export default Vue.extend({
           }
         } else {
           if (
-            !this.recargoCredito ||
+            isNaN(this.recargoCredito) ||
             this.recargoCredito < 0 ||
             this.recargoCredito > 100
           ) {

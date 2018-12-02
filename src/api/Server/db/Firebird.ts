@@ -65,7 +65,7 @@ export default class Firebird {
             if (err) throw err;
 
             resolve(
-              await Total.analizeTotal(
+              await Total.analyzeSystelUpdate(
                 await composeSystelToKg(await Product.loadProducts(), res)
               )
             );

@@ -74,6 +74,11 @@ export const totals = {
   hideSpinner: "HIDE_SPINNER"
 };
 
+export const cierre = {
+  // general
+  collection: "Cierre"
+};
+
 export const sell = {
   // general
   collection: "Sell",
@@ -95,8 +100,8 @@ export const sell = {
 
 export const settings = {
   // actions
-  connect: 'CLIENT_CONNECT',
-  setStatsRoute: 'SETTINGS_SET_STATS_ROUTE',
+  connect: "CLIENT_CONNECT",
+  setStatsRoute: "SETTINGS_SET_STATS_ROUTE",
   // Preferences
   preferencesId: 1,
   loadPreferences: "LOAD_PREFERENCES",

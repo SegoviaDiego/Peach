@@ -81,7 +81,9 @@ export default Vue.extend({
     cierreIndex: state => state.Total.cierreIndex,
     selectedRoute: state => state.Settings.statsSelectedRoute,
     cierres(state) {
-      if (state.Total.data) return state.Total.data.cierres;
+      if (state.Total.data && state.Total.data.cierresData) {
+        return state.Total.data.cierresData;
+      }
       return [];
     }
   }),
@@ -99,22 +101,32 @@ export default Vue.extend({
   methods: {
     equalDates: equalDates,
     makeCierre() {
+      if (this.cierreLoading) return;
       this.cierreLoading = true;
       Client.set(socketEvents.Total.makeCierre)
         .then(async created => {
-          const index = this.cierreIndex;
-          await this.$store.dispatch(totalTypes.load);
-          await this.setCierreIndex(index);
+          if (created) {
+            const index = this.cierreIndex;
+            await this.$store.dispatch(totalTypes.load);
+            await this.setCierreIndex(index);
 
+            this.$notify({
+              title: "Cierre creado",
+              message: "",
+              type: "success",
+              duration: 3000,
+              offset: 170
+            });
+          } else {
+            // this.$notify({
+            //   title: "No se puede crear un cierre si el turno esta vacio",
+            //   message: "",
+            //   type: "warning",
+            //   duration: 3000,
+            //   offset: 170
+            // });
+          }
           this.cierreLoading = false;
-
-          this.$notify({
-            title: "Cierre creado",
-            message: "",
-            type: "success",
-            duration: 3000,
-            offset: 170
-          });
         })
         .catch(systel => {
           if (systel) {
@@ -164,14 +176,11 @@ export default Vue.extend({
       return "Cierre " + i;
     },
     getHourRange(i) {
-      if (this.cierres.length == i && equalDates(new Date(), this.date)) {
-        return `${toHour(new Date(this.cierres[i - 1].start))} - ${toHour(
-          new Date()
-        )}`;
-      }
-      return `${toHour(new Date(this.cierres[i - 1].start))} - ${toHour(
-        new Date(this.cierres[i - 1].end)
-      )}`;
+      return (
+        toHour(new Date(this.cierres[i - 1].start)) +
+        " - " +
+        toHour(new Date(this.cierres[i - 1].end || new Date()))
+      );
     }
   }
 });

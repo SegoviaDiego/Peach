@@ -32,7 +32,7 @@ export default class Server {
             });
           });
         } else {
-          Total.getCurrent().then(() => {
+          Total.getTotal(new Date()).then(() => {
             resolve();
           });
         }

@@ -10,8 +10,8 @@ export default class Sell {
   private static db(): Promise<Collection<any>> {
     return new Promise(async resolve => {
       const db = await Server.getCollection(types.collection);
+      await db.createIndex({ day: 1, time: 1 });
       resolve(db);
-      // db.createIndexes
     });
   }
 
@@ -60,6 +60,27 @@ export default class Sell {
     });
   }
 
+  public static loadCierreSells(timedata: any) {
+    return new Promise(async (resolve, reject) => {
+      Sell.db().then(db => {
+        db.find({
+          day: timedata.day,
+          time: {
+            $gte: timedata.start,
+            $lte: timedata.end
+          }
+        }).toArray((err, sells) => {
+          if (err) {
+            reject();
+            throw err;
+          } else {
+            resolve(sells);
+          }
+        });
+      });
+    });
+  }
+
   public static createSellFromTotal(oldTotal: any, newTotal: any) {
     return new Promise(async resolve => {
       resolve({
@@ -78,11 +99,12 @@ export default class Sell {
 
   public static saveSell(
     sells: any,
-    { total, payDivision, systel }: any
+    { total, subTotal, payDivision, systel }: any
   ): Promise<Boolean> {
     return new Promise(resolve => {
       Sell.db().then(async (db: Collection) => {
         sells = _.toArray(sells);
+        let newSell: any;
         let time = new Date();
         let day = new Date();
         day.setHours(0, 0, 0, 0);
@@ -91,27 +113,28 @@ export default class Sell {
           await Product.remove(sell.item._id, sell.amount);
         }
 
-        db.insertOne(
-          {
-            systel: systel ? true : false,
-            day,
-            time,
-            sells,
-            total,
-            payDivision
-          },
-          (err: any) => {
-            if (err) throw err;
+        newSell = {
+          systel: systel ? true : false,
+          day,
+          time,
+          sells,
+          total,
+          payDivision
+        };
 
-            if (!systel) {
-              Total.addSellsToCierre(sells).then(() => {
-                Total.addPayDivisionToCierre(payDivision);
-              });
-            }
+        if (subTotal && total != subTotal) newSell["subTotal"] = subTotal;
 
-            resolve(true);
-          }
-        );
+        db.insertOne(newSell, (err: any) => {
+          if (err) throw err;
+
+          // if (!systel) {
+          //   Total.addSellsToCierre(sells).then(() => {
+          //     Total.addPayDivisionToCierre(payDivision);
+          //   });
+          // }
+
+          resolve(true);
+        });
       });
     });
   }

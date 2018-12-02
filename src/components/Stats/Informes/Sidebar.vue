@@ -4,32 +4,19 @@
       <template v-if="exists">
         <div class="info">
           <div class="date">{{getDate()}}</div>
+          <div class="date">{{getTimePeriod()}}</div>
           <div class="total">
-            <template v-if="cierreIndex && current">
-              <template
-                v-if="cierreIndex == totalIndex"
-              >Total: ${{parseFloat(current.total).toFixed(2)}}</template>
-              <template
-                v-else
-              >Total en {{getName()}}: ${{parseFloat(current.cierres[cierreIndex - 1].total).toFixed(2)}}</template>
+            <template v-if="cierreIndex && totalDelDia">
+              <OxyTable v-model="sidebarData">
+                <Row slot="row" slot-scope="item">
+                  <Cell label="Desc" :colSpan="1">{{item.title}}</Cell>
+                  <Cell label="Monto" :colSpan="1">$ {{item.value}}</Cell>
+                </Row>
+              </OxyTable>
             </template>
           </div>
           <div class="comparison">
             <!-- $2393 <span style="color: green;">más</span> que ayer. -->
-          </div>
-        </div>
-        <div v-if="false" class="buttons">
-          <div class="circle">
-            <div class="icon">
-              <fontawesome icon="search"/>
-            </div>
-            <div class="title">Detalle</div>
-          </div>
-          <div class="circle">
-            <div class="icon">
-              <fontawesome icon="search"/>
-            </div>
-            <div class="title">Grafico</div>
           </div>
         </div>
       </template>
@@ -43,61 +30,152 @@ import { mapState } from "vuex";
 import { equalDates, toHour } from "@/api/Utils";
 import { totals as types } from "@/vuexTypes";
 
+import OxyTable from "@/components/Table/index.vue";
+import Row from "@/components/Table/Row.vue";
+import Cell from "@/components/Table/Cell.vue";
+
 export default Vue.extend({
   name: "informes-sidebar",
+  components: {
+    OxyTable,
+    Row,
+    Cell
+  },
   data: () => ({
     totalIndex: types.totalIndex
   }),
   computed: mapState({
     exists: state => state.Total.exists,
     date: state => state.Total.date,
+    movements: state => state.Log.mov,
     isLoading: state => state.Total.loading,
-    current: state => state.Total.data,
+    totalDelDia: state => state.Total.data,
     cierreIndex: state => state.Total.cierreIndex,
-    cierres(state) {
+    cantidadDeCierres(state) {
       if (state.Total.data) {
         return state.Total.data.cierres.length;
       }
       return 0;
+    },
+    sidebarData(state) {
+      const data = [];
+      let cierre;
+      let start, end;
+      let total = 0;
+
+      if (this.cierreIndex == this.totalIndex) {
+        cierre = this.totalDelDia;
+        start = new Date(cierre.day);
+        start.setHours(0, 0, 0, 0);
+        end = new Date(cierre.day);
+        end.setHours(24, 0, 0, 0);
+      } else {
+        cierre = this.totalDelDia.cierresData[this.cierreIndex - 1];
+        start = new Date(cierre.start);
+        end = new Date(cierre.end || new Date());
+      }
+
+      data.push({
+        title: "Ventas",
+        value: parseFloat(cierre.subTotal || cierre.total).toFixed(2)
+      });
+      total += parseFloat(cierre.subTotal || cierre.total);
+
+      if (cierre.payDivision && cierre.payDivision.recargo) {
+        data.push({
+          title: "Recargos",
+          value: parseFloat(cierre.payDivision.recargo).toFixed(2)
+        });
+        total += parseFloat(cierre.payDivision.recargo);
+      }
+      data.push({
+        title: "Ingresos",
+        value: this.getIngresos(start, end)
+      });
+      data.push({
+        title: "Egresos",
+        value: this.getEgresos(start, end)
+      });
+
+      total += this.getIngresos(start, end) - this.getEgresos(start, end);
+
+      data.push({
+        title: "Total",
+        value: total.toFixed(2)
+      });
+      return data;
     }
   }),
   methods: {
+    getIngresos(start, end) {
+      let total = 0;
+      const movs = _.toArray(
+        _.pickBy(this.movements, item => {
+          return (
+            item.type == 1 &&
+            new Date(item.time) >= start &&
+            new Date(item.time) <= end
+          );
+        })
+      );
+
+      for (const mov of movs) {
+        total += mov.money;
+      }
+
+      return total;
+    },
+    getEgresos(start, end) {
+      let total = 0;
+      const movs = _.toArray(
+        _.pickBy(this.movements, item => {
+          return (
+            item.type == 2 &&
+            new Date(item.time) >= start &&
+            new Date(item.time) <= end
+          );
+        })
+      );
+
+      for (const mov of movs) {
+        total += mov.money;
+      }
+
+      return total;
+    },
     getName() {
-      if (this.cierreIndex == this.cierres && equalDates(new Date(), this.date))
+      if (
+        this.cierreIndex == this.cantidadDeCierres &&
+        equalDates(new Date(), this.date)
+      )
         return "Turno Actual";
       return "Cierre " + this.cierreIndex;
     },
     getDate() {
-      let date = "";
-      let time = "";
+      if (equalDates(new Date(), this.date)) return "Hoy";
 
-      if (equalDates(new Date(), this.date)) {
-        date = "Hoy";
-      } else {
-        date = `
+      return `
           ${this.date.getDate()}/
           ${this.date.getMonth()}/
           ${this.date.getFullYear()}`;
+    },
+    getTimePeriod() {
+      if (this.cierreIndex == this.totalIndex) return;
+
+      if (
+        this.cierreIndex == this.cantidadDeCierres &&
+        equalDates(new Date(), this.date)
+      ) {
+        return "Turno actual";
       }
 
-      if (this.cierreIndex == this.totalIndex) {
-        return date;
-      } else {
-        if (
-          this.cierreIndex == this.cierres &&
-          equalDates(new Date(), this.date)
-        ) {
-          time = `Turno actual`;
-          return time;
-        } else {
-          time = `
-          ${toHour(
-            new Date(this.current.cierres[this.cierreIndex - 1].start)
-          )} - 
-          ${toHour(new Date(this.current.cierres[this.cierreIndex - 1].end))} `;
-        }
-        return date + " | " + time;
-      }
+      return (
+        toHour(
+          new Date(this.totalDelDia.cierresData[this.cierreIndex - 1].start)
+        ) +
+        " - " +
+        toHour(new Date(this.totalDelDia.cierresData[this.cierreIndex - 1].end))
+      );
     }
   }
 });
@@ -107,7 +185,7 @@ export default Vue.extend({
 .grid {
   grid-area: sidebar;
   display: grid;
-  grid-template-rows: 1fr 2fr;
+  grid-template-rows: 2fr 1fr;
   grid-template-columns: 1fr;
   grid-template-areas: "info" "buttons";
   overflow: hidden;
@@ -137,36 +215,26 @@ export default Vue.extend({
         font-size: 28px;
       }
     }
-    .date {
-    }
     .total {
-      text-align: center;
-      word-break: break-word;
-    }
-  }
-  .buttons {
-    grid-area: buttons;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow: hidden;
-    .circle {
       display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-      $circleSize: 10vw;
-      width: $circleSize;
-      height: $circleSize;
-      border-radius: 50%;
-      background-color: #ff7043;
-      color: #fff;
-      font-size: 24px;
-      // font-weight: bold;
-      font-family: Lato;
-      margin-bottom: 20px;
-      cursor: pointer;
+      .body * {
+        @media screen and (max-width: 899px) {
+          font-size: 18px;
+          margin: 0 1px;
+        }
+        @media screen and (min-width: 900px) and (max-width: 999px) {
+          font-size: 20px;
+          margin: 0 1px;
+        }
+        @media screen and (min-width: 1000px) and (max-width: 1299px) {
+          font-size: 20px;
+          margin: 0 3px;
+        }
+        @media screen and (min-width: 1300px) {
+          font-size: 23px;
+          margin: 0 3px;
+        }
+      }
     }
   }
 }
