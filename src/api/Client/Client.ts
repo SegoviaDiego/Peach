@@ -2,6 +2,9 @@ import { ipcRenderer } from "electron";
 import io from "socket.io-client";
 import Settings from "./Settings";
 
+import mongo from "mongodb";
+import fs from "fs";
+
 export default class Client {
   private static socket: SocketIOClient.Socket;
 
@@ -84,9 +87,15 @@ export default class Client {
     });
   }
 
-  // public static testSell() {
-  //   Client.socket.emit("testSell", (res: any) => {
-  //     console.log(res);
-  //   });
-  // }
+  public static testSell() {
+    Client.socket.emit("testSell", (res: any) => {
+      console.log(res);
+    });
+  }
+
+  public static parseBackup() {
+    Client.socket.emit("parseBackup", (res: any) => {
+      console.log(res);
+    });
+  }
 }

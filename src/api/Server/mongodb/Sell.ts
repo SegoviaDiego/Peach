@@ -43,6 +43,17 @@ export default class Sell {
     }
   }
 
+  public static getFullCollection() {
+    return new Promise((resolve, reject) => {
+      Sell.db().then(db => {
+        db.find({}).toArray((err, res) => {
+          if (err) throw err;
+          resolve(res);
+        });
+      });
+    });
+  }
+
   public static load(date: Date) {
     return new Promise(async (resolve, reject) => {
       date.setHours(0, 0, 0, 0);
@@ -110,7 +121,16 @@ export default class Sell {
         day.setHours(0, 0, 0, 0);
 
         for (let sell of sells) {
-          await Product.remove(sell.item._id, sell.amount);
+          if (sell.item.composed) {
+            for (const composer of sell.item.composition) {
+              await Product.remove(
+                composer._id,
+                sell.amount * composer.equivalencia
+              );
+            }
+          } else {
+            await Product.remove(sell.item._id, sell.amount);
+          }
         }
 
         newSell = {

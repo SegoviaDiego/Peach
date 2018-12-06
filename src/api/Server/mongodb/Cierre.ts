@@ -38,6 +38,17 @@ export default class Cierre {
     }
   }
 
+  public static getFullCollection() {
+    return new Promise((resolve, reject) => {
+      Cierre.db().then(db => {
+        db.find({}).toArray((err, res) => {
+          if (err) throw err;
+          resolve(res);
+        });
+      });
+    });
+  }
+
   public static load(_id: any) {
     return new Promise(async (resolve, reject) => {
       Cierre.db().then(db => {
@@ -122,17 +133,20 @@ export default class Cierre {
       };
 
       for (sell of sells) {
-        total += sell.total;
-        subTotal += sell.subTotal || sell.total;
-        payDivision["efectivo"] += sell.payDivision["efectivo"] || 0;
-        payDivision["credito"] += sell.payDivision["credito"] || 0;
-        payDivision["recargo"] += sell.payDivision["recargo"] || 0;
-        payDivision["debito"] += sell.payDivision["debito"] || 0;
+        total += sell.total || 0;
+        subTotal += sell.subTotal || sell.total || 0;
+
+        if (sell.payDivision) {
+          payDivision["efectivo"] += sell.payDivision["efectivo"] || 0;
+          payDivision["credito"] += sell.payDivision["credito"] || 0;
+          payDivision["recargo"] += sell.payDivision["recargo"] || 0;
+          payDivision["debito"] += sell.payDivision["debito"] || 0;
+        }
 
         for (sellTotal of sell["sells"]) {
           if (totalSells[sellTotal.item._id]) {
-            totalSells[sellTotal.item._id]["amount"] += sellTotal.amount;
-            totalSells[sellTotal.item._id]["money"] += sellTotal.money;
+            totalSells[sellTotal.item._id]["amount"] += sellTotal.amount || 0;
+            totalSells[sellTotal.item._id]["money"] += sellTotal.money || 0;
           } else {
             totalSells[sellTotal.item._id] = sellTotal;
           }

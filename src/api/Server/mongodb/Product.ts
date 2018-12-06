@@ -51,6 +51,11 @@ export default class Product {
           .then(res => callback(true, res))
           .catch(res => callback(false, res));
         break;
+      case socketEvents.Product.composeProduct:
+        Product.composeProduct(data)
+          .then(res => callback(true, res))
+          .catch(res => callback(false, res));
+        break;
       case socketEvents.Product.deleteProducts:
         Product.deleteProducts(data)
           .then(res => callback(true, res))
@@ -67,6 +72,17 @@ export default class Product {
           .catch(res => callback(false, res));
         break;
     }
+  }
+
+  public static getFullCollection() {
+    return new Promise((resolve, reject) => {
+      Product.db().then(db => {
+        db.find({}).toArray((err, res) => {
+          if (err) throw err;
+          resolve(res);
+        });
+      });
+    });
   }
 
   public static getProduct(_id: any) {
@@ -167,6 +183,30 @@ export default class Product {
           );
         })
         .catch(reject);
+    });
+  }
+
+  public static composeProduct({ _id, composition }: any) {
+    return new Promise(async resolve => {
+      Product.db().then(db => {
+        db.updateOne(
+          { _id },
+          {
+            $set: {
+              composition,
+              composed: true
+            }
+          },
+          {},
+          err => {
+            if (err) throw err;
+            else {
+              // Firebase.saveProduct({ ...doc, ...modifiedProduct });
+              resolve();
+            }
+          }
+        );
+      });
     });
   }
 

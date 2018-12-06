@@ -46,6 +46,17 @@ export default class Total {
     }
   }
 
+  public static getFullCollection() {
+    return new Promise((resolve, reject) => {
+      Total.db().then(db => {
+        db.find({}).toArray((err, res) => {
+          if (err) throw err;
+          resolve(res);
+        });
+      });
+    });
+  }
+
   public static getDefault(day: Date) {
     return {
       day,
@@ -141,12 +152,15 @@ export default class Total {
         for (const _id of totalDelDia.cierres) {
           cierre = await Cierre.load(_id);
 
-          total += cierre.total;
-          subTotal += cierre.subTotal || cierre.total;
-          payDivision["efectivo"] += cierre.payDivision["efectivo"] || 0;
-          payDivision["credito"] += cierre.payDivision["credito"] || 0;
-          payDivision["recargo"] += cierre.payDivision["recargo"] || 0;
-          payDivision["debito"] += cierre.payDivision["debito"] || 0;
+          total += cierre.total || 0;
+          subTotal += cierre.subTotal || cierre.total || 0;
+
+          if (cierre.payDivision) {
+            payDivision["efectivo"] += cierre.payDivision["efectivo"] || 0;
+            payDivision["credito"] += cierre.payDivision["credito"] || 0;
+            payDivision["recargo"] += cierre.payDivision["recargo"] || 0;
+            payDivision["debito"] += cierre.payDivision["debito"] || 0;
+          }
 
           cierresData.push(cierre);
         }

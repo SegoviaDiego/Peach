@@ -7,8 +7,9 @@ export const products = {
   filter: "FILTER_CHANGE",
   buttons: "NAVIGATE_BUTTONS",
   create: "CREATE_PRODUCT",
-  delete: "DELETE_PRODUCT",
   modify: "MODIFY_PRODUCT",
+  compose: "COMPOSE_PRODUCT",
+  delete: "DELETE_PRODUCT",
   inStock: "INCREASE_STOCK",
   outStock: "DECREASE_STOCK",
   load: "LOAD_PRODUCTS",
@@ -29,7 +30,8 @@ export const products = {
     deleteItems: 4,
     editItems: 5,
     inStock: 6,
-    outStock: 7
+    outStock: 7,
+    opcionesAvanzadas: 8
   }
 };
 

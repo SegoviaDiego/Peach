@@ -202,17 +202,20 @@ export default class Firebird {
             console.log(err);
             return;
           }
+          console.log("CREATESELL ---- success 1");
 
-          db.query("SELECT * FROM TOTALES WHERE ID_PLU=3", [], (err, doc) => {
+          db.query("SELECT * FROM TOTALES WHERE ID_PLU=12", [], (err, doc) => {
             if (err) {
               console.log("CREATESELL ---- err 2");
               console.log(err);
               return;
             }
 
+            console.log("CREATESELL ---- success 2");
+
             if (doc.length) {
               db.query(
-                "UPDATE TOTALES SET PE=PE + 100 WHERE ID_PLU=3",
+                "UPDATE TOTALES SET PE=PE + 100 WHERE ID_PLU=12",
                 [],
                 err => {
                   db.detach();
@@ -228,7 +231,7 @@ export default class Firebird {
             } else {
               console.log("2----");
               db.query(
-                "INSERT INTO TOTALES (IP, NUMERO, V1, V2, V3, V4, ID_PLU, ID_SECCION, PE, CA) VALUES (1,1,1,1,1,1,3, 1, 100, 100)",
+                "INSERT INTO TOTALES (IP, NUMERO, V1, V2, V3, V4, ID_PLU, ID_SECCION, PE, CA) VALUES (1,1,1,1,1,1,12, 1, 100, 100)",
                 [],
                 err => {
                   db.detach();

@@ -47,6 +47,17 @@ export default class Log {
     }
   }
 
+  public static getFullCollection(collection: any) {
+    return new Promise((resolve, reject) => {
+      Log.db(collection).then(db => {
+        db.find({}).toArray((err, res) => {
+          if (err) throw err;
+          resolve(res);
+        });
+      });
+    });
+  }
+
   public static saveLog(type: any, payload: any) {
     return new Promise(async resolve => {
       switch (type) {

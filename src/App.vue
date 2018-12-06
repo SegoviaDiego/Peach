@@ -13,11 +13,11 @@ export default Vue.extend({
   name: "home",
   mounted() {
     Client.connect().then(() => {
-      this.$store.dispatch(types.connect);
-      // Client.get(socketEvents.Sell.load, date)
+      // Client.parseBackup();
+      // this.$store.dispatch(types.connect);
     });
     if (process.env.NODE_ENV !== "production") {
-      this.$router.replace("/Dashboard");
+      // this.$router.replace("/Dashboard");
     } else {
       this.$router.replace("/Updater");
     }
@@ -32,14 +32,41 @@ export default Vue.extend({
   user-select: none;
 }
 
+// sell's select style
+.sellComponentGrid {
+  .method {
+    .el-select {
+      input {
+        &::placeholder {
+          color: black;
+        }
+        font-weight: bold;
+        border-radius: 50px;
+        overflow: hidden;
+        @media screen and (max-width: 899px) {
+          font-size: 13px;
+        }
+        @media screen and (min-width: 900px) and (max-width: 999px) {
+          font-size: 15px;
+        }
+        @media screen and (min-width: 1000px) and (max-width: 1299px) {
+          font-size: 18px;
+        }
+        @media screen and (min-width: 1300px) {
+          font-size: 20px;
+        }
+      }
+    }
+  }
+}
+
 // Dialog style
 .el-dialog {
-  background: #fff !important;
-  width: 50vw !important;
-  max-height: 50vh;
+  background: #fff;
+  max-height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
-  border-radius: 15px !important;
+  border-radius: 15px;
 
   .el-dialog__header {
     font-weight: bold;

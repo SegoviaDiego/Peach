@@ -54,6 +54,12 @@ export default {
       );
       await commit(types.stopLoading);
     },
+    async [types.compose]({ dispatch, commit }: any, payload: any) {
+      commit(types.startLoading);
+      await Client.set(socketEvents.Product.composeProduct, payload);
+      await dispatch(types.load);
+      commit(types.stopLoading);
+    },
     async [types.delete]({ commit }: any, selection: any) {
       commit(types.startLoading);
       await Client.set(socketEvents.Product.deleteProducts, selection);

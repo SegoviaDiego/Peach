@@ -78,6 +78,18 @@
             </button>
           </el-tooltip>
         </template>
+        <template v-if="true">
+          <el-tooltip content="Opciones avanzadas" placement="top">
+            <button
+              @click="goTo(routes.opcionesAvanzadas)"
+              class="circle"
+              v-loading="saveLoading"
+              :disabled="saveLoading"
+            >
+              <fontawesome icon="toolbox"/>
+            </button>
+          </el-tooltip>
+        </template>
         <el-tooltip content="Volver atras" placement="top">
           <button @click="goTo(routes.default)" class="circle">
             <fontawesome icon="chevron-left"/>

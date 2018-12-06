@@ -9,59 +9,62 @@ export default class Print {
   private static pdfMake: any;
 
   public static print(printContent: any) {
-    const win = new BrowserWindow({
-      title: "Vista previa",
-      show: false,
-      webPreferences: {
-        plugins: true
-      }
-    });
-    const menu = new Menu();
-
-    menu.append(
-      new MenuItem({
-        label: "Imprimir",
-        click() {
-          win.webContents.print();
+    return new Promise(resolve => {
+      const win = new BrowserWindow({
+        title: "Vista previa",
+        show: false,
+        webPreferences: {
+          plugins: true
         }
-      })
-    );
-    menu.append(
-      new MenuItem({
-        label: "Guardar en PDF",
-        click() {
-          dialog.showSaveDialog(
-            {
-              title: "Guardar como PDF",
-              filters: [
-                {
-                  name: "PDF",
-                  extensions: ["pdf"]
+      });
+      const menu = new Menu();
+
+      menu.append(
+        new MenuItem({
+          label: "Imprimir",
+          click() {
+            win.webContents.print();
+          }
+        })
+      );
+      menu.append(
+        new MenuItem({
+          label: "Guardar en PDF",
+          click() {
+            dialog.showSaveDialog(
+              {
+                title: "Guardar como PDF",
+                filters: [
+                  {
+                    name: "PDF",
+                    extensions: ["pdf"]
+                  }
+                ]
+              },
+              path => {
+                if (path) {
+                  fs.writeFileSync(path, fs.readFileSync(Print.route));
+                  win.close();
                 }
-              ]
-            },
-            path => {
-              if (path) {
-                fs.writeFileSync(path, fs.readFileSync(Print.route));
-                win.close();
               }
-            }
-          );
-        }
-      })
-    );
+            );
+          }
+        })
+      );
 
-    win.setMenu(menu);
-    win.maximize();
-    win.once("ready-to-show", () => {
-      win.show();
-    });
+      win.setMenu(menu);
+      win.maximize();
+      win.once("ready-to-show", () => {
+        win.show();
+      });
 
-    Print.prepare();
+      Print.prepare();
 
-    Print.pdfMake.createPdf(printContent).getBuffer((res: any) => {
-      fs.writeFileSync(Print.route, res);
-      win.loadURL(Print.route);
+      Print.pdfMake.createPdf(printContent).getBuffer((res: any) => {
+        fs.writeFileSync(Print.route, res);
+        win.loadURL(Print.route);
+        resolve();
+      });
     });
   }
 

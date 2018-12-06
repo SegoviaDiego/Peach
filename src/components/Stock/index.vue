@@ -69,7 +69,6 @@ export default Vue.extend({
   computed: mapState({
     data: (state: any) => state.Product.data,
     type: (state: any) => state.Product.type,
-    filter: (state: any) => state.Product.filter,
     isLoading: (state: any) => state.Product.loading,
     showSpinner: (state: any) => state.Product.showSpinner,
     route: (state: any) => state.Product.buttonRoute,
@@ -86,12 +85,15 @@ export default Vue.extend({
       return id;
     },
     filteredData(state: any) {
-      return filterData([...state.Product.data], this.filter);
+      return filterData([...state.Product.data], state.Product.filter);
     },
     mutatedProducts(state: any) {
       let list = {} as any;
 
-      for (let item of filterData([...state.Product.data], this.filter)) {
+      for (let item of filterData(
+        [...state.Product.data],
+        state.Product.filter
+      )) {
         list[item._id] = {
           ...item
         };
@@ -166,31 +168,11 @@ export default Vue.extend({
         case types.routes.outStock:
           this.$store.dispatch(types.clearInputs);
           break;
+        case types.routes.opcionesAvanzadas:
+          this.$router.replace("/OpcionesAvanzadas");
+          return;
       }
       this.$store.dispatch(types.buttons, route);
-      // if (from) {
-      //   switch (from) {
-      //     case types.routes.createItem:
-      //       this.newItem = {
-      //         _id: this.nextProductId,
-      //         name: "",
-      //         type: 0,
-      //         price: 0,
-      //         stock: 0
-      //       };
-      //       break;
-      //     case types.routes.editItems:
-      //       this.changes = {};
-      //       break;
-      //     case types.routes.deleteItems:
-      //       this.selected = {};
-      //       break;
-      //     case types.routes.inStock:
-      //     case types.routes.outStock:
-      //       this.$store.dispatch(types.clearInputs);
-      //       break;
-      //   }
-      // }
     }
   }
 });

@@ -3,7 +3,7 @@
     <div class="container">
       <div class="total">
         <div class="title">TOTAL:</div>
-        <div class="value">$ {{total}}</div>
+        <div class="value">${{total}}</div>
       </div>
       <div class="method">
         <el-select v-model="payMethods" multiple placeholder="Seleccionar metodo de pago">
@@ -13,9 +13,21 @@
         </el-select>
       </div>
       <div class="actions">
-        <button @click="handleAction(1)">Cancelar</button>
-        <button @click="handleAction(2)">Simular</button>
-        <button @click="handleAction(3)" v-loading="sellLoading" :disabled="sellLoading">Vender</button>
+        <button
+          v-loading="isActionLoading"
+          :disabled="isActionLoading"
+          @click="handleAction(1)"
+        >Cancelar</button>
+        <button
+          v-loading="isActionLoading"
+          :disabled="isActionLoading"
+          @click="handleAction(2)"
+        >Simular</button>
+        <button
+          v-loading="isActionLoading || sellLoading"
+          :disabled="isActionLoading || sellLoading"
+          @click="handleAction(3)"
+        >Vender</button>
       </div>
     </div>
     <!-- Dialog -->
@@ -134,7 +146,8 @@ export default Vue.extend({
     payMethods: [],
     payDivision: {} as any,
     recargoCredito: null as any,
-    sellLoading: false
+    sellLoading: false,
+    isActionLoading: false
   }),
   methods: {
     handleRecargoChange(value: any) {
@@ -265,6 +278,8 @@ export default Vue.extend({
             color: "black"
           }
         }
+      }).then(() => {
+        this.isActionLoading = false;
       });
     },
     clearSell() {
@@ -280,24 +295,36 @@ export default Vue.extend({
       this.payDivisionMessage = this.getPayDivisionMessage();
     },
     handleAction(type: number) {
+      if (this.isActionLoading) return;
+      this.isActionLoading = true;
       switch (type) {
         case 1: // Cancelar
           this.clearSell();
+          this.isActionLoading = false;
           break;
         case 2: // Simular
           this.print();
           break;
         case 3: // Vender
-          if (this.sellLoading) return;
+          if (this.sellLoading) {
+            this.isActionLoading = false;
+            return;
+          }
 
-          if (!this.isReadyToSell()) return;
+          if (!this.isReadyToSell()) {
+            this.isActionLoading = false;
+            return;
+          }
           // Si es pago multiple o con credito
           if (
             this.payMethods.length > 1 ||
             _.includes(this.payMethods, "credito")
           ) {
             if (this.payDivisionDialog) {
-              if (!this.validateSell()) return;
+              if (!this.validateSell()) {
+                this.isActionLoading = false;
+                return;
+              }
               this.sellLoading = true;
 
               for (const i in this.payDivision) {
@@ -317,12 +344,13 @@ export default Vue.extend({
                 })
                 .then(() => {
                   this.sellLoading = false;
+                  this.isActionLoading = false;
                   this.$notify({
                     title: "Se ha realizado la venta con éxito",
                     message: "",
                     type: "success",
                     duration: 2000,
-                    offset: 80
+                    offset: 150
                   });
                 });
 
@@ -333,8 +361,14 @@ export default Vue.extend({
             }
           } else {
             // Si es un solo metodo de pago
-            if (!this.isReadyToSell()) return;
-            if (!this.validateSell()) return;
+            if (!this.isReadyToSell()) {
+              this.isActionLoading = false;
+              return;
+            }
+            if (!this.validateSell()) {
+              this.isActionLoading = false;
+              return;
+            }
             this.sellLoading = true;
 
             this.payDivision = {
@@ -348,18 +382,19 @@ export default Vue.extend({
               })
               .then(() => {
                 this.sellLoading = false;
+                this.isActionLoading = false;
                 this.$notify({
                   title: "Se ha realizado la venta con éxito",
                   message: "",
                   type: "success",
                   duration: 2000,
-                  offset: 80
+                  offset: 150
                 });
               });
 
             this.clearSell();
-            break;
           }
+          break;
       }
     },
     isReadyToSell() {
@@ -369,7 +404,7 @@ export default Vue.extend({
           message: "Antes de realizar la venta debes elegir el metodo de pago",
           type: "warning",
           duration: 5000,
-          offset: 170
+          offset: 150
         });
       } else if (_.isEmpty(this.sells)) {
         this.$notify({
@@ -378,7 +413,7 @@ export default Vue.extend({
             "Antes de realizar la venta debes seleccionar los productos.",
           type: "warning",
           duration: 5000,
-          offset: 170
+          offset: 150
         });
       } else {
         return true;
@@ -398,7 +433,7 @@ export default Vue.extend({
               message: "El valor del porcentaje debe estar entre 1 y 2.",
               type: "warning",
               duration: 5000,
-              offset: 60
+              offset: 150
             });
             return false;
           }
@@ -413,7 +448,7 @@ export default Vue.extend({
               message: "El valor del porcentaje debe estar entre 0 y 100.",
               type: "warning",
               duration: 5000,
-              offset: 60
+              offset: 150
             });
             return false;
           }
@@ -426,7 +461,7 @@ export default Vue.extend({
             message: `El valor del ${id} no puede ser 0`,
             type: "warning",
             duration: 5000,
-            offset: 60
+            offset: 150
           });
           return false;
         }
@@ -436,7 +471,7 @@ export default Vue.extend({
             message: `El valor del ${id} no puede ser negativo`,
             type: "warning",
             duration: 5000,
-            offset: 60
+            offset: 150
           });
           return false;
         }
@@ -503,15 +538,18 @@ export default Vue.extend({
 
 .actionsGrid {
   grid-area: actions;
+  flex: 1;
   display: flex;
+  position: relative;
   overflow: hidden;
-  width: 100%;
   .container {
+    max-width: 100%;
     flex: 1;
     display: flex;
     flex-direction: column;
     background-color: #e1e2e1;
-    padding: 10px 5%;
+    padding: 10px 15px;
+    overflow: hidden;
     .total {
       flex: 1;
       display: flex;
@@ -528,21 +566,41 @@ export default Vue.extend({
       .value {
         flex: 2;
         font-size: 40px;
+        overflow-y: hidden;
+        overflow-x: auto;
+        &::-webkit-scrollbar {
+          width: 7px;
+          height: 7px;
+        }
+        &::-webkit-scrollbar-track {
+          background-color: transparent;
+        }
+        &::-webkit-scrollbar-thumb {
+          border-radius: 14px;
+          background-color: #3d3d3d;
+        }
       }
 
-      @media screen and (min-height: 500px) and (max-height: 999px) {
+      @media screen and (max-height: 799px) {
+        .value {
+          display: flex;
+          align-items: center;
+          font-size: 34px;
+        }
+      }
+      @media screen and (min-height: 800px) and (max-height: 899px) {
+        flex: 2;
+        flex-direction: column;
         .title {
+          flex: 1;
           font-size: 2.5em;
         }
         .value {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          font-size: 2em;
+          flex: 1;
+          font-size: 37px;
         }
       }
-
-      @media screen and (min-height: 1000px) {
+      @media screen and (min-height: 900px) {
         flex: 2;
         flex-direction: column;
         .title {
@@ -571,18 +629,30 @@ export default Vue.extend({
       align-items: center;
       justify-content: center;
       button {
-        flex: 1;
+        height: 50px;
+        overflow: hidden;
         margin: 0 4px;
+        flex: 1;
         font-family: Lato;
         font-weight: bold;
         color: black;
-        font-size: 20px;
         text-transform: uppercase;
         border: none;
         border-radius: 40px;
-        height: 100%;
-        height: 50px;
+        padding: 0;
         cursor: pointer;
+        @media screen and (max-width: 899px) {
+          font-size: 12px;
+        }
+        @media screen and (min-width: 900px) and (max-width: 999px) {
+          font-size: 14px;
+        }
+        @media screen and (min-width: 1000px) and (max-width: 1299px) {
+          font-size: 18px;
+        }
+        @media screen and (min-width: 1300px) {
+          font-size: 20px;
+        }
       }
       button:nth-of-type(1) {
         background-color: #c4c4c4;

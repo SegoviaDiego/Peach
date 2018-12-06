@@ -52,7 +52,7 @@ export default Vue.extend({
 @import "@/global.scss";
 
 .cell {
-  overflow: hidden;
+  overflow: auto;
   margin: 0 $scrollbarSize;
 
   display: flex;
@@ -76,6 +76,18 @@ export default Vue.extend({
   }
   @media screen and (min-width: 1300px) {
     font-size: 28px;
+  }
+
+  &::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: 14px;
+    background-color: #3d3d3d;
   }
 
   input {

@@ -42,10 +42,10 @@ export default new Router({
             import(/* webpackChunkName: "Database" */ "@/components/Settings/Database/index.vue")
         },
         {
-          path: "/cloud",
-          name: "Cloud",
+          path: "/Backup",
+          name: "Backup",
           component: () =>
-            import(/* webpackChunkName: "Cloud" */ "@/components/Settings/Cloud/index.vue")
+            import(/* webpackChunkName: "Backup" */ "@/components/Settings/Backup/index.vue")
         },
         // {
         //   path: "/users",
@@ -58,6 +58,24 @@ export default new Router({
           name: "Stock",
           component: () =>
             import(/* webpackChunkName: "Stock" */ "@/components/Stock/index.vue")
+        },
+        {
+          path: "/OpcionesAvanzadas",
+          component: () =>
+            import(/* webpackChunkName: "OpcionesAvanzadas" */ "@/components/OpcionesAvanzadas/index.vue"),
+
+          children: [
+            {
+              path: "/",
+              component: () =>
+                import(/* webpackChunkName: "OpcionesAvanzadasDashboard" */ "@/components/OpcionesAvanzadas/Dashboard/index.vue")
+            },
+            {
+              path: "/ProductComposer",
+              component: () =>
+                import(/* webpackChunkName: "ProductComposer" */ "@/components/OpcionesAvanzadas/ProductComposer/index.vue")
+            },
+          ]
         },
         {
           path: "/Sell",

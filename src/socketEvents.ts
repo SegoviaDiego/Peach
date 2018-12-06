@@ -1,10 +1,14 @@
 export default {
+  default: {
+    export: "DEFAULT_Export"
+  },
   Product: {
     loadProducts: "PRODUCT_loadProducts",
     productExists: "PRODUCT_productExists",
     syncToSystel: "PRODUCT_syncToSystel",
     createProduct: "PRODUCT_createProduct",
     mutateProducts: "PRODUCT_mutateProducts",
+    composeProduct: "PRODUCT_composeProduct",
     deleteProducts: "PRODUCT_deleteProducts",
     inStock: "PRODUCT_inStock",
     outStock: "PRODUCT_outStock"
@@ -15,7 +19,7 @@ export default {
   },
   Total: {
     load: "TOTAL_load",
-    makeCierre: "TOTAL_makeCierre",
+    makeCierre: "TOTAL_makeCierre"
   },
   Log: {
     getLog: "LOG_getLog",

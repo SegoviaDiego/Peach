@@ -1,10 +1,13 @@
-import electron from "electron";
 import { MongoClient, Db, Collection } from "mongodb";
 import Firebird from "./db/Firebird";
-import Settings from "./Settings";
-import Total from "./mongodb/Total";
-import { products as pTypes } from "../../vuexTypes";
 import Product from "./mongodb/Product";
+import Total from "./mongodb/Total";
+import Cierre from "./mongodb/Cierre";
+import Sell from "./mongodb/Sell";
+import Log from "./mongodb/Log";
+import Settings from "./Settings";
+import { log as types } from "../../vuexTypes";
+import socketEvents from "../../socketEvents";
 
 export default class Server {
   private static db: Db;
@@ -22,13 +25,15 @@ export default class Server {
       // console.log("TEST UTF8 ----");
       // await Firebird.testUTF8Seq();
       // await Firebird.testUTF8Query();
-
       Settings.isSystelReady().then(ready => {
         if (ready) {
           Firebird.createDatabaseCopy().then(() => {
             Product.syncToSystel().then(() => {
-              Firebird.listenForChanges();
-              resolve();
+              Firebird.listenForChanges().then(() => {
+                resolve();
+              });
+              // Total.getTotal(new Date()).then(() => {
+              // });
             });
           });
         } else {
@@ -75,4 +80,95 @@ export default class Server {
       }
     });
   }
+
+  public static async get(
+    event: string,
+    data: any,
+    callback: (success: boolean, payload: any) => void
+  ) {
+    switch (event) {
+      case socketEvents.default.export:
+        Server.getExportFile()
+          .then(res => callback(true, res))
+          .catch(res => callback(false, res));
+        break;
+    }
+  }
+
+  public static getExportFile() {
+    return new Promise(async (resolve, reject) => {
+      resolve({
+        product: await Product.getFullCollection(),
+        total: await Total.getFullCollection(),
+        cierre: await Cierre.getFullCollection(),
+        sell: await Sell.getFullCollection(),
+        logMov: await Log.getFullCollection(types.movLog),
+        logIngreso: await Log.getFullCollection(types.inStock),
+        logEgreso: await Log.getFullCollection(types.outStock)
+      });
+    });
+  }
+
+  // public static parseBackup(callback: any) {
+  //   let newCierre: any;
+
+  //   Server.getCollection("Total2").then(db => {
+  //     db.find({}).toArray((err, res) => {
+  //       // for each total
+  //       Server.getCollection("Total").then(newTotaldb => {
+  //         // newTotaldb.deleteMany({}, async () => {
+  //         //   for (let item of res) {
+  //         //     await newTotaldb.insertOne({
+  //         //       day: new Date(item.day),
+  //         //       cierres: []
+  //         //     });
+  //         //   }
+  //         // });
+  //         callback("----------------- DONE -------------------");
+  //       });
+
+  //       // item.cierres.forEach((cierre: any) => {
+  //       //   Server.getCollection("Cierre").then(cierredb => {
+  //       //     newCierre = {
+  //       //       day: cierre.day,
+  //       //       start: cierre.start,
+  //       //       canceled: false
+  //       //     };
+
+  //       //     if (!cierre._current) newCierre["end"] = cierre.end;
+
+  //       //     cierredb.insertOne(newCierre, (err: any, mongoNewCierre) => {
+  //       //       if (err) throw err;
+
+  //       //       db.updateOne({ _id: newTotal.insertedId },{
+  //       //         $push: {
+  //       //           cierres: mongoNewCierre.insertedId
+  //       //         }
+  //       //       }).then(()=>{
+
+  //       //       })
+
+  //       //     });
+  //       //   });
+  //       // });
+  //     });
+  //     return;
+  //     db.updateMany(
+  //       {},
+  //       {
+  //         $unset: {
+  //           cierres: "",
+  //           start: "",
+  //           end: "",
+  //           total: "",
+  //           _current: ""
+  //         }
+  //       }
+  //     ).then(() => {
+  //       db.find({}).toArray((err, res) => {
+  //         callback(res);
+  //       });
+  //     });
+  //   });
+  // }
 }

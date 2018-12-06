@@ -46,7 +46,7 @@ export default Vue.extend({
     test(type: any) {
       switch (type) {
         case 1:
-          // Client.testSell();
+          Client.testSell();
           break;
         case 2:
           // Firebird.clearSales();

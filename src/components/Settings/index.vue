@@ -1,56 +1,37 @@
 <template>
   <div class="settingsGrid">
     <div class="header">
-      <button @click="goBack()">
-        Volver atras
-      </button>
+      <button @click="goBack()">Volver atras</button>
     </div>
     <div class="body">
       <template v-if="!loggedIn">
-
         <div class="loginForm">
           <el-input placeholder="Usuario" v-model="user"/>
           <el-input placeholder="Password" type="password" v-model="pass"/>
           <el-button @click="logIn()" type="primary" round>Ingresar</el-button>
         </div>
-
       </template>
       <template v-else>
         <!-- Preferencias -->
         <div @click="goTo(1)" class="route">
           <div class="icon">
-            <fontawesome icon="sliders-h" />
+            <fontawesome icon="sliders-h"/>
           </div>
-          <div class="label">
-            Preferencias
-          </div>
-        </div>
-        <!-- Users -->
-        <div @click="goTo(2)" class="route" v-if="false">
-          <div class="icon">
-            <fontawesome icon="users" />
-          </div>
-          <div class="label">
-            Usuarios
-          </div>
+          <div class="label">Preferencias</div>
         </div>
         <!-- Database -->
+        <div @click="goTo(2)" class="route">
+          <div class="icon">
+            <fontawesome icon="database"/>
+          </div>
+          <div class="label">Base de datos</div>
+        </div>
+        <!-- Backup -->
         <div @click="goTo(3)" class="route">
           <div class="icon">
-            <fontawesome icon="database" />
+            <fontawesome icon="hdd"/>
           </div>
-          <div class="label">
-            Base de datos
-          </div>
-        </div>
-        <!-- Firebase cloud sync -->
-        <div @click="goTo(4)" class="route" v-if="false">
-          <div class="icon">
-            <fontawesome icon="server" />
-          </div>
-          <div class="label">
-            Cloud
-          </div>
+          <div class="label">Backup</div>
         </div>
       </template>
     </div>
@@ -82,13 +63,10 @@ export default Vue.extend({
           this.$router.replace({ path: "/preferences" });
           break;
         case 2:
-          this.$router.replace({ path: "/users" });
-          break;
-        case 3:
           this.$router.replace({ path: "/database" });
           break;
-        case 4:
-          this.$router.replace({ path: "/cloud" });
+        case 3:
+          this.$router.replace({ path: "/Backup" });
           break;
       }
     }

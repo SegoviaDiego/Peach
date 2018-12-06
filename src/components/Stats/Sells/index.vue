@@ -14,7 +14,7 @@ export default {
   },
   mounted() {
     this.$store.dispatch(types.setDate, new Date()).then(() => {
-      this.$store.dispatch(types.loadEgreso);
+      this.$store.dispatch(types.load);
     });
   }
 };

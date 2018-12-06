@@ -52,7 +52,7 @@ export default Vue.extend({
     Cell
   },
   mounted() {
-    this.$store.dispatch(types.load, this.date);
+    
   },
   data: () => ({
     openPrintDialog: false

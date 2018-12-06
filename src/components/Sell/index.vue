@@ -1,9 +1,9 @@
 <template>
-  <div class="mainGrid">
-    <HeaderBar />
-    <Table />
-    <Ticket />
-    <SellActions />
+  <div class="sellComponentGrid">
+    <HeaderBar/>
+    <Table/>
+    <Ticket/>
+    <SellActions/>
   </div>
 </template>
 
@@ -52,7 +52,7 @@ export default Vue.extend({
 </script>
 
 <style lang="scss" scoped>
-.mainGrid {
+.sellComponentGrid {
   flex: 1;
   display: grid;
   $v: 25px;
@@ -60,8 +60,8 @@ export default Vue.extend({
   padding: $v $h;
   grid-row-gap: 10px;
   grid-column-gap: 10px;
-  grid-template-rows: 55px 1fr 1fr 1fr;
-  grid-template-columns: 2fr 1fr;
+  grid-template-rows: 55px 1fr 1fr 1fr !important;
+  grid-template-columns: 2fr 1fr !important;
   grid-template-areas:
     "header header"
     "table ticket"

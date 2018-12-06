@@ -38,7 +38,9 @@ export default class SocketServer {
     //       ni sincronizacion con otras instancias.
 
     socket.on("get", async (event: string, data: any, callback) => {
-      if (event.includes("PRODUCT")) {
+      if (event.includes("DEFAULT")) {
+        Server.get(event, data, callback);
+      } else if (event.includes("PRODUCT")) {
         Product.get(event, data, callback);
       } else if (event.includes("SELL")) {
         Sell.get(event, data, callback);
@@ -73,6 +75,11 @@ export default class SocketServer {
     //   // await Firebird.clearTotales();
     //   await Firebird.createSell();
     //   callback("Completed");
+    // });
+
+    // Parse backup
+    // socket.on("parseBackup", async callback => {
+    //   // Server.parseBackup(callback);
     // });
   }
 }

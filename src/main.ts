@@ -38,7 +38,12 @@ import {
   faSortDown,
   faCartPlus,
   faCartArrowDown,
-  faExchangeAlt
+  faExchangeAlt,
+  faHdd,
+  faToolbox,
+  faHandHoldingUsd,
+  faPuzzlePiece,
+  faMoneyBillAlt
 } from "@fortawesome/free-solid-svg-icons";
 
 //Font awesome
@@ -67,7 +72,12 @@ library.add(
   faSortDown,
   faCartPlus,
   faCartArrowDown,
-  faExchangeAlt
+  faExchangeAlt,
+  faHdd,
+  faToolbox,
+  faHandHoldingUsd,
+  faPuzzlePiece,
+  faMoneyBillAlt
 );
 
 // dependencies
