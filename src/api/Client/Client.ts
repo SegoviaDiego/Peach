@@ -2,9 +2,6 @@ import { ipcRenderer } from "electron";
 import io from "socket.io-client";
 import Settings from "./Settings";
 
-import mongo from "mongodb";
-import fs from "fs";
-
 export default class Client {
   private static socket: SocketIOClient.Socket;
 

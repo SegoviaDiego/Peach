@@ -14,10 +14,10 @@ export default Vue.extend({
   mounted() {
     Client.connect().then(() => {
       // Client.parseBackup();
-      // this.$store.dispatch(types.connect);
+      this.$store.dispatch(types.connect);
     });
     if (process.env.NODE_ENV !== "production") {
-      // this.$router.replace("/Dashboard");
+      this.$router.replace("/Charts");
     } else {
       this.$router.replace("/Updater");
     }

@@ -124,3 +124,18 @@ export const settings = {
   startLoading: "START_LOADING",
   stopLoading: "STOP_LOADING"
 };
+
+export const chart = {
+  // Actions
+  loadDailySell: "LOAD_DAILYSELL",
+  loadMonthlySell: "LOAD_MONTHLYSELL",
+  loadTopProducts: "LOAD_TOPPRODUCTS",
+
+  filter: "CHART_FILTER_CHANGE",
+  setDate: "CHART_SET_DATE",
+  // mutations
+  startLoading: "START_LOADING",
+  stopLoading: "STOP_LOADING",
+  showSpinner: "SHOW_SPINNER",
+  hideSpinner: "HIDE_SPINNER"
+};

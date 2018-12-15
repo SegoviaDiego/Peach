@@ -5,7 +5,7 @@
       :visible="true"
       lock-scroll
       :show-close="false"
-      width="30%">
+      width="50%">
       <span>
         <el-progress
           :text-inside="true"

@@ -25,6 +25,8 @@ export default class Server {
       // console.log("TEST UTF8 ----");
       // await Firebird.testUTF8Seq();
       // await Firebird.testUTF8Query();
+      // resolve();
+      // return;
       Settings.isSystelReady().then(ready => {
         if (ready) {
           Firebird.createDatabaseCopy().then(() => {
@@ -109,66 +111,51 @@ export default class Server {
     });
   }
 
-  // public static parseBackup(callback: any) {
-  //   let newCierre: any;
+  public static async parseBackup(callback: any) {
+    const Total2 = await Server.getCollection("Total2");
+    const Sell2 = await Server.getCollection("Sell2");
+    const Total = await Server.getCollection("Total");
+    const Cierre = await Server.getCollection("Cierre");
 
-  //   Server.getCollection("Total2").then(db => {
-  //     db.find({}).toArray((err, res) => {
-  //       // for each total
-  //       Server.getCollection("Total").then(newTotaldb => {
-  //         // newTotaldb.deleteMany({}, async () => {
-  //         //   for (let item of res) {
-  //         //     await newTotaldb.insertOne({
-  //         //       day: new Date(item.day),
-  //         //       cierres: []
-  //         //     });
-  //         //   }
-  //         // });
-  //         callback("----------------- DONE -------------------");
-  //       });
+    const OldTotales = await Total2.find({}).toArray();
+    const OldSells = await Sell2.find({}).toArray();
 
-  //       // item.cierres.forEach((cierre: any) => {
-  //       //   Server.getCollection("Cierre").then(cierredb => {
-  //       //     newCierre = {
-  //       //       day: cierre.day,
-  //       //       start: cierre.start,
-  //       //       canceled: false
-  //       //     };
+    let day,
+      cierres: Array<any>,
+      isCurrent,
+      newTotal: any,
+      newCierre: any,
+      currentCierreId;
 
-  //       //     if (!cierre._current) newCierre["end"] = cierre.end;
+    for (const OldTotal of OldTotales) {
+      isCurrent = OldTotal._current;
+      day = OldTotal.day;
+      cierres = [];
 
-  //       //     cierredb.insertOne(newCierre, (err: any, mongoNewCierre) => {
-  //       //       if (err) throw err;
+      for (const OldCierre of OldTotal.cierres) {
+        newCierre = {
+          day,
+          start: OldCierre.start
+        };
 
-  //       //       db.updateOne({ _id: newTotal.insertedId },{
-  //       //         $push: {
-  //       //           cierres: mongoNewCierre.insertedId
-  //       //         }
-  //       //       }).then(()=>{
+        if (!OldCierre._current) newCierre["end"] = OldCierre.end;
 
-  //       //       })
+        cierres.push((await Cierre.insertOne(newCierre)).insertedId);
 
-  //       //     });
-  //       //   });
-  //       // });
-  //     });
-  //     return;
-  //     db.updateMany(
-  //       {},
-  //       {
-  //         $unset: {
-  //           cierres: "",
-  //           start: "",
-  //           end: "",
-  //           total: "",
-  //           _current: ""
-  //         }
-  //       }
-  //     ).then(() => {
-  //       db.find({}).toArray((err, res) => {
-  //         callback(res);
-  //       });
-  //     });
-  //   });
-  // }
+        if (isCurrent && OldCierre._current)
+          currentCierreId = cierres[cierres.length - 1];
+      }
+
+      newTotal = {
+        day,
+        cierres
+      };
+
+      if (isCurrent) newTotal["_turnoActual"] = currentCierreId;
+
+      await Total.insertOne(newTotal);
+    }
+
+    console.log('done');
+  }
 }

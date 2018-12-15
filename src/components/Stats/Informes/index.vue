@@ -22,7 +22,7 @@
         </div>
       </div>
       <!-- Dialog -->
-      <el-dialog title="Seleccionar fecha" :visible.sync="selectingDate" width="30%">
+      <el-dialog title="Seleccionar fecha" :visible.sync="selectingDate" width="50%">
         <div>
           <el-date-picker
             v-model="selectedDate"

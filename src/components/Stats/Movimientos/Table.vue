@@ -22,7 +22,7 @@
       </Row>
     </OxyTable>
     <!-- Edit mov dialog -->
-    <el-dialog title="Editar movimiento" :visible.sync="editModal" width="30%">
+    <el-dialog title="Editar movimiento" :visible.sync="editModal" width="50%">
       <!-- Dialog's body -->
       <div class="dialogBody">
         <div class="field">
@@ -54,7 +54,7 @@
       </span>
     </el-dialog>
     <!-- Delete dialog -->
-    <el-dialog title="Eliminar movimiento" :visible.sync="deleteModal" width="30%">
+    <el-dialog title="Eliminar movimiento" :visible.sync="deleteModal" width="50%">
       <!-- Dialog's body -->
       <div class="dialogBody"></div>
       <!-- Dialog's body -->

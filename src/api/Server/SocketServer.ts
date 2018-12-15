@@ -6,6 +6,7 @@ import Product from "./mongodb/Product";
 import Total from "./mongodb/Total";
 import Sell from "./mongodb/Sell";
 import Log from "./mongodb/Log";
+import Chart from "./Chart";
 import Firebird from "./db/Firebird";
 
 export default class SocketServer {
@@ -48,6 +49,8 @@ export default class SocketServer {
         Total.get(event, data, callback);
       } else if (event.includes("LOG")) {
         Log.get(event, data, callback);
+      } else if (event.includes("CHART")) {
+        Chart.get(event, data, callback);
       } else {
         callback(false);
       }
@@ -78,8 +81,8 @@ export default class SocketServer {
     // });
 
     // Parse backup
-    // socket.on("parseBackup", async callback => {
-    //   // Server.parseBackup(callback);
-    // });
+    socket.on("parseBackup", async callback => {
+      Server.parseBackup(callback);
+    });
   }
 }

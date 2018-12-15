@@ -74,7 +74,7 @@ export default new Router({
               path: "/ProductComposer",
               component: () =>
                 import(/* webpackChunkName: "ProductComposer" */ "@/components/OpcionesAvanzadas/ProductComposer/index.vue")
-            },
+            }
           ]
         },
         {
@@ -118,6 +118,37 @@ export default new Router({
               name: "Sells",
               component: () =>
                 import(/* webpackChunkName: "Sells" */ "@/components/Stats/Sells/index.vue")
+            },
+            {
+              path: "/Charts",
+              component: () =>
+                import(/* webpackChunkName: "Charts" */ "@/components/Stats/Charts/index.vue"),
+              children: [
+                {
+                  path: "/",
+                  name: "ChartsDashboard",
+                  component: () =>
+                    import(/* webpackChunkName: "ChartsDashboard" */ "@/components/Stats/Charts/Dashboard/index.vue")
+                },
+                {
+                  path: "/dailySell",
+                  name: "dailySell",
+                  component: () =>
+                    import(/* webpackChunkName: "dailySell" */ "@/components/Stats/Charts/DailySell/index.vue")
+                },
+                {
+                  path: "/monthlySell",
+                  name: "monthlySell",
+                  component: () =>
+                    import(/* webpackChunkName: "monthlySell" */ "@/components/Stats/Charts/MonthlySell/index.vue")
+                },
+                {
+                  path: "/topProducts",
+                  name: "topProducts",
+                  component: () =>
+                    import(/* webpackChunkName: "topProducts" */ "@/components/Stats/Charts/TopProducts/index.vue")
+                }
+              ]
             }
           ]
         },

@@ -1,34 +1,28 @@
 <template>
   <div class="toolbarFlex">
-    <div class="date">
-      {{getDate()}}
-    </div>
+    <div class="date">{{getDate()}}</div>
     <div class="searchbar">
       <input
         :value="filter"
         @input="filterChanged($event.target.value)"
-        placeholder="Buscar" type="text">
+        placeholder="Buscar"
+        type="text"
+      >
     </div>
-    <button @click="selectingDate = true" class="rect">
-      Fecha
-    </button>
+    <button @click="selectingDate = true" class="rect">Fecha</button>
     <!-- <button @click="selectingPrint = true" class="circle">
       <fontawesome icon="print" />
-    </button> -->
-    
+    </button>-->
     <!-- Dialog -->
-    <el-dialog
-      title="Seleccionar fecha"
-      :visible.sync="selectingDate"
-      width="30%">
+    <el-dialog title="Seleccionar fecha" :visible.sync="selectingDate" width="50%">
       <div>
         <el-date-picker
           v-model="selectedDate"
           format="dd/MM/yyyy"
           type="date"
           placeholder="Seleccionar dia"
-          :picker-options="datePickOptions">
-        </el-date-picker>
+          :picker-options="datePickOptions"
+        ></el-date-picker>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="selectingDate = false">Cancelar</el-button>
@@ -39,28 +33,28 @@
     <el-dialog
       title="Seleccionar rango horario para la impresion"
       :visible.sync="selectingPrint"
-      width="30%">
+      width="50%"
+    >
       <div>
         <el-select v-model="selectedType" placeholder="Tipo de egreso">
-          <el-option :value="1" label="Vencimiento" />
-          <el-option :value="2" label="Reciclado" />
-          <el-option :value="3" label="Transferencia" />
-          <el-option :value="4" label="Todo" />
+          <el-option :value="1" label="Vencimiento"/>
+          <el-option :value="2" label="Reciclado"/>
+          <el-option :value="3" label="Transferencia"/>
+          <el-option :value="4" label="Todo"/>
         </el-select>
         <el-time-picker
           is-range
           v-model="selectedTime"
           start-placeholder="Desde"
           range-separator="|"
-          end-placeholder="Hasta">
-        </el-time-picker>
+          end-placeholder="Hasta"
+        ></el-time-picker>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="selectingPrint = false">Cancelar</el-button>
         <el-button type="primary" @click="validatePrint()">Imprimir</el-button>
       </span>
     </el-dialog>
-
   </div>
 </template>
 
@@ -92,7 +86,9 @@ export default Vue.extend({
     isLoading: state => state.Log.loading,
     showSpinner: state => state.Log.showSpinner,
     filter: state => state.Log.filter,
-    date: state => state.Log.date,
+    date: state => {
+      return state.Log.date || new Date();
+    },
     data: state => state.Log.egreso
   }),
   data: () => ({

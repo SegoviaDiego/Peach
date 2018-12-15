@@ -26,5 +26,11 @@ export default {
     saveLog: "LOG_saveLog",
     mutateMov: "LOG_mutateMov",
     deleteMov: "LOG_deleteMov"
+  },
+  Chart: {
+    topProducts: "CHART_topProducts",
+    general: "CHART_general",
+    dailySell: "CHART_dailySell",
+    monthlySell: "CHART_monthlySell"
   }
 };

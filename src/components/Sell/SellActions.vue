@@ -31,7 +31,7 @@
       </div>
     </div>
     <!-- Dialog -->
-    <el-dialog title="Dividir monto a pagar" :visible.sync="payDivisionDialog" width="30%">
+    <el-dialog title="Dividir monto a pagar" :visible.sync="payDivisionDialog" width="50%">
       <!-- Dialog's body -->
       <div class="dialogBody">
         <template v-for="i of payMethods">

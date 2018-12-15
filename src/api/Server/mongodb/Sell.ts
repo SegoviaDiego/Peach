@@ -54,14 +54,43 @@ export default class Sell {
     });
   }
 
-  public static load(date: Date) {
+  public static load(day: Date) {
     return new Promise(async (resolve, reject) => {
-      date.setHours(0, 0, 0, 0);
+      day.setHours(0, 0, 0, 0);
 
       Sell.db().then(db => {
-        db.find({ day: date }).toArray((err, sells) => {
+        db.find({ day }).toArray((err, sells) => {
           if (err) {
             resolve({});
+            throw err;
+          } else {
+            resolve(sells);
+          }
+        });
+      });
+    });
+  }
+
+  public static loadRange(start: Date, end: Date) {
+    return new Promise(async (resolve, reject) => {
+      Sell.db().then(db => {
+        const dStart = new Date(start);
+        const dEnd = new Date(end);
+        dStart.setHours(0, 0, 0, 0);
+        dEnd.setHours(0, 0, 0, 0);
+
+        db.find({
+          day: {
+            $gte: dStart,
+            $lte: dEnd
+          },
+          time: {
+            $gte: start,
+            $lte: end
+          }
+        }).toArray((err, sells) => {
+          if (err) {
+            resolve([]);
             throw err;
           } else {
             resolve(sells);

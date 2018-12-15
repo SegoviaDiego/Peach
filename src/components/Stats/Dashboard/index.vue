@@ -29,11 +29,18 @@
       <div class="label">Egresos</div>
     </div>
     <!-- Ventas -->
-    <div @click="goTo('/Sells')" class="route" v-if="!preferences['systel']">
+    <div @click="goTo('/Sells')" class="route">
       <div class="icon">
         <fontawesome icon="dollar-sign"/>
       </div>
       <div class="label">Ventas</div>
+    </div>
+    <!-- Charts -->
+    <div @click="goTo('/Charts')" class="route">
+      <div class="icon">
+        <fontawesome icon="chart-pie"/>
+      </div>
+      <div class="label">Estadisticas</div>
     </div>
   </div>
 </template>
@@ -67,17 +74,13 @@ export default Vue.extend({
 <style lang="scss" scoped>
 .dashgrid {
   flex: 1;
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  grid-gap: 10px;
+  padding: 10px;
   .route {
     cursor: pointer;
-    flex: 1 1 1;
-    width: 30%;
-    margin: 0 10px;
     display: flex;
     flex-direction: column;
     justify-content: center;

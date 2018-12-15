@@ -1,34 +1,36 @@
 <template>
   <div class="toolbarFlex">
     <div class="date">
-      {{getDate()}}
+      <div class="from">{{getDate(1)}}</div>
+      <div class="to">{{getDate(2)}}</div>
     </div>
     <div class="searchbar">
       <input
         :value="filter"
         @input="filterChanged($event.target.value)"
-        placeholder="Buscar" type="text">
+        placeholder="Buscar"
+        type="text"
+      >
     </div>
-    <button @click="selectingDate = true" class="rect">
-      Fecha
-    </button>
+    <button @click="selectingDate = true" class="rect">Fecha</button>
     <button @click="selectingPrint = true" class="circle">
-      <fontawesome icon="print" />
+      <fontawesome icon="print"/>
     </button>
-    
+
     <!-- Dialog -->
-    <el-dialog
-      title="Seleccionar fecha"
-      :visible.sync="selectingDate"
-      width="50%">
-      <div>
+    <el-dialog title="Seleccionar fecha" :visible.sync="selectingDate" width="50%">
+      <div class="dialogBody">
         <el-date-picker
           v-model="selectedDate"
-          format="dd/MM/yyyy"
-          type="date"
-          placeholder="Seleccionar dia"
-          :picker-options="datePickOptions">
-        </el-date-picker>
+          format="dd/MM/yyyy HH:mm:ss"
+          :picker-options="datePickOptions"
+          type="datetimerange"
+          start-placeholder="Desde"
+          range-separator="|"
+          end-placeholder="Hasta"
+          align="right"
+          :default-time="['00:00:00', '23:59:59']"
+        />
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="selectingDate = false">Cancelar</el-button>
@@ -36,47 +38,35 @@
       </span>
     </el-dialog>
 
-    <el-dialog
-      title="Seleccionar rango horario para la impresion"
-      :visible.sync="selectingPrint"
-      width="50%">
-      <div>
-        <el-time-picker
-          is-range
-          v-model="selectedTime"
-          start-placeholder="Desde"
-          range-separator="|"
-          end-placeholder="Hasta">
-        </el-time-picker>
-      </div>
+    <el-dialog title="Imprimir ventas diarias" :visible.sync="selectingPrint" width="30%">
+      <div class="dialogBody"></div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="selectingPrint = false">Cancelar</el-button>
         <el-button type="primary" @click="validatePrint()">Imprimir</el-button>
       </span>
     </el-dialog>
-
   </div>
 </template>
 
 <script>
 import Vue from "vue";
 import { mapState } from "vuex";
-import { log as types } from "@/vuexTypes";
+import { chart as types } from "@/vuexTypes";
 import Print from "@/api/Print";
-import { composeMagnitude, toHour } from "@/api/Utils";
+import { equalDates, toHour } from "@/api/Utils";
 
 export default Vue.extend({
   name: "informes-toolbar",
   components: {},
   mounted() {},
   computed: mapState({
-    isLoading: state => state.Log.loading,
-    showSpinner: state => state.Log.showSpinner,
-    filter: state => state.Log.filter,
-    date: state => {
-      return state.Log.date || new Date();
-    },
-    data: state => state.Log.ingreso
+    isLoading: state => state.Chart.loading,
+    filter: state => state.Chart.filter,
+    data: state => state.Chart.dailySell,
+    range: state => ({
+      start: state.Chart.start,
+      end: state.Chart.end
+    })
   }),
   data: () => ({
     selectingDate: false,
@@ -86,17 +76,23 @@ export default Vue.extend({
     selectedPrint: null,
     datePickOptions: {
       disabledDate(time) {
-        return time.getTime() > Date.now();
+        const limit = new Date();
+        limit.setDate(limit.getDate() + 1);
+        limit.setHours(0, 0, 0, 0);
+        return time >= limit;
       },
       shortcuts: [
         {
-          text: "Hoy",
+          text: "Esta semana",
           onClick(picker) {
-            picker.$emit("pick", new Date());
+            const end = new Date();
+            const start = new Date();
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+            picker.$emit("pick", [start, end]);
           }
         },
         {
-          text: "Ayer",
+          text: "Este mes",
           onClick(picker) {
             const date = new Date();
             date.setTime(date.getTime() - 3600 * 1000 * 24);
@@ -104,7 +100,7 @@ export default Vue.extend({
           }
         },
         {
-          text: "Semana pasada",
+          text: "Este año",
           onClick(picker) {
             const date = new Date();
             date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
@@ -118,77 +114,72 @@ export default Vue.extend({
     filterChanged(value) {
       this.$store.dispatch(types.filter, value);
     },
-    getDate() {
-      let now = new Date();
-      if (
-        now.getDate() == this.date.getDate() &&
-        now.getMonth() == this.date.getMonth() &&
-        now.getFullYear() == this.date.getFullYear()
-      ) {
-        return "Hoy";
+    getDate(type) {
+      if (equalDates(this.range.start, this.range.end)) {
+        if (type === 1) return "Fecha sin seleccionar";
+        return;
       }
-
-      return `${this.date.getDate()}/${this.date.getMonth()}/${this.date.getFullYear()}`;
+      if (type === 1) {
+        return (
+          this.range.start.getDate() +
+          "/" +
+          this.range.start.getMonth() +
+          "/" +
+          this.range.start.getFullYear() +
+          " - " +
+          toHour(this.range.start)
+        );
+      } else {
+        return (
+          this.range.end.getDate() +
+          "/" +
+          this.range.end.getMonth() +
+          "/" +
+          this.range.end.getFullYear() +
+          " - " +
+          toHour(this.range.end)
+        );
+      }
     },
     setDate() {
-      this.$store.dispatch(types.setDate, this.selectedDate).then(() => {
-        this.$store.dispatch(types.loadIngreso);
-        this.selectingDate = false;
-      });
+      this.$store
+        .dispatch(types.setDate, {
+          start: this.selectedDate[0],
+          end: this.selectedDate[1]
+        })
+        .then(() => {
+          this.$store.dispatch(types.loadDailySell);
+          this.selectingDate = false;
+        });
     },
     validatePrint() {
-      if (!this.selectedTime) {
-        this.$notify({
-          title: "No seleccionaste un rango horario!",
-          message: "No has colocado ningun valor.",
-          type: "warning",
-          duration: 5000,
-          offset: 170
-        });
-      } else {
-        this.print();
-      }
+      this.print();
+      // if (!this.selectedTime) {
+      //   this.$notify({
+      //     title: "No seleccionaste un rango horario!",
+      //     message: "No has colocado ningun valor.",
+      //     type: "warning",
+      //     duration: 5000,
+      //     offset: 170
+      //   });
+      // } else {
+      // }
     },
     print() {
-      let printData = [];
-      let ingresos = [...this.data];
-      let from = this.selectedTime[0];
-      let to = this.selectedTime[1];
+      const res = [];
 
-      printData.push([
-        { text: "CODIGO", style: "tableHeader" },
-        { text: "HORA", style: "tableHeader" },
-        { text: "NOMBRE", style: "tableHeader" },
-        { text: "INGRESADO", style: "tableHeader" }
+      res.push([
+        { text: "Dia", style: "tableHeader" },
+        { text: "Venta", style: "tableHeader" }
       ]);
 
-      ingresos = ingresos.sort((a, b) => {
-        return new Date(b.time) - new Date(a.time);
-      });
-
-      for (let ingreso of ingresos) {
-        if (new Date(ingreso.time) > from && new Date(ingreso.time) < to)
-          printData.push([
-            ingreso.item._id,
-            toHour(new Date(ingreso.time)),
-            ingreso.item.name,
-            composeMagnitude(ingreso.amount, ingreso.item.type)
-          ]);
-      }
-
-      if (printData.length == 1) {
-        this.$notify({
-          title: "Impresion vacia!",
-          message: `No se realizaron ventas en el rango seleccionado. 
-            Seleccione un rango mas amplio`,
-          type: "warning",
-          duration: 5000,
-          offset: 170
-        });
-        return;
-      } else {
-        this.selectingPrint = false;
-        this.selectedTime = null;
+      for (const el of _.toArray(this.data)) {
+        res.push([
+          { text: el.name },
+          {
+            text: el.money.toFixed(2)
+          }
+        ]);
       }
 
       Print.print({
@@ -198,8 +189,8 @@ export default Vue.extend({
               headerRows: 1,
               dontBreakRows: true,
               keepWithHeaderRows: 1,
-              widths: [100, 50, "*", "20%"],
-              body: printData
+              widths: ["*", "20%"],
+              body: res
             }
           }
         ],
@@ -219,6 +210,11 @@ export default Vue.extend({
 <style lang="scss" scoped>
 .datePicker {
   background: red !important;
+}
+.dialogBody {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .dateDialog {
   overflow: visible;
@@ -241,7 +237,7 @@ export default Vue.extend({
     padding-left: 10px;
     grid-area: date;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: flex-start;
     align-items: center;
     font-family: Lato;

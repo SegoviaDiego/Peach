@@ -43,7 +43,8 @@ import {
   faToolbox,
   faHandHoldingUsd,
   faPuzzlePiece,
-  faMoneyBillAlt
+  faMoneyBillAlt,
+  faChartPie
 } from "@fortawesome/free-solid-svg-icons";
 
 //Font awesome
@@ -77,7 +78,8 @@ library.add(
   faToolbox,
   faHandHoldingUsd,
   faPuzzlePiece,
-  faMoneyBillAlt
+  faMoneyBillAlt,
+  faChartPie
 );
 
 // dependencies

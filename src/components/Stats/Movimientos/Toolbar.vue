@@ -50,7 +50,7 @@
       </span>
     </el-dialog>
 
-    <el-dialog title="Seleccionar fecha" :visible.sync="selectingDate" width="30%">
+    <el-dialog title="Seleccionar fecha" :visible.sync="selectingDate" width="50%">
       <div>
         <el-date-picker
           v-model="selectedDate"
@@ -69,7 +69,7 @@
     <el-dialog
       title="Seleccionar rango horario para la impresion"
       :visible.sync="selectingPrint"
-      width="30%"
+      width="50%"
     >
       <div>
         <el-time-picker
@@ -103,7 +103,9 @@ export default Vue.extend({
     isLoading: state => state.Log.loading,
     showSpinner: state => state.Log.showSpinner,
     filter: state => state.Log.filter,
-    date: state => state.Log.date,
+    date: state => {
+      return state.Log.date || new Date();
+    },
     data: state => state.Log.mov
   }),
   data: () => ({

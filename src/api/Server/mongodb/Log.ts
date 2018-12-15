@@ -102,7 +102,7 @@ export default class Log {
     });
   }
 
-  public static getMovs(start: Date, end: number): Promise<any> {
+  public static getMovs(start: Date, end: Date): Promise<any> {
     return new Promise(async (resolve: any) => {
       Log.db(types.movLog).then(db => {
         db.find({

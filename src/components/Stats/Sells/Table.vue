@@ -59,7 +59,9 @@ export default Vue.extend({
   }),
   computed: mapState({
     filter: state => state.Log.filter,
-    date: state => state.Log.date,
+    date: state => {
+      return state.Log.date || new Date();
+    },
     isLoading: state => state.Sell.loading,
     showSpinner: state => state.Sell.showSpinner,
     filteredData(state) {

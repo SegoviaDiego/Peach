@@ -15,7 +15,7 @@
     </button>
 
     <!-- Dialog -->
-    <el-dialog title="Seleccionar fecha" :visible.sync="selectingDate" width="30%">
+    <el-dialog title="Seleccionar fecha" :visible.sync="selectingDate" width="50%">
       <div>
         <el-date-picker
           v-model="selectedDate"
@@ -34,7 +34,7 @@
     <el-dialog
       title="Seleccionar rango horario para la impresion"
       :visible.sync="selectingPrint"
-      width="30%"
+      width="50%"
     >
       <div>
         <el-select multiple v-model="selectedCierre" placeholder="Seleccionar cierre">
@@ -74,7 +74,9 @@ export default Vue.extend({
     filter: state => state.Total.filter,
     isLoading: state => state.Total.loading,
     cierreIndex: state => state.Total.cierreIndex,
-    date: state => state.Total.date,
+    date: state => {
+      return state.Log.date || new Date();
+    },
     cierres(state) {
       if (state.Total.data) return state.Total.data.cierresData;
       return [];

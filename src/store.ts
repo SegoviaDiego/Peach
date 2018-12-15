@@ -8,6 +8,7 @@ import Total from "@/models/Total";
 import Log from "@/models/Log";
 import Sell from "@/models/Sell";
 import Settings from "@/models/Settings";
+import Chart from "@/models/Chart";
 
 export default new Vuex.Store({
   modules: {
@@ -15,6 +16,7 @@ export default new Vuex.Store({
     Total,
     Log,
     Sell,
-    Settings
+    Settings,
+    Chart 
   }
 });

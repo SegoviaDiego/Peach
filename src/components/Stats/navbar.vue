@@ -77,7 +77,9 @@ export default Vue.extend({
   name: "stats-navbar",
   computed: mapState({
     isLoading: state => state.Total.loading,
-    date: state => state.Total.date,
+    date: state => {
+      return state.Log.date || new Date();
+    },
     cierreIndex: state => state.Total.cierreIndex,
     selectedRoute: state => state.Settings.statsSelectedRoute,
     cierres(state) {
@@ -93,7 +95,8 @@ export default Vue.extend({
       movs: "/movimientos",
       ingreso: "/ingresos",
       egreso: "/egresos",
-      sells: "/Sells"
+      sells: "/Sells",
+      charts: "/Charts"
     },
     totalIndex: totalTypes.totalIndex,
     cierreLoading: false
@@ -161,6 +164,8 @@ export default Vue.extend({
           return "Egresos";
         case this.routes.sells:
           return "Ventas";
+        case this.routes.charts:
+          return "Estadisticas";
         default:
           return "Seleccionar categoria";
       }
