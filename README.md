@@ -28,7 +28,7 @@ Install and run it as a service
 
 Edit Systels products with incompatible characters (ñ and accent marks)
 
-Everything is ready!
+Everything is ready :D!
 
 ## Project setup
 
