@@ -78,7 +78,7 @@ export default Vue.extend({
   },
   async mounted() {
     setTimeout(() => {
-      this.isLoading = false;
+      (this as any).isLoading = false;
     }, 0);
   },
   data: () => ({
@@ -94,12 +94,12 @@ export default Vue.extend({
   computed: {
     sortedData() {
       const data = _.toArray(this.value);
-      if (this.OxyTable.sortBy) {
+      if ((this.OxyTable as any).sortBy) {
         return sortData(
           data,
-          this.OxyTable.sortBy,
-          this.OxyTable.sortOrder,
-          this.OxyTable.isNumber
+          (this.OxyTable as any).sortBy,
+          (this.OxyTable as any).sortOrder,
+          (this.OxyTable as any).isNumber
         );
       } else {
         return data;
@@ -119,7 +119,7 @@ export default Vue.extend({
         }
       });
 
-      this.OxyTable.gridTemplate = template;
+      (this as any).OxyTable.gridTemplate = template;
     }
   }
 });

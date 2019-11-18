@@ -69,11 +69,11 @@ export default class Total {
 
   public static load(date: Date) {
     return new Promise(async resolve => {
-      const total = await Total.getTotal(date);
+      const total: any = await Total.getTotal(date);
 
       resolve({
         ...total,
-        ...(await Total.getCierres(total))
+        ...(await Total.getCierres(total) as any)
       });
     });
   }

@@ -1,5 +1,3 @@
-"use strict";
-
 import SocketServer from "./api/Server/SocketServer";
 
 import {

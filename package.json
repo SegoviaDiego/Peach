@@ -1,6 +1,6 @@
 {
   "name": "Peach",
-  "version": "0.1.30",
+  "version": "0.1.35",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -51,7 +51,7 @@
     "@vue/cli-service": "^3.0.4",
     "@vue/eslint-config-prettier": "^3.0.4",
     "@vue/eslint-config-typescript": "^3.0.4",
-    "electron": "^2.0.2",
+    "electron": "^2.0.18",
     "node-sass": "^4.9.0",
     "sass-loader": "^7.0.1",
     "typescript": "^3.0.0",
@@ -84,7 +84,7 @@
     "last 2 versions",
     "not ie <= 8"
   ],
-  "main": "dist_electron/bundled/background.js",
+  "main": "background.js",
   "optionalDependencies": {
     "bufferutil": "^4.0.0",
     "utf-8-validate": "^5.0.1"
