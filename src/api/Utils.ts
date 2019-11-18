@@ -97,6 +97,8 @@ export function magnitude(type: number) {
       return " m";
     case 3: //Gr to Kg
       return " Kg";
+    case 7: // Litro
+      return " L";
     default:
       return "";
   }
@@ -109,6 +111,8 @@ export function composeMagnitude(amount: number, type: number) {
     case 1:
       return value.toFixed(3) + mag;
     case 2:
+      return value.toFixed(2) + mag;
+    case 7:
       return value.toFixed(2) + mag;
     case 0:
     default:
@@ -129,6 +133,8 @@ export function getProductTypeStep(type: number) {
       return 0.1;
     case 2:
       return 0.1;
+    case 7:
+      return 0.1;
     default:
       return 1;
   }
@@ -142,6 +148,8 @@ export function getProductTypeLabel(type: number) {
       return "Kilogramo";
     case 2:
       return "Metro";
+    case 7:
+      return "Litro";
     default:
       return "";
   }
@@ -159,6 +167,8 @@ export function toMagnitude(amount: number, type: number) {
       return amount / 1000;
     case 4: // Kg to Gr
       return amount * 1000;
+    case 7: // Litro
+      return amount;
     default:
       return amount;
   }
@@ -171,6 +181,7 @@ export function fromMagnitude(amount: number, type: number): number {
     case 0: // Unidad
     case 1: // Kilogramo
     case 2: // Metro
+    case 7: // Litro
     default:
       return amount;
   }

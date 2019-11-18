@@ -13,6 +13,7 @@
           <el-option label="Unidad" :value="0"/>
           <el-option label="Kilogramo" :value="1"/>
           <el-option label="Metro" :value="2"/>
+          <el-option label="Litro" :value="7"/>
         </el-select>
       </Cell>
       <Cell label="Precio" :colSpan="1">
