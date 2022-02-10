@@ -52,7 +52,7 @@
     "@vue/eslint-config-prettier": "^3.0.4",
     "@vue/eslint-config-typescript": "^3.0.4",
     "electron": "^2.0.18",
-    "node-sass": "^4.9.0",
+    "node-sass": "^7.0.0",
     "sass-loader": "^7.0.1",
     "typescript": "^3.0.0",
     "vue-cli-plugin-electron-builder": "^1.0.0-rc.3",
