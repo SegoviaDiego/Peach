@@ -5,8 +5,8 @@
 
 ## MongoDB Installation
 
-download mongodb 32 bits from
-'https://www.mongodb.org/dl/win32/i386'
+download mongodb 32 bits from https://www.mongodb.com/download-center/community/releases/archive
+Old link: 'https://www.mongodb.org/dl/win32/i386'
 
 Open cmd as administrator and run
 
